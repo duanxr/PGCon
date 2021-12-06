@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="INFO" monitorInterval="600" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <Properties>
+    <property name="logDirect">.</property>
+    <property name="logFileName">nug</property>
+    <property name="loggerLogLevel">INFO</property>
+  </Properties>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout charset="UTF-8"
+        pattern="[%date][%c{1.}][%t][%p] dstTraceId:[%X{dstTraceId}] [%X{TRACE_LOG_ID}] -%msg%xEx%n"/>
+    </Console>
+    <xi:include href="log4j2-appender.xml"/>
+  </Appenders>
+  <Loggers>
+    <root level="INFO">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="${logFileName}"/>
+    </root>
+  </Loggers>
+</configuration>
