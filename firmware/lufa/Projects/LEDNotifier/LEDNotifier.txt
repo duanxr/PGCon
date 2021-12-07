@@ -42,7 +42,7 @@
  *  \section Sec_Description Project Description:
  *
  *  USB LED Notifier Project. This project is designed for the Busware BUI board, however it can run easily on any
- *  USB AVR. It is a generic RGB LED controller (via a three channel software PWM) which listens for commands from the
+ *  USB AVR. It is a generic RGB LED protocol (via a three channel software PWM) which listens for commands from the
  *  host on a CDC virtual serial port. When new commands are received, it updates the board LEDs.
  *
  *  This can be controlled with any host application that can write to the virtual serial port, allowing it to become

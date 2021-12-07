@@ -1,3 +1,4 @@
+/*
 package com.duanxr.rhm.test;
 
 import com.duanxr.rhm.config.ConstantConfig;
@@ -81,3 +82,4 @@ public class ImageAreaFindTest {
   }
 
 }
+*/

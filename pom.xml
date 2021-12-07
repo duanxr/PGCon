@@ -10,8 +10,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.duanxr</groupId>
-  <artifactId>relentless-hatching-machine</artifactId>
-  <name>relentless-hatching-machine</name>
+  <artifactId>pokemon-game-control</artifactId>
+  <name>pokemon-game-control</name>
   <version>1.0.0-SNAPSHOT</version>
   <description>Automatic hunting and hatching shiny Pokémon for Pokémon games on nintendo switch, based on image recognition and
     OCR.
@@ -33,6 +33,11 @@
     </plugins>
   </build>
   <dependencies>
+    <dependency>
+      <groupId>org.boofcv</groupId>
+      <artifactId>boofcv-all</artifactId>
+      <version>0.39.1</version>
+    </dependency>
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>

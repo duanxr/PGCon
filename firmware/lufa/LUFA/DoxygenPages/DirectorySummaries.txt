@@ -28,15 +28,15 @@
  *  die within the same physical chip.
  *
  *  \dir Drivers/USB
- *  \brief USB controller peripheral driver files.
+ *  \brief USB protocol peripheral driver files.
  *
- *  This folder contains the complete LUFA USB stack and controller files, including the core driver and stack, as well
+ *  This folder contains the complete LUFA USB stack and protocol files, including the core driver and stack, as well
  *  as the USB class driver implementations.
  *
  *  \dir Drivers/USB/Core
  *  \brief Core USB driver files.
  *
- *  This folder contains the core USB stack and controller driver files, to correctly implement USB functionality on the
+ *  This folder contains the core USB stack and protocol driver files, to correctly implement USB functionality on the
  *  target architecture and microcontroller model. This
  *
  *  \dir Drivers/USB/Class

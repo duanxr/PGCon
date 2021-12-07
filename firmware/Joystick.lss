@@ -2487,7 +2487,7 @@ void Endpoint_ClearStatusStage(void)
      bf6:	08 95       	ret
 
 00000bf8 <Endpoint_WaitUntilReady>:
-			 *  \return Current USB frame number from the USB controller.
+			 *  \return Current USB frame number from the USB protocol.
 			 */
 			static inline uint16_t USB_Device_GetFrameNumber(void) ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT;
 			static inline uint16_t USB_Device_GetFrameNumber(void)

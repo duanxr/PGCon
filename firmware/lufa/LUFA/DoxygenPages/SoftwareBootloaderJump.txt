@@ -13,7 +13,7 @@
  *  just to streamline the device upgrade process on the host PC.
  *
  *  The following C code snippets may be used to enter the bootloader upon request by the user application.
- *  By using the watchdog to physically reset the controller, it is ensured that all system hardware is
+ *  By using the watchdog to physically reset the protocol, it is ensured that all system hardware is
  *  completely reset to their defaults before the bootloader is run. This is important; since bootloaders
  *  are written to occupy a very limited space, they usually make assumptions about the register states based
  *  on the default values after a hard-reset of the chip.
