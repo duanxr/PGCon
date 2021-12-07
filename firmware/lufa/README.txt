@@ -23,7 +23,7 @@
 This package contains the complete LUFA library, demos, user-submitted
 projects and bootloaders for use with compatible microcontroller models.
 LUFA is a simple to use, lightweight framework which sits atop the hardware
-USB protocol in specific AVR microcontroller models, and allows for the
+USB controller in specific AVR microcontroller models, and allows for the
 quick and easy creation of complex USB devices and hosts.
 
 To get started, you will need to install the "Doxygen" documentation

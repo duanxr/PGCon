@@ -183,7 +183,7 @@
  *    - A new USB driver source file, \c Drivers/USB/HighLevel/PipeStream.c now exists. This source file should be added to all
  *      project makefiles using the USB driver of LUFA, or the makefile should be updated to use the new module source variables.
  *    - The \c EVENT_USB_InitFailure() event has been removed, as the \ref USB_Init() function will no longer fail; if not USB mode is
- *      specified, the protocol will default to UID selection mode.
+ *      specified, the controller will default to UID selection mode.
  *    - The USB mode specifier constants have been moved into a new enum and renamed. Existing projects should use the equivalent
  *      value in the new \ref USB_Modes_t enum.
  *    - All class driver headers are now included as part of the standard \c LUFA/Drivers/USB/USB.h master dispatch header, and should

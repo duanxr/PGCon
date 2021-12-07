@@ -41,7 +41,7 @@
  *
  *  \section Sec_Description Project Description:
  *
- *  Missile Launcher host. This is a host driver for the popular USB-protocol table top toy missile launchers,
+ *  Missile Launcher host. This is a host driver for the popular USB-controller table top toy missile launchers,
  *  which can typically aim and fire small foam "missiles" from a spring-loaded turret. This project controls the
  *  launcher via a joystick and button to aim and fire missiles at targets without a PC.
  *
