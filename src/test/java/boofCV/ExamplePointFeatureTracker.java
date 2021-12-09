@@ -149,7 +149,7 @@ public class ExamplePointFeatureTracker<T extends ImageGray<T>, D extends ImageG
         //    media.openVideo("C:\\Users\\段然\\Desktop\\2021120700043400_s.mp4", ImageType.single(imageType));
         //pause = 50;
         media.openCamera(list.get(0).getDevice().getName(), 1920, 1080, ImageType.single(imageType));
-    pause = 5;
+    pause = 500;
     sequence.setLoop(false);
     ExamplePointFeatureTracker app = new ExamplePointFeatureTracker(imageType, pause);
 

@@ -2,29 +2,30 @@ package com.duanxr.pgcon.input;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Objects;
 import javax.imageio.ImageIO;
 import lombok.SneakyThrows;
 
 /**
  * @author Duanran 2019/12/16
  */
-public class StaticImageInput implements ImageInput {
+public class StaticImageInput implements ImageInput<BufferedImage> {
 
-  private BufferedImage bufferedImage;
+  private final BufferedImage image;
 
   @SneakyThrows
   public StaticImageInput(File file) {
-    bufferedImage = ImageIO.read(file);
+    image = ImageIO.read(file);
   }
 
   @SneakyThrows
   public StaticImageInput(String resourcePath) {
-    bufferedImage = ImageIO.read(getClass().getResource(resourcePath));
+    image = ImageIO.read(Objects.requireNonNull(getClass().getResource(resourcePath)));
   }
 
   @Override
   public BufferedImage read() {
-    return bufferedImage;
+    return image;
   }
 
 }

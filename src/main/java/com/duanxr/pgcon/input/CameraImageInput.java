@@ -1,37 +1,50 @@
 package com.duanxr.pgcon.input;
 
-import com.github.sarxos.webcam.Webcam;
-import java.awt.image.BufferedImage;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.opencv.core.Mat;
-import org.opencv.videoio.VideoCapture;
+import static com.duanxr.pgcon.util.ConstantConfig.INPUT_VIDEO_FRAME_CACHE_SIZE;
+
+import boofcv.io.image.SimpleImageSequence;
+import boofcv.io.wrapper.DefaultMediaManager;
+import boofcv.struct.image.GrayF32;
+import boofcv.struct.image.ImageType;
+import com.duanxr.pgcon.util.ConstantConfig;
 
 /**
  * @author Duanran 2019/12/16
  */
-public class CameraImageInput implements ImageInput {
+public class CameraImageInput implements StreamImageInput<GrayF32> {
 
-  private VideoCapture cameraCapture;
+  private SimpleImageSequence<GrayF32> camera;
+  private final GrayF32[] frames;
+  private int framesIndex;
 
-  public CameraImageInput(int cameraIndex) {
-    cameraCapture = new VideoCapture(cameraIndex);
-  }
-
-  public static List<String> getCameraList() {
-    List<Webcam> list = Webcam.getWebcams();
-    return list.isEmpty() ? Collections.emptyList() : list.stream().map(Webcam::getName).collect(
-        Collectors.toList());
-  }
-
-  public BufferedImage loadInput(Mat buffer) {
-    cameraCapture.read(buffer);
-    return null;
+  public CameraImageInput(String device) {
+    camera = DefaultMediaManager.INSTANCE.openCamera(device, (int) ConstantConfig.SIZE.width,
+        (int) ConstantConfig.SIZE.height, ImageType.single(GrayF32.class));
+    frames = new GrayF32[INPUT_VIDEO_FRAME_CACHE_SIZE];
+    framesIndex = 0;
   }
 
   @Override
-  public BufferedImage read() {
-    return null;
+  public synchronized GrayF32[] readCache() {
+    GrayF32[] cachedImages = new GrayF32[frames.length];
+    for (int i = framesIndex; i < cachedImages.length + framesIndex; i++) {
+      cachedImages[i - framesIndex] = frames[i % frames.length];
+    }
+    return cachedImages;
+  }
+
+  @Override
+  public synchronized GrayF32 read() {
+    GrayF32 image = camera.next();
+    if (framesIndex == frames.length) {
+      framesIndex = 0;
+    }
+    frames[framesIndex++] = image;
+    return image;
+  }
+
+  public synchronized void close() {
+    camera.close();
+    camera = null;
   }
 }

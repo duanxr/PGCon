@@ -1,98 +1,112 @@
-/*
 package com.duanxr.pgcon.gui;
 
 
-import java.awt.Color;
-import java.awt.Font;
+import static com.duanxr.pgcon.util.ConstantConfig.INPUT_VIDEO_FRAME_INTERVAL;
+
+import boofcv.io.image.ConvertBufferedImage;
+import com.duanxr.pgcon.gui.draw.Drawable;
+import com.duanxr.pgcon.input.CameraImageInput;
+import com.duanxr.pgcon.input.StaticImageInput;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import lombok.AllArgsConstructor;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.ImageIcon;
 import lombok.Getter;
-import org.opencv.core.Mat;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
-*/
 /**
  * @author Duanran 2019/12/21
- *//*
-
+ */
 @Service
 public class DisplayHandler {
 
+  private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(
+      "img/no_input.bmp");
 
-  private static final Color BACK_COLOR = new Color(249, 38, 114, 180);
-  private static final Color BACK_DDAD_COLOR = new Color(18, 249, 43, 128);
-  private static final Color TEXT_COLOR = new Color(226, 226, 226);
-  private static final Font MICROSOFT_YA_HEI = new Font("Microsoft YaHei", Font.PLAIN, 18);
+  private final Map<String, Drawable> drawableHashMap = new ConcurrentHashMap<>();
 
-  @Autowired
-  private InputHandler inputHandler;
-
-  private Map<String, DrawArea> detectRects;
-
-  private List<String> needRemoveKey;
-
-  public DisplayHandler() {
-    this.detectRects = new HashMap<>();
-    this.needRemoveKey = new ArrayList<>();
-  }
-
-  public BufferedImage getImage() {
-    for (Entry<String, DrawArea> drawAreaEntry : detectRects.entrySet()) {
-      DrawArea drawArea = drawAreaEntry.getValue();
-      if (System.currentTimeMillis() - drawArea.getTime()
-          > TEMPLATE_MATCH_RECT_SHOW_TIME) {
-        needRemoveKey.add(drawAreaEntry.getKey());
-      }
-    }
-    for (String key : needRemoveKey) {
-      detectRects.remove(key);
-    }
-    needRemoveKey.clear();
-    Mat image = new Mat();
-    inputHandler.getStream().copyTo(image);
-    BufferedImage bufferedImage = MatUtil.toBufferedImage(image);
-    Graphics graphics = bufferedImage.getGraphics();
-    for (Entry<String, DrawArea> drawArea : detectRects.entrySet()) {
-      if (drawArea.getKey().equals("DDAD")) {
-        graphics.setColor(BACK_DDAD_COLOR);
-      } else {
-        graphics.setColor(BACK_COLOR);
-      }
-      graphics
-          .fillRect(drawArea.getValue().getCachedImageArea().getLeft(),
-              drawArea.getValue().getCachedImageArea().getTop(),
-              drawArea.getValue().getCachedImageArea().getRight() - drawArea.getValue()
-                  .getCachedImageArea().getLeft(),
-              drawArea.getValue().getCachedImageArea().getBottom() - drawArea.getValue()
-                  .getCachedImageArea().getTop());
-      graphics.setColor(TEXT_COLOR);
-      graphics.setFont(MICROSOFT_YA_HEI);
-      graphics.drawString(drawArea.getValue().getText(),
-          drawArea.getValue().getCachedImageArea().getLeft() + 5,
-          drawArea.getValue().getCachedImageArea().getBottom() - 5);
-    }
-    return bufferedImage;
-  }
-
-  public void setDetectRect(CachedImageArea cachedImageArea, String key, String text) {
-    DrawArea drawArea = new DrawArea(cachedImageArea, System.currentTimeMillis(), text);
-    this.detectRects.put(key, drawArea);
-  }
+  private final AtomicBoolean frozen = new AtomicBoolean(false);
 
   @Getter
-  @AllArgsConstructor
-  public static class DrawArea {
+  private CameraImageInput imageInput;
+  private DisplayScreen displayScreen;
 
-    private CachedImageArea cachedImageArea;
-    private long time;
-    private String text;
+  public DisplayHandler() {
+    Executors.newSingleThreadExecutor().execute(new Runnable() {
+      @Override
+      @SneakyThrows
+      public void run() {
+        while (true) {
+          TimeUnit.MILLISECONDS.sleep(INPUT_VIDEO_FRAME_INTERVAL);
+          if(displayScreen != null && imageInput != null && !frozen.get()) {
+            repaint(getDisplay());
+          }
+        }
+      }
+    });
+  }
+
+  public BufferedImage getDisplay() {
+    return ConvertBufferedImage.convertTo(getImageInput().read(),null);
+  }
+
+  public void addDrawRule(String key, Drawable drawable) {
+    drawableHashMap.put(key, drawable);
+  }
+
+  public void removeDrawRule(String key) {
+    drawableHashMap.remove(key);
+  }
+
+  private BufferedImage draw(BufferedImage read) {
+    Graphics graphics = read.getGraphics();
+    for (Iterator<Entry<String, Drawable>> iterator = drawableHashMap.entrySet().iterator();
+        iterator.hasNext(); ) {
+      Entry<String, Drawable> entry = iterator.next();
+      Drawable drawable = entry.getValue();
+      drawable.draw(graphics);
+      if (drawable.isExpired()) {
+        iterator.remove();
+      }
+    }
+    return read;
+  }
+
+  private boolean froze() {
+    return frozen.getAndSet(true);
+  }
+
+  private boolean unfroze() {
+    return frozen.getAndSet(false);
+  }
+
+  public void close() {
+    if (imageInput != null) {
+      imageInput.close();
+      imageInput = null;
+    }
+  }
+
+  public void setImageInput(CameraImageInput imageInput) {
+    close();
+    this.imageInput = imageInput;
+  }
+
+  public void setDisplayScreen(DisplayScreen displayScreen) {
+    this.displayScreen = displayScreen;
+    repaint(DEFAULT_IMAGE_INPUT.read());
+  }
+
+  private void repaint(BufferedImage image) {
+    ImageIcon icon = new ImageIcon(image);
+    displayScreen.setIcon(icon);
+    displayScreen.repaint();
   }
 }
-*/

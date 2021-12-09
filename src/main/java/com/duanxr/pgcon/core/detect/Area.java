@@ -14,6 +14,6 @@ public class Area {
 
   private int x;
   private int y;
-  private int high;
   private int weight;
+  private int high;
 }

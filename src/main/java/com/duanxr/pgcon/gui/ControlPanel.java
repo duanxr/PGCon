@@ -1,4 +1,3 @@
-/*
 package com.duanxr.pgcon.gui;
 
 import static com.duanxr.pgcon.util.ConstantConfig.MAIN_PANEL_TITLE;
@@ -25,16 +24,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-*/
 /**
  * @author Duanran 2019/12/16
- *//*
-
+ */
 @Slf4j
 @Service
 public class ControlPanel extends JFrame {
 
-  private static final Color COLOR = new Color(0, 255, 0, 127);
+
   @Autowired
   private DisplayHandler displayHandler;
 
@@ -149,13 +146,7 @@ public class ControlPanel extends JFrame {
 
   @SneakyThrows
   private void addVideoLabel() {
-    GridBagConstraints bagConstraints = new GridBagConstraints();
-    bagConstraints.fill = GridBagConstraints.NONE;
-    bagConstraints.anchor = GridBagConstraints.EAST;
-    bagConstraints.gridheight = 12;
-    bagConstraints.gridwidth = 1;
-    bagConstraints.gridx = 0;
-    bagConstraints.gridy = 0;
+
     this.videoLabel = new JLabel() {
       Point pointStart = null;
       Point pointEnd = null;
@@ -185,10 +176,7 @@ public class ControlPanel extends JFrame {
         });
       }
     };
-    Dimension dimension = new Dimension((int) SIZE.width, (int) SIZE.height);
-    this.videoLabel.setMinimumSize(dimension);
-    this.videoLabel.setPreferredSize(dimension);
-    this.videoLabel.setMaximumSize(dimension);
+
     this.add(videoLabel, bagConstraints);
     this.setVisible(true);
     this.executor = Executors.newSingleThreadExecutor();
@@ -210,4 +198,3 @@ public class ControlPanel extends JFrame {
   }
 
 }
-*/
