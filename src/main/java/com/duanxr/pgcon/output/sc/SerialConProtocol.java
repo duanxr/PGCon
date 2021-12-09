@@ -99,27 +99,4 @@ public class SerialConProtocol implements Protocol {
     return new byte[]{0, 0, 8, -128, -128, -128, -128};
   }
 
-  @SneakyThrows
-  public static void main(String[] args) {
-    SerialConProtocol serialConProtocol = new SerialConProtocol("COM15");
-    serialConProtocol.clear();
-    serialConProtocol.send(StickAction.R_TOP, PressAction.PRESS);
-    Thread.sleep(500);
-    serialConProtocol.send(StickAction.R_BOTTOM, PressAction.PRESS);
-    Thread.sleep(500);
-    serialConProtocol.send(StickAction.R_LEFT, PressAction.PRESS);
-    Thread.sleep(500);
-    serialConProtocol.send(StickAction.R_RIGHT, PressAction.PRESS);
-    Thread.sleep(500);
-    serialConProtocol.send(StickAction.R_TOP_LEFT, PressAction.PRESS);
-    Thread.sleep(500);
-    serialConProtocol.send(StickAction.R_TOP_RIGHT, PressAction.PRESS);
-    Thread.sleep(500);
-    serialConProtocol.send(StickAction.R_BOTTOM_LEFT, PressAction.PRESS);
-    Thread.sleep(500);
-    serialConProtocol.send(StickAction.R_BOTTOM_RIGHT, PressAction.PRESS);
-    Thread.sleep(1000);
-    System.exit(0);
-  }
-
 }

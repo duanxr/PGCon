@@ -3,14 +3,14 @@ package com.duanxr.pgcon.output;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.PressAction;
 import com.duanxr.pgcon.output.action.StickAction;
-import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2021/12/7
  */
+@Component
 public class Controller {
 
-  @Setter
   private Protocol protocol;
 
   public void press(ButtonAction buttonType) {
@@ -48,5 +48,10 @@ public class Controller {
       protocol.send(ButtonAction.CAPTURE, PressAction.RELEASE);
     } catch (Exception ignore) {
     }
+  }
+
+  public void setProtocol(Protocol protocol) {
+    //TODO CLOSE PORT CONNECTION
+    this.protocol = protocol;
   }
 }

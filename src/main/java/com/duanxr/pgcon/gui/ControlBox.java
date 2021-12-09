@@ -1,4 +1,3 @@
-/*
 package com.duanxr.pgcon.gui;
 
 import java.awt.event.ActionEvent;
@@ -7,11 +6,9 @@ import java.util.List;
 import javax.swing.JComboBox;
 import lombok.extern.slf4j.Slf4j;
 
-*/
 /**
  * @author Duanran 2019/12/18
- *//*
-
+ */
 @Slf4j
 public class ControlBox<T> extends JComboBox<String> {
 
@@ -27,6 +24,7 @@ public class ControlBox<T> extends JComboBox<String> {
     this.addItem(null, boxName);
   }
 
+  //TODO ADD CONFIRM BUTTON
   private void selectionCallBack(ActionEvent actionEvent) {
     try {
       int selectedIndex = super.getSelectedIndex();
@@ -47,4 +45,3 @@ public class ControlBox<T> extends JComboBox<String> {
     void apply(T t);
   }
 }
-*/

@@ -82,16 +82,6 @@ public class SerialConSerialPort implements SerialPort<byte[]> {
     return false;
   }
 
-  public static void main(String[] args) {
-    try {
-      SerialConSerialPort serialConSerialPort = new SerialConSerialPort("COM15");
-      serialConSerialPort.checkConnection();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    System.exit(0);
-  }
-
   @SneakyThrows
   private void listen() {
     while (true) {

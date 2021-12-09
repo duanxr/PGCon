@@ -1,24 +1,21 @@
 package com.duanxr.pgcon.gui;
 
 import static com.duanxr.pgcon.util.ConstantConfig.MAIN_PANEL_TITLE;
-import static com.duanxr.pgcon.util.ConstantConfig.MAIN_PANEL_VIDEO_RETRY_DELAY;
 import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import com.duanxr.pgcon.core.script.Script;
+import com.duanxr.pgcon.core.script.ScriptCache;
+import com.duanxr.pgcon.core.script.ScriptRunner;
+import com.duanxr.pgcon.input.CameraImageInput;
+import com.duanxr.pgcon.input.StreamImageInput;
+import com.duanxr.pgcon.output.Controller;
+import com.duanxr.pgcon.output.SerialPort;
+import com.duanxr.pgcon.output.sc.SerialConProtocol;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,25 +28,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class ControlPanel extends JFrame {
 
-
   @Autowired
   private DisplayHandler displayHandler;
 
   @Autowired
-  private InputHandler inputHandler;
-
-  @Autowired
-  private ActionHandler actionHandler;
+  private Controller controller;
 
   @Autowired
   private ScriptRunner scriptRunner;
 
   @Autowired
-  private ScriptLoader scriptLoader;
-
-  private Executor executor;
-
-  private JLabel videoLabel;
+  private DisplayScreen screen;
 
   @PostConstruct
   private void initPanel() {
@@ -58,8 +47,7 @@ public class ControlPanel extends JFrame {
     this.setTitle(MAIN_PANEL_TITLE);
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     this.setLayout(new GridBagLayout());
-    scriptLoader.load();
-    addVideoLabel();
+    addDisplayScreen();
     addVideoSelection();
     addOutputSelection();
     addScriptSelection();
@@ -75,24 +63,20 @@ public class ControlPanel extends JFrame {
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
     bagConstraints.gridy = 2;
-    List<String> scriptList = ScriptCache.getScriptList();
-    com.duanxr.rhm.core.gui.ControlBox<String> controlBox = new com.duanxr.rhm.core.gui.ControlBox<>(
-        this::selectScript, "选择执行脚本");
-    for (String name : scriptList) {
-      controlBox.addItem(name, name);
+    List<Script> list = ScriptCache.getScriptList();
+    ControlBox<Script> controlBox = new ControlBox<>(this::selectScript, "选择执行脚本");
+    for (Script script : list) {
+      controlBox.addItem(script, script.name());
     }
     this.add(controlBox, bagConstraints);
   }
 
-  private void selectScript(String scriptName) {
+  private void selectScript(Script script) {
     scriptRunner.stopScript();
-    if (scriptName == null) {
+    if (script == null) {
       return;
     }
-    Script executableScript = ScriptCache.get(scriptName);
-    if (executableScript != null) {
-      scriptRunner.runScript(executableScript);
-    }
+    scriptRunner.runScript(script);
   }
 
   @SneakyThrows
@@ -104,11 +88,10 @@ public class ControlPanel extends JFrame {
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
     bagConstraints.gridy = 1;
-    List<String> portList = SerialControllerOutput.getSerialList();
-    com.duanxr.rhm.core.gui.ControlBox<String> controlBox = new com.duanxr.rhm.core.gui.ControlBox<>(
+    List<String> portList = SerialPort.getSerialList();
+    ControlBox<String> controlBox = new ControlBox<>(
         this::selectOutputPort, "选择输出端口");
-    for (int i = 0; i < portList.size(); i++) {
-      String name = portList.get(i);
+    for (String name : portList) {
       controlBox.addItem(name, name);
     }
     this.add(controlBox, bagConstraints);
@@ -116,8 +99,9 @@ public class ControlPanel extends JFrame {
 
   @SneakyThrows
   private void selectOutputPort(String portName) {
-    this.actionHandler
-        .setControllerOutput(portName == null ? null : new SerialControllerOutput(portName));
+    if (portName != null) {
+      this.controller.setProtocol(new SerialConProtocol(portName));
+    }
   }
 
   @SneakyThrows
@@ -129,72 +113,30 @@ public class ControlPanel extends JFrame {
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
     bagConstraints.gridy = 0;
-    List<String> cameraList = CameraImageInput.getCameraList();
-    com.duanxr.rhm.core.gui.ControlBox<Integer> controlBox = new com.duanxr.rhm.core.gui.ControlBox<>(
+    List<String> cameraList = StreamImageInput.getCameraList();
+    ControlBox<String> controlBox = new ControlBox<>(
         this::selectVideo, "选择视频源");
-    for (int i = 0; i < cameraList.size(); i++) {
-      String name = cameraList.get(i);
-      controlBox.addItem(i, name);
+    for (String name : cameraList) {
+      controlBox.addItem(name, name);
     }
     this.add(controlBox, bagConstraints);
   }
 
-  private void selectVideo(Integer index) {
-    this.inputHandler.setNewInput(
-        index == null ? InputHandler.getNoInputHandler() : new CameraImageInput(index));
+  private void selectVideo(String cameraName) {
+    this.displayHandler.setImageInput(cameraName == null ? null : new CameraImageInput(cameraName));
   }
 
   @SneakyThrows
-  private void addVideoLabel() {
-
-    this.videoLabel = new JLabel() {
-      Point pointStart = null;
-      Point pointEnd = null;
-
-      {
-        addMouseListener(new MouseAdapter() {
-          public void mousePressed(MouseEvent e) {
-            pointStart = e.getPoint();
-          }
-
-          public void mouseReleased(MouseEvent e) {
-            log.info("拖动区域:  {},{},{},{}", pointStart.y, pointEnd.y, pointStart.x, pointEnd.x);
-            pointStart = null;
-          }
-        });
-        addMouseMotionListener(new MouseMotionAdapter() {
-          public void mouseMoved(MouseEvent e) {
-            pointEnd = e.getPoint();
-          }
-
-          public void mouseDragged(MouseEvent e) {
-            pointEnd = e.getPoint();
-            displayHandler.setDetectRect(
-                new CachedImageArea(pointStart.x, pointStart.y, pointEnd.x, pointEnd.y), "DDAD",
-                "");
-          }
-        });
-      }
-    };
-
-    this.add(videoLabel, bagConstraints);
+  private void addDisplayScreen() {
+    GridBagConstraints bagConstraints = new GridBagConstraints();
+    bagConstraints.fill = GridBagConstraints.NONE;
+    bagConstraints.anchor = GridBagConstraints.EAST;
+    bagConstraints.gridheight = 12;
+    bagConstraints.gridwidth = 1;
+    bagConstraints.gridx = 0;
+    bagConstraints.gridy = 0;
+    this.add(screen, bagConstraints);
     this.setVisible(true);
-    this.executor = Executors.newSingleThreadExecutor();
-    this.executor.execute(this::showVideo);
-  }
-
-  @SneakyThrows
-  private void showVideo() {
-    while (inputHandler != null) {
-      try {
-        ImageIcon image = new ImageIcon(displayHandler.getImage());
-        videoLabel.setIcon(image);
-        videoLabel.repaint();
-      } catch (Exception e) {
-        log.warn("show video Exception.", e);
-      }
-      Thread.sleep(MAIN_PANEL_VIDEO_RETRY_DELAY);
-    }
   }
 
 }

@@ -3,7 +3,6 @@ package com.duanxr.pgcon.gui;
 
 import static com.duanxr.pgcon.util.ConstantConfig.INPUT_VIDEO_FRAME_INTERVAL;
 
-import boofcv.io.image.ConvertBufferedImage;
 import com.duanxr.pgcon.gui.draw.Drawable;
 import com.duanxr.pgcon.input.CameraImageInput;
 import com.duanxr.pgcon.input.StaticImageInput;
@@ -28,7 +27,7 @@ import org.springframework.stereotype.Service;
 public class DisplayHandler {
 
   private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(
-      "img/no_input.bmp");
+      "/img/no_input.bmp");
 
   private final Map<String, Drawable> drawableHashMap = new ConcurrentHashMap<>();
 
@@ -45,7 +44,7 @@ public class DisplayHandler {
       public void run() {
         while (true) {
           TimeUnit.MILLISECONDS.sleep(INPUT_VIDEO_FRAME_INTERVAL);
-          if(displayScreen != null && imageInput != null && !frozen.get()) {
+          if (displayScreen != null && imageInput != null && !frozen.get()) {
             repaint(getDisplay());
           }
         }
@@ -54,7 +53,7 @@ public class DisplayHandler {
   }
 
   public BufferedImage getDisplay() {
-    return ConvertBufferedImage.convertTo(getImageInput().read(),null);
+    return getImageInput().read();
   }
 
   public void addDrawRule(String key, Drawable drawable) {
@@ -105,7 +104,7 @@ public class DisplayHandler {
   }
 
   private void repaint(BufferedImage image) {
-    ImageIcon icon = new ImageIcon(image);
+    ImageIcon icon = new ImageIcon(draw(image));
     displayScreen.setIcon(icon);
     displayScreen.repaint();
   }

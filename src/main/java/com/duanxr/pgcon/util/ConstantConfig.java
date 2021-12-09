@@ -15,8 +15,6 @@ public class ConstantConfig {
 
   public static final int MAIN_PANEL_VIDEO_RETRY_DELAY = 1000;
 
-  public static final int LOAD_IMAGE_FLAG = Imgcodecs.CV_LOAD_IMAGE_COLOR;
-
   public static final int OUTPUT_SERIAL_BAUD_RATE = 9600;
 
   public static final int OUTPUT_PRESS_TIME = 85;

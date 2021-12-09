@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.core;
+package com.duanxr.pgcon.core.script;
 
 import com.duanxr.pgcon.core.detect.image.compare.ImageCompare;
 import com.duanxr.pgcon.core.detect.ocr.Ocr;
@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author 段然 2021/12/7
  */
 @Slf4j
-public abstract class BaseScript implements Runnable {
+public abstract class BaseScript implements Script {
 
   protected final Ocr ocr;
   protected final Controller controller;
@@ -20,12 +20,13 @@ public abstract class BaseScript implements Runnable {
     this.ocr = ocr;
     this.controller = controller;
     this.imageCompare = imageCompare;
-    controller.clear();
+    ScriptCache.add(this);
   }
 
   @Override
   public void run() {
     try {
+      controller.clear();
       execute();
     } catch (Exception e) {
       log.error("An error occurred while executing the script, please report this to the developer. Trying to save Switch video.",e);
