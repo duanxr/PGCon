@@ -4,7 +4,7 @@ import static com.duanxr.pgcon.util.ConstantConfig.MAIN_PANEL_TITLE;
 import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
 
 import com.duanxr.pgcon.core.script.Script;
-import com.duanxr.pgcon.core.script.ScriptCache;
+import com.duanxr.pgcon.core.script.ScriptLoader;
 import com.duanxr.pgcon.core.script.ScriptRunner;
 import com.duanxr.pgcon.input.CameraImageInput;
 import com.duanxr.pgcon.input.StreamImageInput;
@@ -38,6 +38,9 @@ public class ControlPanel extends JFrame {
   private ScriptRunner scriptRunner;
 
   @Autowired
+  private ScriptLoader scriptLoader;
+
+  @Autowired
   private DisplayScreen screen;
 
   @PostConstruct
@@ -63,7 +66,7 @@ public class ControlPanel extends JFrame {
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
     bagConstraints.gridy = 2;
-    List<Script> list = ScriptCache.getScriptList();
+    List<Script> list = scriptLoader.getScriptList();
     ControlBox<Script> controlBox = new ControlBox<>(this::selectScript, "选择执行脚本");
     for (Script script : list) {
       controlBox.addItem(script, script.name());

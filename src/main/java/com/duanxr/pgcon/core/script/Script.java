@@ -5,4 +5,5 @@ package com.duanxr.pgcon.core.script;
  */
 public interface Script extends Runnable {
   String name();
+  void stop();
 }

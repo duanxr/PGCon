@@ -4,10 +4,12 @@ import com.duanxr.pgcon.core.detect.Area;
 import com.duanxr.pgcon.core.detect.DetectResult;
 import com.duanxr.pgcon.core.detect.Detector;
 import java.util.concurrent.Future;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2021/12/6
  */
+@Component
 public class ImageCompare implements Detector<Area, IcParam, IcResult> {
 
   @Override

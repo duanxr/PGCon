@@ -31,12 +31,15 @@ public class ScriptRunner {
 
   public synchronized void runScript(Script script) {
     stopScript();
-    ListenableFuture<?> submit = scriptExecutorService.submit(script);
+    currentScript =script;
+    currentScriptSubmit = scriptExecutorService.submit(script);
   }
 
   public synchronized void stopScript() {
     if (currentScriptSubmit != null) {
+      currentScript.stop();
       currentScriptSubmit.cancel(true);
+      currentScriptSubmit=null;
     }
   }
 }

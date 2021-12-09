@@ -41,7 +41,7 @@ public class ConstantConfig {
 
   public static final Size SIZE = new Size(1280, 720);
 
-  public static final int INPUT_VIDEO_FRAME_INTERVAL = 50;
+  public static final int INPUT_VIDEO_FRAME_INTERVAL = 75;
 
   public static final int INPUT_VIDEO_FRAME_CACHE_SIZE = 20;
 }
