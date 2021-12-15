@@ -123,7 +123,7 @@ public class ExamplePointFeatureTracker<T extends ImageGray<T>, D extends ImageG
     configDetector.type = PointDetectorTypes.SHI_TOMASI;
     configDetector.general.maxFeatures = 60;
     configDetector.general.radius = 6;
-    configDetector.general.threshold = 1;
+    configDetector.general.threshold = 0.5F;
 
     tracker = FactoryPointTracker.klt(configKlt, configDetector, imageType, derivType);
   }
@@ -149,7 +149,7 @@ public class ExamplePointFeatureTracker<T extends ImageGray<T>, D extends ImageG
         //    media.openVideo("C:\\Users\\段然\\Desktop\\2021120700043400_s.mp4", ImageType.single(imageType));
         //pause = 50;
         media.openCamera(list.get(0).getDevice().getName(), 1920, 1080, ImageType.single(imageType));
-    pause = 500;
+    pause = 5;
     sequence.setLoop(false);
     ExamplePointFeatureTracker app = new ExamplePointFeatureTracker(imageType, pause);
 

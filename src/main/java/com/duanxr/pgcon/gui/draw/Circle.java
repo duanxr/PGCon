@@ -36,8 +36,6 @@ public class Circle extends BaseDrawable implements Drawable {
   @Override
   public void draw(Graphics graphics) {
     graphics.setColor(this.getColor());
-    x = x - (r / 2);
-    y = y - (r / 2);
-    graphics.fillOval(x, y, r, r);
+    graphics.fillOval(x - (r / 2), y - (r / 2), r, r);
   }
 }

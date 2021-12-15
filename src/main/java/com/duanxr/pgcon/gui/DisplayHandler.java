@@ -3,6 +3,8 @@ package com.duanxr.pgcon.gui;
 
 import static com.duanxr.pgcon.util.ConstantConfig.INPUT_VIDEO_FRAME_INTERVAL;
 
+import com.duanxr.pgcon.core.ControlSystemManager;
+import com.duanxr.pgcon.core.script.ScriptLoader;
 import com.duanxr.pgcon.gui.draw.Drawable;
 import com.duanxr.pgcon.input.CameraImageInput;
 import com.duanxr.pgcon.input.StaticImageInput;
@@ -18,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.ImageIcon;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -36,6 +39,8 @@ public class DisplayHandler {
   @Getter
   private CameraImageInput imageInput;
   private DisplayScreen displayScreen;
+  @Autowired
+  private ControlSystemManager controlSystemManager;
 
   public DisplayHandler() {
     Executors.newSingleThreadExecutor().execute(new Runnable() {
@@ -45,7 +50,9 @@ public class DisplayHandler {
         while (true) {
           TimeUnit.MILLISECONDS.sleep(INPUT_VIDEO_FRAME_INTERVAL);
           if (displayScreen != null && imageInput != null && !frozen.get()) {
-            repaint(getDisplay());
+            controlSystemManager.getExecutors().execute(() -> {
+              repaint(getDisplay());
+            });
           }
         }
       }

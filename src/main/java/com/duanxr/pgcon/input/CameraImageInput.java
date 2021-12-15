@@ -38,13 +38,20 @@ public class CameraImageInput implements StreamImageInput<BufferedImage> {
     return cachedImages;
   }
 
+  public synchronized BufferedImage read(boolean isRefresh) {
+    return isRefresh ? read() : frames[framesIndex == 0 ? frames.length - 1 : framesIndex - 1];
+  }
+
   @Override
-  public synchronized BufferedImage read() {
+  public BufferedImage read() {
+    if(camera== null) {
+      return null;
+    }
     if (!camera.hasNext()) {
       return frames[framesIndex == 0 ? frames.length - 1 : framesIndex - 1];
     }
     BufferedImage image = camera.getGuiImage();
-    if(camera.getWidth()!=SIZE.width || camera.getHeight()!=SIZE.height){
+    if (camera.getWidth() != SIZE.width || camera.getHeight() != SIZE.height) {
       image = resize(image, (int) SIZE.width, (int) SIZE.height);
     }
     if (framesIndex == frames.length) {
