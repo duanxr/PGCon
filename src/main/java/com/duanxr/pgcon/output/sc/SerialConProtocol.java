@@ -1,7 +1,5 @@
 package com.duanxr.pgcon.output.sc;
 
-import static com.duanxr.pgcon.util.ConstantConfig.OUTPUT_PRESS_TIME;
-
 import com.duanxr.pgcon.output.Protocol;
 import com.duanxr.pgcon.output.SerialPort;
 import com.duanxr.pgcon.output.action.ButtonAction;
@@ -23,7 +21,7 @@ public class SerialConProtocol implements Protocol {
 
   @Override
   @SneakyThrows
-  public void send(ButtonAction buttonType, PressAction pressAction) {
+  public void send(ButtonAction buttonType, PressAction pressAction, int pressTime) {
     switch (pressAction) {
       case HOLD:
         sendButton(buttonType);
@@ -33,11 +31,12 @@ public class SerialConProtocol implements Protocol {
         break;
       default:
         sendButton(buttonType);
-        Thread.sleep(OUTPUT_PRESS_TIME);
+        Thread.sleep(pressTime);
         reset();
         break;
     }
   }
+
 
   private void sendButton(ButtonAction buttonType) {
     int scCommand = buttonType.getScCommand();
@@ -73,7 +72,7 @@ public class SerialConProtocol implements Protocol {
 
   @Override
   @SneakyThrows
-  public void send(StickAction stickAction, PressAction pressAction) {
+  public void send(StickAction stickAction, PressAction pressAction, int pressTime) {
     switch (pressAction) {
       case HOLD:
         sendStick(stickAction);
@@ -83,7 +82,7 @@ public class SerialConProtocol implements Protocol {
         break;
       default:
         sendStick(stickAction);
-        Thread.sleep(OUTPUT_PRESS_TIME);
+        Thread.sleep(pressTime);
         reset();
         break;
     }

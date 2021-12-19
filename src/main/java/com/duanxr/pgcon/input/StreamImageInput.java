@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
  */
 public interface StreamImageInput<I> extends ImageInput<I> {
 
-  I[] readCache();
-
   static List<String> getCameraList() {
     List<Webcam> list = Webcam.getWebcams();
     return list.isEmpty() ? Collections.emptyList() : list.stream().map(Webcam::getName).collect(

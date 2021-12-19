@@ -23,7 +23,7 @@ public class PGConProtocol implements Protocol {
 
   @Override
   @SneakyThrows
-  public void send(ButtonAction buttonType, PressAction pressAction) {
+  public void send(ButtonAction buttonType, PressAction pressAction, int pressTime) {
     switch (pressAction) {
       case HOLD:
         send(buttonType.getPgcHoldCommand());
@@ -33,7 +33,7 @@ public class PGConProtocol implements Protocol {
         break;
       default:
         send(buttonType.getPgcHoldCommand());
-        Thread.sleep(OUTPUT_PRESS_TIME);
+        Thread.sleep(pressTime);
         send(buttonType.getPgcReleaseCommand());
         break;
     }
@@ -41,7 +41,7 @@ public class PGConProtocol implements Protocol {
 
   @Override
   @SneakyThrows
-  public void send(StickAction stickAction, PressAction pressAction) {
+  public void send(StickAction stickAction, PressAction pressAction, int pressTime) {
     switch (pressAction) {
       case HOLD:
         send(stickAction.getActionX().getPgcCommand());
@@ -59,7 +59,7 @@ public class PGConProtocol implements Protocol {
       default:
         send(stickAction.getActionX().getPgcCommand());
         send(stickAction.getActionY().getPgcCommand());
-        Thread.sleep(OUTPUT_PRESS_TIME);
+        Thread.sleep(pressTime);
         if (stickAction.isLeft()) {
           send(StickAction.L_CENTER.getActionX().getPgcCommand());
           send(StickAction.L_CENTER.getActionY().getPgcCommand());

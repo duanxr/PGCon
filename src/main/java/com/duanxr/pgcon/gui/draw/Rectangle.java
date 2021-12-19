@@ -12,7 +12,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class Rectangle  extends  BaseDrawable implements Drawable {
+public class Rectangle extends  BaseDrawable implements Drawable {
 
   private Area area;
   private Color color;

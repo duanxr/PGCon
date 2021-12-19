@@ -11,9 +11,10 @@ import lombok.SneakyThrows;
 public interface Protocol {
   //TODO 添加虚拟按键自动释放功能
 
-  void send(ButtonAction buttonType, PressAction pressAction);
+  @SneakyThrows
+  void send(ButtonAction buttonType, PressAction pressAction, int pressTime);
 
-  void send(StickAction stickSimpleAction, PressAction pressAction);
+  void send(StickAction stickSimpleAction, PressAction pressAction, int pressTime);
 
   void clear();
 

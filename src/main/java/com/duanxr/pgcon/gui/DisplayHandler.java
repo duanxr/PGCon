@@ -2,24 +2,29 @@ package com.duanxr.pgcon.gui;
 
 
 import static com.duanxr.pgcon.util.ConstantConfig.INPUT_VIDEO_FRAME_INTERVAL;
+import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
 
-import com.duanxr.pgcon.core.ControlSystemManager;
-import com.duanxr.pgcon.core.script.ScriptLoader;
+import com.duanxr.pgcon.event.DrawEvent;
+import com.duanxr.pgcon.event.FrameEvent;
+import com.duanxr.pgcon.event.PGEventBus;
 import com.duanxr.pgcon.gui.draw.Drawable;
 import com.duanxr.pgcon.input.CameraImageInput;
 import com.duanxr.pgcon.input.StaticImageInput;
+import com.google.common.base.Strings;
+import com.google.common.eventbus.Subscribe;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.ImageIcon;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +34,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class DisplayHandler {
 
+  private static final Executor EXECUTOR = Executors.newFixedThreadPool(30);
+
   private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(
       "/img/no_input.bmp");
+  private static final FrameEvent DEFAULT_FRAME = new FrameEvent(DEFAULT_IMAGE_INPUT.read(), 0L);
 
   private final Map<String, Drawable> drawableHashMap = new ConcurrentHashMap<>();
 
@@ -38,37 +46,44 @@ public class DisplayHandler {
 
   @Getter
   private CameraImageInput imageInput;
-  private DisplayScreen displayScreen;
-  @Autowired
-  private ControlSystemManager controlSystemManager;
+  private final DisplayScreen displayScreen;
 
-  public DisplayHandler() {
+  @Autowired
+  public DisplayHandler(PGEventBus pgEventBus,
+      DisplayScreen displayScreen) {
+    this.displayScreen = displayScreen;
     Executors.newSingleThreadExecutor().execute(new Runnable() {
       @Override
       @SneakyThrows
       public void run() {
         while (true) {
           TimeUnit.MILLISECONDS.sleep(INPUT_VIDEO_FRAME_INTERVAL);
-          if (displayScreen != null && imageInput != null && !frozen.get()) {
-            controlSystemManager.getExecutors().execute(() -> {
-              repaint(getDisplay());
-            });
+          if (DisplayHandler.this.displayScreen != null && imageInput != null && !frozen.get()) {
+            BufferedImage image = getDisplay();
+            FrameEvent imageEvent = new FrameEvent(image, System.currentTimeMillis());
+            pgEventBus.post(imageEvent);
           }
         }
       }
     });
+    pgEventBus.register(this);
   }
 
   public BufferedImage getDisplay() {
     return getImageInput().read();
   }
 
-  public void addDrawRule(String key, Drawable drawable) {
-    drawableHashMap.put(key, drawable);
-  }
-
-  public void removeDrawRule(String key) {
-    drawableHashMap.remove(key);
+  @Subscribe
+  public void handleDrawEvent(DrawEvent drawEvent) {
+    EXECUTOR.execute(() -> {
+      if (!Strings.isNullOrEmpty(drawEvent.getKey())) {
+        if (drawEvent.getDrawable() == null) {
+          drawableHashMap.remove(drawEvent.getKey());
+        } else {
+          drawableHashMap.put(drawEvent.getKey(), drawEvent.getDrawable());
+        }
+      }
+    });
   }
 
   private BufferedImage draw(BufferedImage read) {
@@ -105,14 +120,22 @@ public class DisplayHandler {
     this.imageInput = imageInput;
   }
 
-  public void setDisplayScreen(DisplayScreen displayScreen) {
-    this.displayScreen = displayScreen;
-    repaint(DEFAULT_IMAGE_INPUT.read());
+
+  @Subscribe
+  public void repaint(FrameEvent event) {
+    EXECUTOR.execute(() -> {
+      if (event.getFrame() != null) {
+        BufferedImage draw = draw(event.getFrame());
+        BufferedImage resize = resize(draw, (int) SIZE.width, (int) SIZE.height);
+        displayScreen.repaint(resize);
+      } else {
+        repaint(DEFAULT_FRAME);
+      }
+    });
   }
 
-  private void repaint(BufferedImage image) {
-    ImageIcon icon = new ImageIcon(draw(image));
-    displayScreen.setIcon(icon);
-    displayScreen.repaint();
+  @SneakyThrows
+  public BufferedImage resize(BufferedImage bufferedImage, int width, int height) {
+    return Thumbnails.of(bufferedImage).size(width, height).asBufferedImage();
   }
 }
