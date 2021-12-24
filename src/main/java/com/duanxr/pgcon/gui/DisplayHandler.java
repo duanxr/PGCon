@@ -66,6 +66,7 @@ public class DisplayHandler {
         }
       }
     });
+    repaint(DEFAULT_FRAME);
     pgEventBus.register(this);
   }
 

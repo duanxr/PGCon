@@ -217,7 +217,7 @@ public class Pokemon {
   private List<int[]> filterX(List<int[]> list) {
     List<int[]> fun = new ArrayList<>();
     for (int[] ints : list) {
-      boolean b1 = !(ints[0] > 678 && ints[0] < 1147 && ints[1] >349  && ints[1] < 804);
+      boolean b1 = !(ints[0] > 790 && ints[0] < 1147 && ints[1] >312  && ints[1] < 690);
       boolean b2 = ints[0] > GRID_FILTER_RANGE_THRESHOLD * 1920
           && ints[0] < (1 - GRID_FILTER_RANGE_THRESHOLD) * 1920
           && ints[1] > GRID_FILTER_RANGE_THRESHOLD * 1080
@@ -229,16 +229,16 @@ public class Pokemon {
               new Color(b1 ? 0 : 255, b2 ? 0 : 255,  255, 90), 33000)));
       if (b1 && b2) {
         ints[1] = (ints[3] + ints[1]) / 2;
-        if (b3) {
+        //if (b3) {
           fun.add(ints);
-        } else {
+       /* } else {
           if (ints[2] < (1920 / 2)) {
             int tmp = ints[2];
             ints[2] = 1920-ints[0];
             ints[0] = 1920-tmp;
             fun.add(ints);
           }
-        }
+        }*/
       }
     }
     return fun;

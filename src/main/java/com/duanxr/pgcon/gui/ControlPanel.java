@@ -79,6 +79,17 @@ public class ControlPanel extends JFrame {
     if (script == null) {
       return;
     }
+    if(script.label()!=null){
+      GridBagConstraints bagConstraints = new GridBagConstraints();
+      bagConstraints.fill = GridBagConstraints.BOTH;
+      bagConstraints.anchor = GridBagConstraints.WEST;
+      bagConstraints.gridheight = 1;
+      bagConstraints.gridwidth = 1;
+      bagConstraints.gridx = 1;
+      bagConstraints.gridy = 3;
+      this.add(script.label(),bagConstraints);
+      this.revalidate();
+    }
     scriptRunner.runScript(script);
   }
 

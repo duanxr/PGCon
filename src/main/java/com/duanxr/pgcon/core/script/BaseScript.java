@@ -5,8 +5,9 @@ import com.duanxr.pgcon.core.detect.ocr.Ocr;
 import com.duanxr.pgcon.core.util.Pokemon;
 import com.duanxr.pgcon.output.Controller;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -56,6 +57,11 @@ public abstract class BaseScript implements Script {
   public void stop() {
     running.set(false);
     controller.clear();
+  }
+
+  @Override
+  public JPanel label() {
+    return null;
   }
 
 }
