@@ -14,6 +14,20 @@ import org.opencv.core.Mat;
  */
 public class TestUtil {
 
+  private static final ImageIcon IMAGE_ICON = new ImageIcon();
+
+  private static final JLabel J_LABEL = new JLabel();
+
+  static {
+    JFrame frame = new JFrame();
+    frame.setLayout(new FlowLayout());
+    frame.setSize(1920 + 50, 1080 + 50);
+    J_LABEL.setIcon(IMAGE_ICON);
+    frame.add(J_LABEL);
+    frame.setVisible(true);
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+  }
+
   public static void displayImage(Mat m) {
     displayImage(Mat2BufferedImage(m));
   }
@@ -35,14 +49,7 @@ public class TestUtil {
   }
 
   public static void displayImage(Image img2) {
-    ImageIcon icon = new ImageIcon(img2);
-    JFrame frame = new JFrame();
-    frame.setLayout(new FlowLayout());
-    frame.setSize(img2.getWidth(null) + 50, img2.getHeight(null) + 50);
-    JLabel lbl = new JLabel();
-    lbl.setIcon(icon);
-    frame.add(lbl);
-    frame.setVisible(true);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    IMAGE_ICON.setImage(img2);
+    J_LABEL.repaint();
   }
 }

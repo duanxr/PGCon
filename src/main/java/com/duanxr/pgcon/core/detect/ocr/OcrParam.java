@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 public class OcrParam {
 
   private String text;
-  private int OcrType;
-  private float similarity;
+  private Integer OcrType;
+  private Float similarity;
+  private Integer timeoutMillis;
+  private Integer retryTimes;
 }

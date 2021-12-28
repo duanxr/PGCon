@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.gui.draw;
 
-import com.duanxr.pgcon.core.detect.base.Area;
+import com.duanxr.pgcon.core.detect.Area;
 import java.awt.Color;
 import java.awt.Graphics;
 import lombok.Getter;
@@ -30,6 +30,6 @@ public class Oval extends BaseDrawable implements Drawable {
   @Override
   public void draw(Graphics graphics) {
     graphics.setColor(this.getColor());
-    graphics.fillOval(area.getX(), area.getY(), area.getWeight(), area.getHigh());
+    graphics.fillOval(area.getX(), area.getY(), area.getWidth(), area.getHeight());
   }
 }

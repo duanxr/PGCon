@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.gui.draw;
 
-import com.duanxr.pgcon.core.detect.base.Area;
+import com.duanxr.pgcon.core.detect.Area;
 import java.awt.Color;
 import java.awt.Graphics;
 import lombok.Getter;
@@ -31,6 +31,6 @@ public class Rectangle extends  BaseDrawable implements Drawable {
   public void draw(Graphics graphics) {
     graphics.setColor(this.getColor());
     graphics.fillRect(this.getArea().getX(), this.getArea().getY(),
-        this.getArea().getWeight(), this.getArea().getHigh());
+        this.getArea().getWidth(), this.getArea().getHeight());
   }
 }

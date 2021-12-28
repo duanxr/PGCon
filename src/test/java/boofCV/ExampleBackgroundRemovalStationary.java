@@ -44,7 +44,7 @@ public class ExampleBackgroundRemovalStationary {
 
     // Comment/Uncomment to switch algorithms
     BackgroundModelStationary background =
-        FactoryBackgroundModel.stationaryBasic(new ConfigBackgroundBasic(45, 0.012F), imageType);
+        FactoryBackgroundModel.stationaryBasic(new ConfigBackgroundBasic(30, 0.01F), imageType);
 				//FactoryBackgroundModel.stationaryGmm(configGmm, imageType);
 //        FactoryBackgroundModel.stationaryGaussian(new ConfigBackgroundGaussian(5, 0.7F), imageType);
     MediaManager media = DefaultMediaManager.INSTANCE;

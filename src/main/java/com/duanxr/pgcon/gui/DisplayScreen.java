@@ -2,7 +2,7 @@ package com.duanxr.pgcon.gui;
 
 import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
 
-import com.duanxr.pgcon.core.detect.base.Area;
+import com.duanxr.pgcon.core.detect.Area;
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.gui.draw.Rectangle;
 import com.google.common.eventbus.EventBus;

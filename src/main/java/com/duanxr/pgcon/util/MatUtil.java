@@ -3,9 +3,11 @@ package com.duanxr.pgcon.util;
 
 import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
 
+import com.duanxr.pgcon.core.detect.Area;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
@@ -18,9 +20,8 @@ public class MatUtil {
   /**
    * 返回引用而非新的矩阵
    */
-  public static Mat split(Mat origin, int left, int top, int right, int bottom) {
-    Rect rectCrop = new Rect(left, top, right - left, bottom - top);
-    return origin.submat(rectCrop);
+  public static Mat split(Mat origin, Area area) {
+    return origin.submat(new Rect(area.getX(), area.getY(), area.getWidth(), area.getHeight()));
   }
 
   public static Mat toMask(Mat origin) {
@@ -51,5 +52,12 @@ public class MatUtil {
     byte[] bytes = new byte[bufferSize];
     mat.get(0, 0, bytes);
     return bytes;
+  }
+
+  public static Mat toMat(BufferedImage bufferedImage) {
+    Mat mat = new Mat(bufferedImage.getHeight(), bufferedImage.getWidth(), CvType.CV_8UC3);
+    byte[] data = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
+    mat.put(0, 0, data);
+    return mat;
   }
 }

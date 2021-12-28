@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.gui.draw;
 
-import com.duanxr.pgcon.core.detect.base.Area;
+import com.duanxr.pgcon.core.detect.Area;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -35,6 +35,6 @@ public class Picture extends BaseDrawable implements Drawable {
   public void draw(Graphics graphics) {
     graphics.setColor(this.getColor());
     graphics.drawImage(image,this.getArea().getX(), this.getArea().getY(),
-        this.getArea().getWeight(), this.getArea().getHigh(), null);
+        this.getArea().getWidth(), this.getArea().getHeight(), null);
   }
 }

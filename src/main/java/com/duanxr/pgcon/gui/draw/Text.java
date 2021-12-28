@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.gui.draw;
 
-import com.duanxr.pgcon.core.detect.base.Area;
+import com.duanxr.pgcon.core.detect.Area;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -47,8 +47,8 @@ public class Text extends BaseDrawable implements Drawable {
     }
     FontMetrics metrics = graphics.getFontMetrics(graphics.getFont());
     int x = this.getArea().getX()
-        + (this.getArea().getWeight() - metrics.stringWidth(this.getText())) / 2;
-    int y = this.getArea().getY() + ((this.getArea().getHigh() - metrics.getHeight()) / 2)
+        + (this.getArea().getWidth() - metrics.stringWidth(this.getText())) / 2;
+    int y = this.getArea().getY() + ((this.getArea().getHeight() - metrics.getHeight()) / 2)
         + metrics.getAscent();
     graphics.drawString(this.getText(), x, y);
   }

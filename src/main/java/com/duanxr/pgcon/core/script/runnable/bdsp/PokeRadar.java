@@ -8,7 +8,7 @@ import boofcv.struct.image.GrayF32;
 import boofcv.struct.image.GrayU8;
 import boofcv.struct.image.ImageBase;
 import boofcv.struct.image.ImageType;
-import com.duanxr.pgcon.core.detect.base.Area;
+import com.duanxr.pgcon.core.detect.Area;
 import com.duanxr.pgcon.core.script.BaseScript;
 import com.duanxr.pgcon.core.script.ScriptLoader;
 import com.duanxr.pgcon.event.DrawEvent;
