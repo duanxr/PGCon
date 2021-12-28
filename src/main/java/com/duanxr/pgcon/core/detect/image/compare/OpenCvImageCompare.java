@@ -5,7 +5,7 @@ import com.duanxr.pgcon.core.detect.FrameCache;
 import com.duanxr.pgcon.core.detect.FrameReceiver;
 import com.duanxr.pgcon.core.detect.image.compare.ImageCompare.Result.Similarity;
 import com.duanxr.pgcon.event.FrameEvent;
-import com.duanxr.pgcon.util.MatUtil;
+import com.duanxr.pgcon.util.ImageUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import lombok.NonNull;
 import org.opencv.core.DMatch;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDMatch;
@@ -63,8 +62,8 @@ public class OpenCvImageCompare implements ImageCompare {
     if (param.getPeriod().getFrames() < 0) {
       List<FrameEvent> eventList = frameCache.get(-param.getPeriod().getFrames());
       for (FrameEvent frame : eventList) {
-        Mat originMat = MatUtil.toMat(frame.getFrame());
-        Mat targetMat = MatUtil.split(originMat, param.getArea());
+        Mat originMat = ImageUtil.bufferedImageToMat(frame.getFrame());
+        Mat targetMat = ImageUtil.splitMat(originMat, param.getArea());
         Float score = doDetect(temple, targetMat,param.getMethod());
         Similarity similarity = Similarity.builder().point( score)
             .timestamp(frame.getTimestamp())
@@ -78,8 +77,8 @@ public class OpenCvImageCompare implements ImageCompare {
       FrameReceiver receiver = new FrameReceiver(componentManager, param.getPeriod().getFrames()) {
         @Override
         public void receive(FrameEvent frame) {
-          Mat originMat = MatUtil.toMat(frame.getFrame());
-          Mat targetMat = MatUtil.split(originMat, param.getArea());
+          Mat originMat = ImageUtil.bufferedImageToMat(frame.getFrame());
+          Mat targetMat = ImageUtil.splitMat(originMat, param.getArea());
           Float score = doDetect(temple, targetMat,param.getMethod());
           Similarity similarity = Similarity.builder().point( score)
               .timestamp(frame.getTimestamp())
@@ -110,10 +109,10 @@ public class OpenCvImageCompare implements ImageCompare {
         .all(list).build();
   }
 
-  private Result detectNow(Mat temple, @NonNull Param param) {
+  private Result detectNow(Mat temple, Param param) {
     FrameEvent frame = frameCache.get();
-    Mat originMat = MatUtil.toMat(frame.getFrame());
-    Mat targetMat = MatUtil.split(originMat, param.getArea());
+    Mat originMat = ImageUtil.bufferedImageToMat(frame.getFrame());
+    Mat targetMat = ImageUtil.splitMat(originMat, param.getArea());
     Float score = doDetect(temple, targetMat,param.getMethod());
     Similarity similarity = Similarity.builder().point( score)
         .timestamp(frame.getTimestamp())

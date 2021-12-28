@@ -13,7 +13,7 @@ import org.opencv.core.Mat;
 public class DebugUtil {
 
   public static void displayImage(Mat m) {
-    displayImage(MatUtil.toBufferedImage(m));
+    displayImage(ImageUtil.matToBufferedImage(m));
   }
 
   public static void displayImage(Image img2) {
