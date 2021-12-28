@@ -15,7 +15,7 @@ import com.duanxr.pgcon.core.fitting.PolyTrendLine3D;
 import com.duanxr.pgcon.core.script.BaseScript;
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.event.FrameEvent;
-import com.duanxr.pgcon.event.PGEventBus;
+import com.duanxr.pgcon.event.EventBus;
 import com.duanxr.pgcon.gui.draw.Circle;
 import com.duanxr.pgcon.gui.draw.Line;
 import com.duanxr.pgcon.output.action.ButtonAction;
@@ -55,11 +55,11 @@ public class Pokemon {
 
   private static final int POLY_TREND_LINE_DEGREE = 1;
 
-  private final PGEventBus pgEventBus;
+  private final EventBus eventBus;
 
-  public Pokemon(@Autowired PGEventBus pgEventBus)
+  public Pokemon(@Autowired EventBus eventBus)
       throws InterruptedException {
-    this.pgEventBus = pgEventBus;
+    this.eventBus = eventBus;
   }
 
 
@@ -160,7 +160,7 @@ public class Pokemon {
     List<Integer> lines = new ArrayList<>();
     int n = GRID_BASE_X_LINE;
     while (n < 1920) {
-      pgEventBus.post(new DrawEvent("gridAnalyzeLineX" + n + "WithY" + l,
+      eventBus.post(new DrawEvent("gridAnalyzeLineX" + n + "WithY" + l,
           new Line(n, l, n, r, Color.BLUE)));
       double predict = polyTrendLine.predict(n,(l+r)/2D);
       n = (int) predict;
@@ -183,7 +183,7 @@ public class Pokemon {
     List<Integer> lines = new ArrayList<>();
     int n = GRID_BASE_Y_LINE;
     while (n < 1080) {
-      pgEventBus.post(new DrawEvent("gridAnalyzeLineY" + n, new Line(0, n, 1920, n, Color.BLUE)));
+      eventBus.post(new DrawEvent("gridAnalyzeLineY" + n, new Line(0, n, 1920, n, Color.BLUE)));
       double predict = polyTrendLine.predict(n);
       n = (int) predict;
       lines.add(n);
@@ -205,7 +205,7 @@ public class Pokemon {
     List<Integer> lines = new ArrayList<>();
     int n = GRID_BASE_Y_LINE;
     while (n > 0) {
-      pgEventBus.post(new DrawEvent("gridAnalyzeLineY" + n, new Line(0, n, 1920, n, Color.BLUE)));
+      eventBus.post(new DrawEvent("gridAnalyzeLineY" + n, new Line(0, n, 1920, n, Color.BLUE)));
       double predict = polyTrendLine.predict(n);
       n = (int) predict;
       lines.add(n);
@@ -223,7 +223,7 @@ public class Pokemon {
           && ints[1] > GRID_FILTER_RANGE_THRESHOLD * 1080
           && ints[1] < (1 - GRID_FILTER_RANGE_THRESHOLD) * 1080;
       boolean b3 = ints[0] > (1920 / 2);
-      pgEventBus.post(new DrawEvent(
+      eventBus.post(new DrawEvent(
           String.valueOf(Arrays.hashCode(ints)),
           new Circle(ints[2], ints[3], 9,
               new Color(b1 ? 0 : 255, b2 ? 0 : 255,  255, 90), 33000)));
@@ -259,7 +259,7 @@ public class Pokemon {
           && ints[0] < (1 - GRID_FILTER_RANGE_THRESHOLD) * 1920
           && ints[1] > GRID_FILTER_RANGE_THRESHOLD * 1080
           && ints[1] < (1 - GRID_FILTER_RANGE_THRESHOLD) * 1080;
-      pgEventBus.post(new DrawEvent(
+      eventBus.post(new DrawEvent(
           String.valueOf(Arrays.hashCode(ints)),
           new Circle(ints[2], ints[3], 9,
               new Color(b1 ? 0 : 255, b2 ? 0 : 255, 255, 90), 3000)));
@@ -274,15 +274,15 @@ public class Pokemon {
 
     private final Map<Long, int[]> map = new HashMap<>(GRID_ANALYZE_MAX_FEATURES);
     private final PointTrackerKltPyramid<GrayF32, GrayF32> tracker;
-    private final PGEventBus pgEventBus;
+    private final EventBus eventBus;
     private final List<FrameEvent> list = new ArrayList<>(64);
 
     private GrayF32 frame = null;
 
     public GridAnalyzer(PointTrackerKltPyramid<GrayF32, GrayF32> tracker,
-        PGEventBus pgEventBus) {
+        EventBus eventBus) {
       this.tracker = tracker;
-      this.pgEventBus = pgEventBus;
+      this.eventBus = eventBus;
     }
 
     @Subscribe
@@ -303,7 +303,7 @@ public class Pokemon {
           int red = (int) (2.5 * (track.featureId % 100));
           int green = (int) ((255.0 / 150.0) * (track.featureId % 150));
           int blue = (int) (track.featureId % 255);
-          pgEventBus.post(new DrawEvent(String.valueOf(track.featureId),
+          eventBus.post(new DrawEvent(String.valueOf(track.featureId),
               new Circle((int) track.pixel.x, (int) track.pixel.y, 9,
                   new Color(red, green, blue, 180), 10)));
           map.compute(track.featureId, (k, v) -> {
@@ -338,12 +338,12 @@ public class Pokemon {
       ButtonAction action) {
     script.controller.press(action);
     Thread.sleep(1200);
-    GridAnalyzer gridAnalyzer = new GridAnalyzer(tracker, pgEventBus);
-    pgEventBus.register(gridAnalyzer);
+    GridAnalyzer gridAnalyzer = new GridAnalyzer(tracker, eventBus);
+    eventBus.register(gridAnalyzer);
     Thread.sleep(1000);
     script.controller.press(action);
     Thread.sleep(1200);
-    pgEventBus.unregister(gridAnalyzer);
+    eventBus.unregister(gridAnalyzer);
     return gridAnalyzer.getResult();
   }
 

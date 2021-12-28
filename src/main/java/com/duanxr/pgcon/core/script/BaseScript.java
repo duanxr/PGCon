@@ -1,12 +1,11 @@
 package com.duanxr.pgcon.core.script;
 
-import com.duanxr.pgcon.core.detect.image.compare.ImageCompare;
+import com.duanxr.pgcon.core.detect.ImageCompare;
 import com.duanxr.pgcon.core.detect.ocr.Ocr;
 import com.duanxr.pgcon.core.util.Pokemon;
 import com.duanxr.pgcon.output.Controller;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import lombok.extern.slf4j.Slf4j;
 

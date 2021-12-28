@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.core.script;
 
-import com.duanxr.pgcon.core.detect.image.compare.ImageCompare;
+import com.duanxr.pgcon.core.detect.ImageCompare;
 import com.duanxr.pgcon.core.detect.ocr.Ocr;
 import com.duanxr.pgcon.core.util.Pokemon;
 import com.duanxr.pgcon.output.Controller;

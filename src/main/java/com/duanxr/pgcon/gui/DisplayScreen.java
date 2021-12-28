@@ -2,10 +2,10 @@ package com.duanxr.pgcon.gui;
 
 import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
 
-import com.duanxr.pgcon.core.detect.Area;
+import com.duanxr.pgcon.core.detect.base.Area;
 import com.duanxr.pgcon.event.DrawEvent;
-import com.duanxr.pgcon.event.PGEventBus;
 import com.duanxr.pgcon.gui.draw.Rectangle;
+import com.google.common.eventbus.EventBus;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -34,7 +34,8 @@ public class DisplayScreen extends JLabel {
   private Point pointStart = null;
   private Point pointEnd = null;
 
-  public DisplayScreen(@Autowired PGEventBus pgEventBus) {
+  @Autowired
+  public DisplayScreen(EventBus eventBus) {
     Dimension dimension = new Dimension((int) SIZE.width, (int) SIZE.height);
     this.imageIcon = new ImageIcon();
     this.setIcon(imageIcon);
@@ -68,7 +69,7 @@ public class DisplayScreen extends JLabel {
         int rectStartPointY = Math.min(startY, endY);
         int rectEndPointX = Math.max(startX, endX);
         int rectEndPointY = Math.max(startY, endY);
-        pgEventBus.post(
+        eventBus.post(
             new DrawEvent(MOUSE_DRAGGED_KEY,
                 new Rectangle(
                     new Area(rectStartPointX, rectStartPointY,

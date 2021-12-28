@@ -6,7 +6,7 @@ import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
 
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.event.FrameEvent;
-import com.duanxr.pgcon.event.PGEventBus;
+import com.duanxr.pgcon.event.EventBus;
 import com.duanxr.pgcon.gui.draw.Drawable;
 import com.duanxr.pgcon.input.CameraImageInput;
 import com.duanxr.pgcon.input.StaticImageInput;
@@ -40,17 +40,20 @@ public class DisplayHandler {
       "/img/no_input.bmp");
   private static final FrameEvent DEFAULT_FRAME = new FrameEvent(DEFAULT_IMAGE_INPUT.read(), 0L);
 
-  private final Map<String, Drawable> drawableHashMap = new ConcurrentHashMap<>();
+  private final Map<String, Drawable> drawableHashMap;
 
-  private final AtomicBoolean frozen = new AtomicBoolean(false);
+  private final AtomicBoolean frozen;
+
+  private final DisplayScreen displayScreen;
 
   @Getter
   private CameraImageInput imageInput;
-  private final DisplayScreen displayScreen;
 
   @Autowired
-  public DisplayHandler(PGEventBus pgEventBus,
+  public DisplayHandler(EventBus eventBus,
       DisplayScreen displayScreen) {
+    this.drawableHashMap  = new ConcurrentHashMap<>();
+    this.frozen = new AtomicBoolean(false);
     this.displayScreen = displayScreen;
     Executors.newSingleThreadExecutor().execute(new Runnable() {
       @Override
@@ -61,13 +64,13 @@ public class DisplayHandler {
           if (DisplayHandler.this.displayScreen != null && imageInput != null && !frozen.get()) {
             BufferedImage image = getDisplay();
             FrameEvent imageEvent = new FrameEvent(image, System.currentTimeMillis());
-            pgEventBus.post(imageEvent);
+            eventBus.post(imageEvent);
           }
         }
       }
     });
     repaint(DEFAULT_FRAME);
-    pgEventBus.register(this);
+    eventBus.register(this);
   }
 
   public BufferedImage getDisplay() {

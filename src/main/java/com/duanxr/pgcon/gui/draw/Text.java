@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.gui.draw;
 
-import com.duanxr.pgcon.core.detect.Area;
+import com.duanxr.pgcon.core.detect.base.Area;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;

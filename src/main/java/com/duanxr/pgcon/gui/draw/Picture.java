@@ -1,10 +1,9 @@
 package com.duanxr.pgcon.gui.draw;
 
-import com.duanxr.pgcon.core.detect.Area;
+import com.duanxr.pgcon.core.detect.base.Area;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
