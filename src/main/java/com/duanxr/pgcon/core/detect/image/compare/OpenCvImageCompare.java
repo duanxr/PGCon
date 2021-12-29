@@ -1,11 +1,12 @@
 package com.duanxr.pgcon.core.detect.image.compare;
 
-import com.duanxr.pgcon.core.ComponentManager;
+import com.duanxr.pgcon.core.PGPool;
 import com.duanxr.pgcon.core.detect.FrameCache;
 import com.duanxr.pgcon.core.detect.FrameReceiver;
 import com.duanxr.pgcon.core.detect.image.compare.ImageCompare.Result.Similarity;
 import com.duanxr.pgcon.event.FrameEvent;
 import com.duanxr.pgcon.util.ImageUtil;
+import com.google.common.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,21 +32,23 @@ import org.springframework.stereotype.Component;
 public class OpenCvImageCompare implements ImageCompare {
 
   private final Map<Method, BiFunction<Mat, Mat, Float>> methods;
-  private final ComponentManager componentManager;
   private final FrameCache frameCache;
+  private final EventBus eventBus;
+  private final PGPool pgPool;
 
   @Autowired
-  public OpenCvImageCompare(ComponentManager componentManager,
-      FrameCache frameCache) {
-    this.componentManager = componentManager;
+  public OpenCvImageCompare(PGPool pgPool,
+      FrameCache frameCache, EventBus eventBus) {
     this.frameCache = frameCache;
+    this.eventBus = eventBus;
+    this.pgPool = pgPool;
     this.methods = new HashMap<>();
     methods.put(Method.ORB, this::orb);
   }
 
   @Override
   public Future<Result> asyncDetect(Param param) {
-    return componentManager.getExecutors().submit(() -> detect(param));
+    return pgPool.getExecutors().submit(() -> detect(param));
   }
 
 
@@ -64,27 +67,27 @@ public class OpenCvImageCompare implements ImageCompare {
       for (FrameEvent frame : eventList) {
         Mat originMat = ImageUtil.bufferedImageToMat(frame.getFrame());
         Mat targetMat = ImageUtil.splitMat(originMat, param.getArea());
-        Float score = doDetect(temple, targetMat,param.getMethod());
-        Similarity similarity = Similarity.builder().point( score)
+        Float score = doDetect(temple, targetMat, param.getMethod());
+        Similarity similarity = Similarity.builder().point(score)
             .timestamp(frame.getTimestamp())
             .build();
         list.add(similarity);
-        if(checker!=null && checker.apply(similarity)){
+        if (checker != null && checker.apply(similarity)) {
           break;
         }
       }
     } else {
-      FrameReceiver receiver = new FrameReceiver(componentManager, param.getPeriod().getFrames()) {
+      FrameReceiver receiver = new FrameReceiver(eventBus, param.getPeriod().getFrames()) {
         @Override
         public void receive(FrameEvent frame) {
           Mat originMat = ImageUtil.bufferedImageToMat(frame.getFrame());
           Mat targetMat = ImageUtil.splitMat(originMat, param.getArea());
-          Float score = doDetect(temple, targetMat,param.getMethod());
-          Similarity similarity = Similarity.builder().point( score)
+          Float score = doDetect(temple, targetMat, param.getMethod());
+          Similarity similarity = Similarity.builder().point(score)
               .timestamp(frame.getTimestamp())
               .build();
           list.add(similarity);
-          if(checker!=null && checker.apply(similarity)){
+          if (checker != null && checker.apply(similarity)) {
             super.breakReceive();
           }
         }
@@ -113,8 +116,8 @@ public class OpenCvImageCompare implements ImageCompare {
     FrameEvent frame = frameCache.get();
     Mat originMat = ImageUtil.bufferedImageToMat(frame.getFrame());
     Mat targetMat = ImageUtil.splitMat(originMat, param.getArea());
-    Float score = doDetect(temple, targetMat,param.getMethod());
-    Similarity similarity = Similarity.builder().point( score)
+    Float score = doDetect(temple, targetMat, param.getMethod());
+    Similarity similarity = Similarity.builder().point(score)
         .timestamp(frame.getTimestamp())
         .build();
     return Result.builder().avg(similarity).max(similarity).min(similarity)

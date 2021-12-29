@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.gui;
 
-import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
-
+import com.duanxr.pgcon.config.GuiConfig;
+import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.core.detect.Area;
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.gui.draw.Rectangle;
@@ -27,16 +27,19 @@ import org.springframework.stereotype.Component;
 public class DisplayScreen extends JLabel {
 
   private static final String MOUSE_DRAGGED_KEY = "mouseDragged";
-  private static final double X_SCALE = 1920.0 / 1280.0;
-  private static final double Y_SCALE = 1080.0 / 720.0;
+
+  private final double xScale;
+  private final double yScale;
 
   private final ImageIcon imageIcon;
   private Point pointStart = null;
   private Point pointEnd = null;
 
-  @Autowired
-  public DisplayScreen(EventBus eventBus) {
-    Dimension dimension = new Dimension((int) SIZE.width, (int) SIZE.height);
+  public DisplayScreen(InputConfig inputConfig, GuiConfig guiConfig, EventBus eventBus) {
+    this.xScale = 1D *inputConfig.getWidth() / guiConfig.getWidth();
+    this.yScale = 1D * inputConfig.getHeight() / guiConfig.getHeight();
+    Dimension dimension = new Dimension(guiConfig.getWidth(),
+        guiConfig.getHeight());
     this.imageIcon = new ImageIcon();
     this.setIcon(imageIcon);
     this.setMinimumSize(dimension);
@@ -49,8 +52,8 @@ public class DisplayScreen extends JLabel {
 
       public void mouseReleased(MouseEvent event) {
         log.info("拖动区域: {},{},{},{}",
-            (int) (pointStart.y * Y_SCALE), (int) (pointEnd.y * Y_SCALE),
-            (int) (pointStart.x * X_SCALE), (int) (pointEnd.x * X_SCALE));
+            (int) (pointStart.y * yScale), (int) (pointEnd.y * yScale),
+            (int) (pointStart.x * xScale), (int) (pointEnd.x * xScale));
         pointStart = null;
       }
     });
@@ -61,20 +64,14 @@ public class DisplayScreen extends JLabel {
 
       public void mouseDragged(MouseEvent event) {
         pointEnd = event.getPoint();
-        int startX = (int) (pointStart.x * X_SCALE);
-        int startY = (int) (pointStart.y * Y_SCALE);
-        int endX = (int) (pointEnd.x * X_SCALE);
-        int endY = (int) (pointEnd.y * Y_SCALE);
-        int rectStartPointX = Math.min(startX, endX);
-        int rectStartPointY = Math.min(startY, endY);
-        int rectEndPointX = Math.max(startX, endX);
-        int rectEndPointY = Math.max(startY, endY);
+        int startX = (int) (pointStart.x * xScale);
+        int startY = (int) (pointStart.y * yScale);
+        int endX = (int) (pointEnd.x * xScale);
+        int endY = (int) (pointEnd.y * yScale);
         eventBus.post(
             new DrawEvent(MOUSE_DRAGGED_KEY,
                 new Rectangle(
-                    new Area(rectStartPointX, rectStartPointY,
-                        rectEndPointX - rectStartPointX,
-                        rectEndPointY - rectStartPointY),
+                    Area.ofPoints(startX, startY, endX, endY),
                     new Color(255, 0, 127, 128),
                     5000))
         );

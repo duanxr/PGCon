@@ -1,10 +1,11 @@
 package com.duanxr.pgcon.output;
 
-import static com.duanxr.pgcon.util.ConstantConfig.OUTPUT_PRESS_TIME;
 
+import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.PressAction;
 import com.duanxr.pgcon.output.action.StickAction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,10 +14,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class Controller {
 
+  private final OutputConfig outputConfig;
+
   private Protocol protocol;
 
+  @Autowired
+  public Controller(OutputConfig outputConfig) {
+    this.outputConfig = outputConfig;
+  }
+
   public void press(ButtonAction buttonType) {
-    protocol.send(buttonType, PressAction.PRESS, OUTPUT_PRESS_TIME);
+    protocol.send(buttonType, PressAction.PRESS, outputConfig.getPressTime());
   }
 
   public void press(ButtonAction buttonType, int time) {
@@ -32,7 +40,7 @@ public class Controller {
   }
 
   public void press(StickAction stickAction) {
-    protocol.send(stickAction, PressAction.PRESS, OUTPUT_PRESS_TIME);
+    protocol.send(stickAction, PressAction.PRESS, outputConfig.getPressTime());
   }
 
   public void press(StickAction stickAction, int time) {
@@ -53,10 +61,11 @@ public class Controller {
 
   public void capture() {
     try {
-      protocol.send(ButtonAction.CAPTURE, PressAction.PRESS, 5000);
+      protocol.send(ButtonAction.CAPTURE, PressAction.PRESS, outputConfig.getCaptureTime());
     } catch (Exception ignore) {
     }
   }
+
   public void setProtocol(Protocol protocol) {
     //TODO CLOSE PORT CONNECTION
     this.protocol = protocol;

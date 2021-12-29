@@ -1,11 +1,9 @@
 package com.duanxr.pgcon.output.sc;
 
-import static com.duanxr.pgcon.util.ConstantConfig.OUTPUT_SERIAL_BAUD_RATE;
 
 import com.duanxr.pgcon.output.SerialPort;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import lombok.SneakyThrows;
@@ -23,13 +21,13 @@ public class SerialConSerialPort implements SerialPort<byte[]> {
   private final InputStream inputStream;
   private final Semaphore semaphore;
 
-  public SerialConSerialPort(String portName) throws Exception {
+  public SerialConSerialPort(String portName, int baudRate) throws Exception {
     semaphore = new Semaphore(0);
     CommPortIdentifier commPortIdentifier = CommPortIdentifier.getPortIdentifier(portName);
     purejavacomm.SerialPort serialPort = (purejavacomm.SerialPort) commPortIdentifier.open("SerialCon",
         500);
     serialPort.setSerialPortParams(
-        OUTPUT_SERIAL_BAUD_RATE,
+        baudRate,
         purejavacomm.SerialPort.DATABITS_8,
         purejavacomm.SerialPort.STOPBITS_1,
         purejavacomm.SerialPort.PARITY_NONE
@@ -84,7 +82,7 @@ public class SerialConSerialPort implements SerialPort<byte[]> {
 
   @SneakyThrows
   private void listen() {
-    while (true) {
+    while (!Thread.currentThread().isInterrupted()) {
       semaphore.acquire();
       if (inputStream != null && inputStream.available() > 0) {
         byte[] bytes = IOUtils.toByteArray(inputStream, inputStream.available());

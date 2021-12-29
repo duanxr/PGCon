@@ -2,15 +2,12 @@ package com.duanxr.pgcon.core.detect.ocr;
 
 import static org.bytedeco.javacpp.lept.pixDestroy;
 
-import com.duanxr.pgcon.core.ComponentManager;
+import com.duanxr.pgcon.core.PGPool;
 import com.duanxr.pgcon.core.detect.FrameCache;
 import com.duanxr.pgcon.core.detect.FrameReceiver;
-import com.duanxr.pgcon.core.detect.image.compare.ImageCompare;
-import com.duanxr.pgcon.core.detect.image.compare.ImageCompare.Param;
-import com.duanxr.pgcon.core.detect.image.compare.ImageCompare.Result;
-import com.duanxr.pgcon.core.detect.image.compare.ImageCompare.Result.Similarity;
 import com.duanxr.pgcon.event.FrameEvent;
 import com.duanxr.pgcon.util.ImageUtil;
+import com.google.common.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,25 +17,30 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.lept.PIX;
 import org.bytedeco.javacpp.tesseract.TessBaseAPI;
 import org.opencv.core.Mat;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2021/12/29
  */
+@Component
 public class TesseractOCR implements OCR {
 
-  private final ComponentManager componentManager;
   private final FrameCache frameCache;
+  private final EventBus eventBus;
+  private final PGPool pgPool;
 
-
-  public TesseractOCR(ComponentManager componentManager,
-      FrameCache frameCache) {
-    this.componentManager = componentManager;
+  @Autowired
+  public TesseractOCR(FrameCache frameCache, EventBus eventBus,
+      PGPool pgPool) {
     this.frameCache = frameCache;
+    this.eventBus = eventBus;
+    this.pgPool = pgPool;
   }
 
   @Override
   public Future<List<Result>> asyncDetect(Param param) {
-    return componentManager.getExecutors().submit(() -> detect(param));
+    return pgPool.getExecutors().submit(() -> detect(param));
   }
 
   @Override
@@ -58,12 +60,12 @@ public class TesseractOCR implements OCR {
         String text = doDetect(targetMat, param.getMethod());
         Result result = Result.builder().text(text).timestamp(frame.getTimestamp()).build();
         list.add(result);
-        if(checker.apply(result)){
+        if (checker.apply(result)) {
           break;
         }
       }
     } else {
-      FrameReceiver receiver = new FrameReceiver(componentManager, param.getPeriod().getFrames()) {
+      FrameReceiver receiver = new FrameReceiver(eventBus, param.getPeriod().getFrames()) {
         @Override
         public void receive(FrameEvent frame) {
           Mat originMat = ImageUtil.bufferedImageToMat(frame.getFrame());
@@ -71,7 +73,7 @@ public class TesseractOCR implements OCR {
           String text = doDetect(targetMat, param.getMethod());
           Result result = Result.builder().text(text).timestamp(frame.getTimestamp()).build();
           list.add(result);
-          if(checker.apply(result)){
+          if (checker.apply(result)) {
             super.breakReceive();
           }
         }
@@ -84,8 +86,9 @@ public class TesseractOCR implements OCR {
     FrameEvent frame = frameCache.get();
     Mat originMat = ImageUtil.bufferedImageToMat(frame.getFrame());
     Mat targetMat = ImageUtil.splitMat(originMat, param.getArea());
-    String text = doDetect(targetMat,param.getMethod());
-    return Collections.singletonList(Result.builder().text(text).timestamp(frame.getTimestamp()).build());
+    String text = doDetect(targetMat, param.getMethod());
+    return Collections.singletonList(
+        Result.builder().text(text).timestamp(frame.getTimestamp()).build());
   }
 
   private String doDetect(Mat target, Method method) {

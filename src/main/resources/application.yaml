@@ -1,0 +1,14 @@
+pgcon:
+  gui:
+    width: 1280
+    height: 720
+  input:
+    width: 1920
+    height: 1080
+    ppi: 237
+    frameInterval: 65
+    cacheSize: 100
+  output:
+    baudRate: 9600
+    pressTime: 150
+    captureTime: 5000

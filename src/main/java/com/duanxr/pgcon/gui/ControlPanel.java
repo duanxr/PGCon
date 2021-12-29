@@ -1,8 +1,9 @@
 package com.duanxr.pgcon.gui;
 
-import static com.duanxr.pgcon.util.ConstantConfig.MAIN_PANEL_TITLE;
-import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
+import static com.duanxr.pgcon.config.ConstantConfig.MAIN_PANEL_TITLE;
 
+import com.duanxr.pgcon.config.GuiConfig;
+import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.core.script.Script;
 import com.duanxr.pgcon.core.script.ScriptLoader;
 import com.duanxr.pgcon.core.script.ScriptRunner;
@@ -16,6 +17,7 @@ import java.awt.GridBagLayout;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,24 +30,32 @@ import org.springframework.stereotype.Service;
 @Service
 public class ControlPanel extends JFrame {
 
-  @Autowired
-  private DisplayHandler displayHandler;
+  private final DisplayHandler displayHandler;
+  private final OutputConfig outputConfig;
+  private final ScriptRunner scriptRunner;
+  private final ScriptLoader scriptLoader;
+  private final DisplayScreen screen;
+  private final Controller controller;
+  private final GuiConfig guiConfig;
 
-  @Autowired
-  private Controller controller;
+  private JPanel extraPanel;
 
-  @Autowired
-  private ScriptRunner scriptRunner;
+  public ControlPanel(DisplayHandler displayHandler,
+      Controller controller, ScriptRunner scriptRunner, ScriptLoader scriptLoader,
+      DisplayScreen screen, GuiConfig guiConfig, OutputConfig outputConfig) {
+    this.displayHandler = displayHandler;
+    this.scriptRunner = scriptRunner;
+    this.scriptLoader = scriptLoader;
+    this.outputConfig = outputConfig;
+    this.controller = controller;
+    this.guiConfig = guiConfig;
+    this.screen = screen;
+  }
 
-  @Autowired
-  private ScriptLoader scriptLoader;
-
-  @Autowired
-  private DisplayScreen screen;
 
   @PostConstruct
   private void initPanel() {
-    this.setSize((int) (SIZE.width + 200), (int) (SIZE.height + 46));
+    this.setSize(guiConfig.getWidth() + 200, guiConfig.getHeight() + 46);
     this.setResizable(false);
     this.setTitle(MAIN_PANEL_TITLE);
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -69,26 +79,18 @@ public class ControlPanel extends JFrame {
     List<Script> list = scriptLoader.getScriptList();
     ControlBox<Script> controlBox = new ControlBox<>(this::selectScript, "选择执行脚本");
     for (Script script : list) {
-      controlBox.addItem(script, script.name());
+      controlBox.addItem(script, script.getName());
     }
     this.add(controlBox, bagConstraints);
   }
 
   private void selectScript(Script script) {
     scriptRunner.stopScript();
+    if (extraPanel != null) {
+      this.remove(extraPanel);
+    }
     if (script == null) {
       return;
-    }
-    if(script.label()!=null){
-      GridBagConstraints bagConstraints = new GridBagConstraints();
-      bagConstraints.fill = GridBagConstraints.BOTH;
-      bagConstraints.anchor = GridBagConstraints.WEST;
-      bagConstraints.gridheight = 1;
-      bagConstraints.gridwidth = 1;
-      bagConstraints.gridx = 1;
-      bagConstraints.gridy = 3;
-      this.add(script.label(),bagConstraints);
-      this.revalidate();
     }
     scriptRunner.runScript(script);
   }
@@ -114,7 +116,7 @@ public class ControlPanel extends JFrame {
   @SneakyThrows
   private void selectOutputPort(String portName) {
     if (portName != null) {
-      this.controller.setProtocol(new SerialConProtocol(portName));
+      this.controller.setProtocol(new SerialConProtocol(portName,outputConfig.getBaudRate()));
     }
   }
 
@@ -137,7 +139,8 @@ public class ControlPanel extends JFrame {
   }
 
   private void selectVideo(String cameraName) {
-    this.displayHandler.setImageInput(cameraName == null ? null : new CameraImageInput(cameraName));
+    this.displayHandler.setImageInput(
+        cameraName == null ? null : new CameraImageInput(cameraName, guiConfig));
   }
 
   @SneakyThrows

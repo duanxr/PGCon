@@ -1,7 +1,5 @@
 package com.duanxr.pgcon.output.pgc;
 
-import static com.duanxr.pgcon.util.ConstantConfig.OUTPUT_PRESS_TIME;
-
 import com.duanxr.pgcon.output.Protocol;
 import com.duanxr.pgcon.output.SerialPort;
 import com.duanxr.pgcon.output.action.ButtonAction;
@@ -17,25 +15,21 @@ public class PGConProtocol implements Protocol {
   private final SerialPort<Integer> pgConProtocol;
 
   @SneakyThrows
-  public PGConProtocol(String portName){
-    pgConProtocol= new PGConSerialPort(portName);
+  public PGConProtocol(String portName,int baudRate) {
+    pgConProtocol= new PGConSerialPort(portName,baudRate);
   }
 
   @Override
   @SneakyThrows
   public void send(ButtonAction buttonType, PressAction pressAction, int pressTime) {
     switch (pressAction) {
-      case HOLD:
-        send(buttonType.getPgcHoldCommand());
-        break;
-      case RELEASE:
-        send(buttonType.getPgcReleaseCommand());
-        break;
-      default:
+      case HOLD -> send(buttonType.getPgcHoldCommand());
+      case RELEASE -> send(buttonType.getPgcReleaseCommand());
+      default -> {
         send(buttonType.getPgcHoldCommand());
         Thread.sleep(pressTime);
         send(buttonType.getPgcReleaseCommand());
-        break;
+      }
     }
   }
 

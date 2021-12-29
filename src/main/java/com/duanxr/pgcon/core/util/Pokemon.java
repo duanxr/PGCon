@@ -1,3 +1,4 @@
+/*
 package com.duanxr.pgcon.core.util;
 
 import boofcv.abst.feature.detect.interest.ConfigPointDetector;
@@ -12,13 +13,13 @@ import boofcv.struct.image.GrayF32;
 import boofcv.struct.pyramid.ConfigDiscreteLevels;
 import com.duanxr.pgcon.core.fitting.PolyTrendLine;
 import com.duanxr.pgcon.core.fitting.PolyTrendLine3D;
-import com.duanxr.pgcon.core.script.BaseScript;
+import com.duanxr.pgcon.core.script.RunnableScript;
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.event.FrameEvent;
-import com.duanxr.pgcon.event.EventBus;
 import com.duanxr.pgcon.gui.draw.Circle;
 import com.duanxr.pgcon.gui.draw.Line;
 import com.duanxr.pgcon.output.action.ButtonAction;
+import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -33,9 +34,11 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+*/
 /**
  * @author 段然 2021/12/7
- */
+ *//*
+
 @Component
 public class Pokemon {
 
@@ -64,7 +67,7 @@ public class Pokemon {
 
 
   @SneakyThrows
-  public void gridAnalyze(BaseScript script) {
+  public void gridAnalyze(RunnableScript script) {
     initiateCharacter(script);
     PointTrackerKltPyramid<GrayF32, GrayF32> tracker = initiateTracker();
     List<Integer> gridY = drawGridY(script, tracker);
@@ -87,7 +90,7 @@ public class Pokemon {
   }
 
   @SneakyThrows
-  private void initiateCharacter(BaseScript script) {
+  private void initiateCharacter(RunnableScript script) {
     script.controller.press(ButtonAction.D_LEFT);
     Thread.sleep(600);
     script.controller.press(ButtonAction.D_RIGHT);
@@ -100,7 +103,7 @@ public class Pokemon {
     Thread.sleep(600);
   }
 
-  private void drawGridX(BaseScript script, PointTrackerKltPyramid<GrayF32, GrayF32> tracker,
+  private void drawGridX(RunnableScript script, PointTrackerKltPyramid<GrayF32, GrayF32> tracker,
       List<Integer> gridY) {
     List<int[]> list = gridAnalyzeMove(script, tracker, ButtonAction.D_LEFT);
     list = filterX(list);
@@ -108,7 +111,7 @@ public class Pokemon {
   }
 
   @SneakyThrows
-  private List<Integer> drawGridY(BaseScript script,
+  private List<Integer> drawGridY(RunnableScript script,
       PointTrackerKltPyramid<GrayF32, GrayF32> tracker) {
     List<int[]> list = gridAnalyzeMove(script, tracker, ButtonAction.D_BOTTOM);
     list = filterY(list);
@@ -125,25 +128,25 @@ public class Pokemon {
   }
 
 
-  private void drawLineHorizon(BaseScript script, List<int[]> list,
+  private void drawLineHorizon(RunnableScript script, List<int[]> list,
       List<Integer> gridY) {
     list.sort(Comparator.comparingInt(a -> a[1]));
     Map<Integer, List<int[]>> map = new HashMap<>();
-    Map<Integer,Integer> map2 = new HashMap<>();
+    Map<Integer, Integer> map2 = new HashMap<>();
     int index = 0;
     for (int i = 1; i < gridY.size(); i++) {
       int l = gridY.get(i - 1);
       int r = gridY.get(i);
-      map2.putIfAbsent(l,r);
+      map2.putIfAbsent(l, r);
       while (index < list.size() && list.get(index)[1] < l) {
         map.computeIfAbsent(l, ArrayList::new).add(list.get(index));
         index++;
       }
     }
-    drawLineXM(script,list,GRID_BASE_Y_LINE,map2.get(GRID_BASE_Y_LINE));
+    drawLineXM(script, list, GRID_BASE_Y_LINE, map2.get(GRID_BASE_Y_LINE));
   }
 
-  private List<Integer> drawLineXM(BaseScript script, List<int[]> list, int l,
+  private List<Integer> drawLineXM(RunnableScript script, List<int[]> list, int l,
       int r) {
     PolyTrendLine3D polyTrendLine = new PolyTrendLine3D(2);
     list.sort(Comparator.comparingInt(o -> o[0]));
@@ -162,14 +165,14 @@ public class Pokemon {
     while (n < 1920) {
       eventBus.post(new DrawEvent("gridAnalyzeLineX" + n + "WithY" + l,
           new Line(n, l, n, r, Color.BLUE)));
-      double predict = polyTrendLine.predict(n,(l+r)/2D);
+      double predict = polyTrendLine.predict(n, (l + r) / 2D);
       n = (int) predict;
       lines.add(n);
     }
     return lines;
   }
 
-  private List<Integer> drawLineDown(BaseScript script, List<int[]> list) {
+  private List<Integer> drawLineDown(RunnableScript script, List<int[]> list) {
     PolyTrendLine polyTrendLine = new PolyTrendLine(POLY_TREND_LINE_DEGREE);
     list.sort(Comparator.comparingInt(o -> o[3]));
     double[] x = new double[list.size()];
@@ -191,7 +194,7 @@ public class Pokemon {
     return lines;
   }
 
-  private List<Integer> drawLineUp(BaseScript script, List<int[]> list) {
+  private List<Integer> drawLineUp(RunnableScript script, List<int[]> list) {
     PolyTrendLine polyTrendLine = new PolyTrendLine(POLY_TREND_LINE_DEGREE);
     list.sort(Comparator.comparingInt(o -> o[1]));
     double[] x = new double[list.size()];
@@ -217,7 +220,7 @@ public class Pokemon {
   private List<int[]> filterX(List<int[]> list) {
     List<int[]> fun = new ArrayList<>();
     for (int[] ints : list) {
-      boolean b1 = !(ints[0] > 790 && ints[0] < 1147 && ints[1] >312  && ints[1] < 690);
+      boolean b1 = !(ints[0] > 790 && ints[0] < 1147 && ints[1] > 312 && ints[1] < 690);
       boolean b2 = ints[0] > GRID_FILTER_RANGE_THRESHOLD * 1920
           && ints[0] < (1 - GRID_FILTER_RANGE_THRESHOLD) * 1920
           && ints[1] > GRID_FILTER_RANGE_THRESHOLD * 1080
@@ -226,19 +229,21 @@ public class Pokemon {
       eventBus.post(new DrawEvent(
           String.valueOf(Arrays.hashCode(ints)),
           new Circle(ints[2], ints[3], 9,
-              new Color(b1 ? 0 : 255, b2 ? 0 : 255,  255, 90), 33000)));
+              new Color(b1 ? 0 : 255, b2 ? 0 : 255, 255, 90), 33000)));
       if (b1 && b2) {
         ints[1] = (ints[3] + ints[1]) / 2;
         //if (b3) {
-          fun.add(ints);
-       /* } else {
+        fun.add(ints);
+       */
+/* } else {
           if (ints[2] < (1920 / 2)) {
             int tmp = ints[2];
             ints[2] = 1920-ints[0];
             ints[0] = 1920-tmp;
             fun.add(ints);
           }
-        }*/
+        }*//*
+
       }
     }
     return fun;
@@ -254,7 +259,7 @@ public class Pokemon {
     List<int[]> fun = new ArrayList<>();
     for (int[] ints : list) {
       //boolean b1 = ints[3] - ints[1] < count;
-      boolean b1 = !(ints[0] > 678 && ints[0] < 1147 && ints[1] >349  && ints[1] < 804);
+      boolean b1 = !(ints[0] > 678 && ints[0] < 1147 && ints[1] > 349 && ints[1] < 804);
       boolean b2 = ints[0] > GRID_FILTER_RANGE_THRESHOLD * 1920
           && ints[0] < (1 - GRID_FILTER_RANGE_THRESHOLD) * 1920
           && ints[1] > GRID_FILTER_RANGE_THRESHOLD * 1080
@@ -333,7 +338,7 @@ public class Pokemon {
   }
 
   @SneakyThrows
-  private List<int[]> gridAnalyzeMove(BaseScript script,
+  private List<int[]> gridAnalyzeMove(RunnableScript script,
       PointTrackerKltPyramid<GrayF32, GrayF32> tracker,
       ButtonAction action) {
     script.controller.press(action);
@@ -349,3 +354,4 @@ public class Pokemon {
 
 
 }
+*/

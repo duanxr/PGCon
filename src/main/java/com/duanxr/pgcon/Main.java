@@ -1,5 +1,6 @@
 package com.duanxr.pgcon;
 
+import nu.pattern.OpenCV;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,8 @@ import org.springframework.context.annotation.Configuration;
 public class Main {
 
   public static void main(String[] args) {
+    OpenCV.loadLocally();
+
     new SpringApplicationBuilder(Main.class).headless(false).run(args);
   }
 

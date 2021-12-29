@@ -24,7 +24,7 @@ public class Area {
     return new Area(x, y, weight, high);
   }
 
-  public static Area ofPoint(int x1, int y1, int x2, int y2) {
+  public static Area ofPoints(int x1, int y1, int x2, int y2) {
     int x = Math.min(x1, x2);
     int y = Math.min(y1, y2);
     int weight = Math.max(x1, x2) - x;
@@ -35,6 +35,31 @@ public class Area {
   public static Area ofLines(int left, int top, int right, int bottom) {
     return new Area(left, top, right - left, bottom - top);
   }
+
+  public static Area ofRect(float x, float y, float weight, float high) {
+    return Area.ofRect((int) x, (int) y, (int) weight, (int) high);
+  }
+
+  public static Area ofPoints(float x1, float y1, float x2, float y2) {
+    return Area.ofPoints((int) x1, (int) y1, (int) x2, (int) y2);
+  }
+
+  public static Area ofLines(float left, float top, float right, float bottom) {
+    return Area.ofLines((int) left, (int) top, (int) right, (int) bottom);
+  }
+
+  public static Area ofRect(double x, double y, double weight, double high) {
+    return Area.ofRect((int) x, (int) y, (int) weight, (int) high);
+  }
+
+  public static Area ofPoints(double x1, double y1, double x2, double y2) {
+    return Area.ofPoints((int) x1, (int) y1, (int) x2, (int) y2);
+  }
+
+  public static Area ofLines(double left, double top, double right, double bottom) {
+    return Area.ofLines((int) left, (int) top, (int) right, (int) bottom);
+  }
+
 
   public int getLeft() {
     return x;

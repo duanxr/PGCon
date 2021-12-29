@@ -1,6 +1,5 @@
 package com.duanxr.pgcon.output.pgc;
 
-import static com.duanxr.pgcon.util.ConstantConfig.OUTPUT_SERIAL_BAUD_RATE;
 
 import com.duanxr.pgcon.output.SerialPort;
 import java.io.InputStream;
@@ -22,13 +21,13 @@ public class PGConSerialPort implements SerialPort<Integer> {
   private final InputStream inputStream;
   private final Semaphore semaphore;
 
-  public PGConSerialPort(String portName) throws Exception {
+  public PGConSerialPort(String portName,int baudRate) throws Exception {
     semaphore = new Semaphore(0);
     CommPortIdentifier commPortIdentifier = CommPortIdentifier.getPortIdentifier(portName);
     purejavacomm.SerialPort serialPort = (purejavacomm.SerialPort) commPortIdentifier.open("PGCon",
         500);
     serialPort.setSerialPortParams(
-        OUTPUT_SERIAL_BAUD_RATE,
+        baudRate,
         purejavacomm.SerialPort.DATABITS_8,
         purejavacomm.SerialPort.STOPBITS_1,
         purejavacomm.SerialPort.PARITY_NONE
@@ -58,7 +57,7 @@ public class PGConSerialPort implements SerialPort<Integer> {
 
   @SneakyThrows
   private void listen() {
-    while (true) {
+    while (!Thread.currentThread().isInterrupted()) {
       semaphore.acquire();
       if (inputStream != null && inputStream.available() > 0) {
         byte[] bytes = IOUtils.toByteArray(inputStream, inputStream.available());

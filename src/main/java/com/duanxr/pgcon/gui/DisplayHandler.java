@@ -1,16 +1,15 @@
 package com.duanxr.pgcon.gui;
 
-
-import static com.duanxr.pgcon.util.ConstantConfig.INPUT_VIDEO_FRAME_INTERVAL;
-import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
-
+import com.duanxr.pgcon.config.GuiConfig;
+import com.duanxr.pgcon.config.InputConfig;
+import com.duanxr.pgcon.core.PGPool;
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.event.FrameEvent;
-import com.duanxr.pgcon.event.EventBus;
 import com.duanxr.pgcon.gui.draw.Drawable;
 import com.duanxr.pgcon.input.CameraImageInput;
 import com.duanxr.pgcon.input.StaticImageInput;
 import com.google.common.base.Strings;
+import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -18,7 +17,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,8 +32,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class DisplayHandler {
 
-  private static final Executor EXECUTOR = Executors.newFixedThreadPool(30);
-
   private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(
       "/img/no_input.bmp");
   private static final FrameEvent DEFAULT_FRAME = new FrameEvent(DEFAULT_IMAGE_INPUT.read(), 0L);
@@ -46,26 +42,32 @@ public class DisplayHandler {
 
   private final DisplayScreen displayScreen;
 
+  private final GuiConfig guiConfig;
+
+  private final PGPool pgPool;
+
   @Getter
   private CameraImageInput imageInput;
 
   @Autowired
-  public DisplayHandler(EventBus eventBus,
-      DisplayScreen displayScreen) {
-    this.drawableHashMap  = new ConcurrentHashMap<>();
+  public DisplayHandler(DisplayScreen displayScreen,
+      InputConfig inputConfig, GuiConfig guiConfig, PGPool pgPool,
+      EventBus eventBus) {
+    this.guiConfig = guiConfig;
+    this.pgPool = pgPool;
+    this.drawableHashMap = new ConcurrentHashMap<>();
     this.frozen = new AtomicBoolean(false);
     this.displayScreen = displayScreen;
-    Executors.newSingleThreadExecutor().execute(new Runnable() {
-      @Override
-      @SneakyThrows
-      public void run() {
-        while (true) {
-          TimeUnit.MILLISECONDS.sleep(INPUT_VIDEO_FRAME_INTERVAL);
+    Executors.newSingleThreadExecutor().execute(() -> {
+      while (!Thread.currentThread().isInterrupted()) {
+        try {
+          TimeUnit.MILLISECONDS.sleep(inputConfig.getFrameInterval());
           if (DisplayHandler.this.displayScreen != null && imageInput != null && !frozen.get()) {
             BufferedImage image = getDisplay();
             FrameEvent imageEvent = new FrameEvent(image, System.currentTimeMillis());
             eventBus.post(imageEvent);
           }
+        } catch (InterruptedException ignored) {
         }
       }
     });
@@ -79,7 +81,7 @@ public class DisplayHandler {
 
   @Subscribe
   public void handleDrawEvent(DrawEvent drawEvent) {
-    EXECUTOR.execute(() -> {
+    pgPool.getExecutors().execute(() -> {
       if (!Strings.isNullOrEmpty(drawEvent.getKey())) {
         if (drawEvent.getDrawable() == null) {
           drawableHashMap.remove(drawEvent.getKey());
@@ -127,10 +129,11 @@ public class DisplayHandler {
 
   @Subscribe
   public void repaint(FrameEvent event) {
-    EXECUTOR.execute(() -> {
+    pgPool.getExecutors().execute(() -> {
       if (event.getFrame() != null) {
         BufferedImage draw = draw(event.getFrame());
-        BufferedImage resize = resize(draw, (int) SIZE.width, (int) SIZE.height);
+        BufferedImage resize = resize(draw, guiConfig.getWidth(),
+            guiConfig.getHeight());
         displayScreen.repaint(resize);
       } else {
         repaint(DEFAULT_FRAME);

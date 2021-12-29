@@ -1,9 +1,9 @@
 package com.duanxr.pgcon.core.detect;
 
+import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.event.FrameEvent;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import java.awt.image.BufferedImage;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,7 +13,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,14 +24,12 @@ public class FrameCache {
   private final ArrayDeque<FrameEvent> cache;
   private final ExecutorService executorService;
   private final ReadWriteLock readWriteLock;
+  private final InputConfig inputConfig;
 
-  @Value("${pgcon.detect.frame.cache.size}")
-  private int cacheSize;
-  @Value("${pgcon.detect.frame.cache.task.size}")
-  private int taskSize;
 
   @Autowired
-  public FrameCache(EventBus eventBus) {
+  public FrameCache(EventBus eventBus, InputConfig inputConfig) {
+    this.inputConfig = inputConfig;
     this.executorService = Executors.newCachedThreadPool();
     this.readWriteLock = new ReentrantReadWriteLock();
     this.cache = new ArrayDeque<>();
@@ -44,7 +41,7 @@ public class FrameCache {
     executorService.execute(() -> {
       readWriteLock.writeLock().lock();
       cache.addFirst(frame);
-      while (cache.size() > cacheSize) {
+      while (cache.size() > inputConfig.getCacheSize()) {
         cache.removeLast();
       }
       readWriteLock.writeLock().unlock();

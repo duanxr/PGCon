@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
  * @author 段然 2021/12/15
  */
 @Component
-public class PgEventBus extends EventBus {
+public class PGEventBus extends EventBus {
 
 }

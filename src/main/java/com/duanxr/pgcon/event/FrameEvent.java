@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class FrameEvent {
-    private BufferedImage frame;
-    private long timestamp;
+
+  private BufferedImage frame;
+  private long timestamp;
 }

@@ -1,15 +1,10 @@
 package com.duanxr.pgcon.util;
 
 
-import static com.duanxr.pgcon.util.ConstantConfig.SIZE;
-
 import com.duanxr.pgcon.core.detect.Area;
-import com.sun.jna.ptr.PointerByReference;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
-import jtermios.JTermios.JTermiosInterface.NativeSize;
-import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.lept;
 import org.bytedeco.javacpp.lept.PIX;
 import org.opencv.core.Core;
@@ -54,10 +49,6 @@ public class ImageUtil {
     origin.copyTo(mask);
     Core.bitwise_not(mask, mask);
     return mask;
-  }
-
-  public static void resizeMat(Mat origin) {
-    Imgproc.resize(origin, origin, SIZE);
   }
 
   public static BufferedImage matToBufferedImage(Mat mat) {

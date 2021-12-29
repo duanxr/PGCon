@@ -15,25 +15,21 @@ public class SerialConProtocol implements Protocol {
   private final SerialPort<byte[]> pgConProtocol;
 
   @SneakyThrows
-  public SerialConProtocol(String portName) {
-    pgConProtocol = new SerialConSerialPort(portName);
+  public SerialConProtocol(String portName, int baudRate) {
+    pgConProtocol = new SerialConSerialPort(portName,baudRate);
   }
 
   @Override
   @SneakyThrows
   public void send(ButtonAction buttonType, PressAction pressAction, int pressTime) {
     switch (pressAction) {
-      case HOLD:
-        sendButton(buttonType);
-        break;
-      case RELEASE:
-        reset();
-        break;
-      default:
+      case HOLD -> sendButton(buttonType);
+      case RELEASE -> reset();
+      default -> {
         sendButton(buttonType);
         Thread.sleep(pressTime);
         reset();
-        break;
+      }
     }
   }
 
@@ -74,17 +70,13 @@ public class SerialConProtocol implements Protocol {
   @SneakyThrows
   public void send(StickAction stickAction, PressAction pressAction, int pressTime) {
     switch (pressAction) {
-      case HOLD:
-        sendStick(stickAction);
-        break;
-      case RELEASE:
-        reset();
-        break;
-      default:
+      case HOLD -> sendStick(stickAction);
+      case RELEASE -> reset();
+      default -> {
         sendStick(stickAction);
         Thread.sleep(pressTime);
         reset();
-        break;
+      }
     }
   }
 
