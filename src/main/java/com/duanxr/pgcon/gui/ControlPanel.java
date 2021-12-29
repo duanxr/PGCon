@@ -5,7 +5,6 @@ import static com.duanxr.pgcon.config.ConstantConfig.MAIN_PANEL_TITLE;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.core.script.Script;
-import com.duanxr.pgcon.core.script.ScriptLoader;
 import com.duanxr.pgcon.core.script.ScriptRunner;
 import com.duanxr.pgcon.input.CameraImageInput;
 import com.duanxr.pgcon.input.StreamImageInput;
@@ -20,7 +19,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,28 +31,31 @@ public class ControlPanel extends JFrame {
   private final DisplayHandler displayHandler;
   private final OutputConfig outputConfig;
   private final ScriptRunner scriptRunner;
-  private final ScriptLoader scriptLoader;
   private final DisplayScreen screen;
   private final Controller controller;
   private final GuiConfig guiConfig;
 
+  private final ControlBox<Script> controlBox;
+
   private JPanel extraPanel;
 
   public ControlPanel(DisplayHandler displayHandler,
-      Controller controller, ScriptRunner scriptRunner, ScriptLoader scriptLoader,
+      Controller controller, ScriptRunner scriptRunner,
       DisplayScreen screen, GuiConfig guiConfig, OutputConfig outputConfig) {
     this.displayHandler = displayHandler;
     this.scriptRunner = scriptRunner;
-    this.scriptLoader = scriptLoader;
     this.outputConfig = outputConfig;
     this.controller = controller;
     this.guiConfig = guiConfig;
     this.screen = screen;
+
+    this.controlBox = new ControlBox<>(this::selectScript, "选择执行脚本");
   }
 
-
+  @SneakyThrows
   @PostConstruct
   private void initPanel() {
+    Thread.sleep(1500);
     this.setSize(guiConfig.getWidth() + 200, guiConfig.getHeight() + 46);
     this.setResizable(false);
     this.setTitle(MAIN_PANEL_TITLE);
@@ -76,11 +77,6 @@ public class ControlPanel extends JFrame {
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
     bagConstraints.gridy = 2;
-    List<Script> list = scriptLoader.getScriptList();
-    ControlBox<Script> controlBox = new ControlBox<>(this::selectScript, "选择执行脚本");
-    for (Script script : list) {
-      controlBox.addItem(script, script.getName());
-    }
     this.add(controlBox, bagConstraints);
   }
 
@@ -116,7 +112,7 @@ public class ControlPanel extends JFrame {
   @SneakyThrows
   private void selectOutputPort(String portName) {
     if (portName != null) {
-      this.controller.setProtocol(new SerialConProtocol(portName,outputConfig.getBaudRate()));
+      this.controller.setProtocol(new SerialConProtocol(portName, outputConfig.getBaudRate()));
     }
   }
 
@@ -154,6 +150,10 @@ public class ControlPanel extends JFrame {
     bagConstraints.gridy = 0;
     this.add(screen, bagConstraints);
     this.setVisible(true);
+  }
+
+  public void addScript(Script script) {
+    controlBox.addItem(script, script.getName());
   }
 
 }

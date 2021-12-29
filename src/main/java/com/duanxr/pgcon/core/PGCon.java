@@ -5,7 +5,6 @@ import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.core.detect.image.compare.ImageCompare;
 import com.duanxr.pgcon.core.detect.ocr.OCR;
-import com.duanxr.pgcon.core.script.ScriptLoader;
 import com.duanxr.pgcon.gui.ControlPanel;
 import com.duanxr.pgcon.output.Controller;
 import com.google.common.eventbus.EventBus;
@@ -26,7 +25,6 @@ public class PGCon {
   private final Controller controller;
   private final ControlPanel controlPanel;
   private final ImageCompare imageCompare;
-  private final ScriptLoader scriptLoader;
   private final ExecutorService executors;
 
   private final GuiConfig guiConfig;
@@ -39,13 +37,12 @@ public class PGCon {
       Controller controller, ControlPanel controlPanel,
       ImageCompare imageCompare, GuiConfig guiConfig,
       InputConfig inputConfig, OutputConfig outPutConfig,
-      PGPool pgPool, ScriptLoader scriptLoader) {
+      PGPool pgPool) {
     this.ocr = ocr;
     this.eventBus = eventBus;
     this.controller = controller;
     this.controlPanel = controlPanel;
     this.imageCompare = imageCompare;
-    this.scriptLoader = scriptLoader;
 
     this.guiConfig = guiConfig;
     this.inputConfig = inputConfig;

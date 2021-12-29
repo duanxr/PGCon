@@ -16,7 +16,7 @@ public abstract class RunnableScript extends PGScript {
   protected RunnableScript(PGCon pg) {
     super(pg);
     this.running = new AtomicBoolean(false);
-    pg.getScriptLoader().add(this);
+    pg.getControlPanel().addScript(this);
   }
 
 

@@ -2,7 +2,6 @@ package com.duanxr.pgcon.core.script.runnable.common;
 
 import com.duanxr.pgcon.core.PGCon;
 import com.duanxr.pgcon.core.script.RunnableScript;
-import com.duanxr.pgcon.core.script.ScriptLoader;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

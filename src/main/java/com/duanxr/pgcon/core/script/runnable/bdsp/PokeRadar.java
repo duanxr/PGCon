@@ -7,9 +7,7 @@ import com.duanxr.pgcon.core.detect.image.compare.ImageCompare.Param;
 import com.duanxr.pgcon.core.detect.image.compare.ImageCompare.Param.Period;
 import com.duanxr.pgcon.core.detect.image.compare.ImageCompare.Result;
 import com.duanxr.pgcon.core.script.RunnableScript;
-import com.duanxr.pgcon.core.script.ScriptLoader;
 import com.duanxr.pgcon.event.DrawEvent;
-import com.duanxr.pgcon.gui.draw.Circle;
 import com.duanxr.pgcon.gui.draw.Line;
 import com.duanxr.pgcon.gui.draw.Rectangle;
 import com.duanxr.pgcon.gui.draw.Text;
@@ -29,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,6 +35,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author 段然 2021/12/9
  */
+@Slf4j
 @Component
 public class PokeRadar extends RunnableScript {
 
@@ -176,6 +176,12 @@ public class PokeRadar extends RunnableScript {
 
       sleep(30);
     }
+    //TODO DEBUG ONLY
+    log.info("VERTICAL_AXIS_BASE: {}, VERTICAL_AXIS_INTERVAL: {}, VERTICAL_AXIS_SLOPE: {}, VERTICAL_AXIS_OFFSET: {}",
+        VERTICAL_AXIS_BASE.get(), VERTICAL_AXIS_INTERVAL.get(), VERTICAL_AXIS_SLOPE.get(),
+        VERTICAL_AXIS_OFFSET.get());
+    log.info("HORIZON_AXIS_BASE: {}, HORIZON_AXIS_INTERVAL: {}, HORIZON_AXIS_SLOPE: {}",
+        HORIZON_AXIS_BASE.get(), HORIZON_AXIS_INTERVAL.get(), HORIZON_AXIS_SLOPE.get());
     extraPanel.setEnabled(false);
   }
 
@@ -190,7 +196,7 @@ public class PokeRadar extends RunnableScript {
 
   @SneakyThrows
   private void detectShakingGrass() {
-    long s =  System.currentTimeMillis();
+    long s = System.currentTimeMillis();
     List<Pair<Pair<Integer, Integer>, Future<Result>>> list = new ArrayList<>();
     for (int x = 0, gridLength = grid.length; x < gridLength - 1; x++) {
       for (int y = 0, pointsLength = grid[0].length; y < pointsLength - 1; y++) {
@@ -202,7 +208,7 @@ public class PokeRadar extends RunnableScript {
           int offY = y + yOffset;
           if ((offX != 0 || offY != 0) && (offX != 0 || offY != 1)) {
             Future<Result> detect = imageCompare.asyncDetect(Param.builder()
-                .image("").method(Method.ORB).period(Period.builder().frames(10).build())
+                .image("C:\\Users\\段然\\Desktop\\111.jpg").method(Method.ORB).period(Period.builder().frames(10).build())
                 .area(Area.ofPoints((int) point.x, (int) point.y, (int) point2.x, (int) point2.y))
                 .build());
             list.add(new Pair<>(new Pair<>(x, y), detect));
@@ -226,9 +232,9 @@ public class PokeRadar extends RunnableScript {
       int y = pair.getKey().getValue();
       Point point = grid[x][y];
       Point point2 = grid[x + 1][y + 1];
-      if(i<4) {
+      if (i < 4) {
         eventBus.post(new DrawEvent("pkr-sg-" + x + "-" + y,
-            new Rectangle(Area.ofPoints(point.x,point.y,point2.x,point2.y), Color.ORANGE, 100)));
+            new Rectangle(Area.ofPoints(point.x, point.y, point2.x, point2.y), Color.ORANGE, 100)));
       }
       eventBus.post(new DrawEvent("pkr-pt-" + x + "-" + y,
           new Text(Area.ofRect(x, y - 30, 40, 40),
