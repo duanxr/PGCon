@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.util;
 
 
-import com.duanxr.pgcon.core.detect.Area;
+import com.duanxr.pgcon.core.detect.model.Area;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
@@ -13,7 +13,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Rect;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 
 //TODO 优化转换速度?
 /**
@@ -34,16 +33,6 @@ public class ImageUtil {
     ByteBuffer buff = ByteBuffer.wrap(bytes.toArray());
     return lept.pixReadMem(buff, buff.limit());
   }
-
-/*  public static Mat pixToMat(PIX pix) {
-    PointerByReference pdata = new PointerByReference();
-    NativeSizeByReference psize = new NativeSizeByReference();
-    Leptonica1.pixWriteMem(pdata, psize, pix, ILeptonica.IFF_TIFF);
-    byte[] b = pdata.getValue().getByteArray(0, psize.getValue().intValue());
-    Leptonica1.lept_free(pdata.getValue());
-    return Imgcodecs.imdecode(new MatOfByte(b), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-  }*/
-
   public static Mat matToMask(Mat origin) {
     Mat mask = new Mat();
     origin.copyTo(mask);

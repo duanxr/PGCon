@@ -21,8 +21,8 @@ public enum StickBaseAction {
   RY_MAX(47,-1),
   RY_CENTER(48,-128);
 
-  private byte pgcCommand;
-  private byte scCommand;
+  private final byte pgcCommand;
+  private final byte scCommand;
 
   StickBaseAction(int command, int scCommand) {
     this.pgcCommand = (byte) command;

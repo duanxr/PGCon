@@ -7,7 +7,7 @@
 """
 
 """
-    LUFA Generic HID device demo host test script. This script will send a
+    LUFA Generic HID device demo host test mainScript. This mainScript will send a
     continuous stream of generic reports to the device, to show a variable LED
     pattern on the target board. Send and received report data is printed to
     the terminal.

@@ -40,9 +40,9 @@ public enum StickAction {
   R_TOP_LEFT(RX_MIN, LY_MIN,false),
   R_CENTER(RX_CENTER, RY_CENTER,false);
 
-  private StickBaseAction actionX;
-  private StickBaseAction actionY;
-  private boolean isLeft;
+  private final StickBaseAction actionX;
+  private final StickBaseAction actionY;
+  private final boolean isLeft;
 
   StickAction(StickBaseAction actionX, StickBaseAction actionY, boolean isLeft) {
     this.actionX = actionX;

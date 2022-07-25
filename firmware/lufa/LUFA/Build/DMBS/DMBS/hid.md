@@ -27,7 +27,7 @@ original tool works with Teensy boards only, and not LUFA HID bootloader
 devices.
 
 This module requires the `hid_bootloader_cli` utility to be available in your
-system's `PATH` variable. The `hid_bootloader_cli` Python script utility is
+system's `PATH` variable. The `hid_bootloader_cli` Python mainScript utility is
 distributed in LUFA project's [official site](http://www.lufa-lib.org/).
 
 This module requires the AVR-GCC compiler to be installed and available in the
@@ -41,11 +41,11 @@ The following targets are supported by this module:
  <tbody>
    <tr>
     <td>hid</td>
-    <td>Program a LUFA HID class bootloader device, using the `hid_bootloader_cli.py` Python script.</td>
+    <td>Program a LUFA HID class bootloader device, using the `hid_bootloader_cli.py` Python mainScript.</td>
    </tr>
    <tr>
     <td>hid-ee</td>
-    <td>Program a LUFA HID class bootloader device's EEPROM, using the `hid_bootloader_cli.py` Python script and a shim application which is programmed into the target's flash.</td>
+    <td>Program a LUFA HID class bootloader device's EEPROM, using the `hid_bootloader_cli.py` Python mainScript and a shim application which is programmed into the target's flash.</td>
    </tr>
    <tr>
     <td>teensy</td>

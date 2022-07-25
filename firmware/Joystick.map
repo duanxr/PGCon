@@ -194,7 +194,7 @@ lock             0x00830000         0x00000400         rw !x
 signature        0x00840000         0x00000400         rw !x
 *default*        0x00000000         0xffffffff
 
-Linker script and memory map
+Linker mainScript and memory map
 
 Address of section .data set to 0x800100
 LOAD c:/winavr-20100110/bin/../lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm32u4.o

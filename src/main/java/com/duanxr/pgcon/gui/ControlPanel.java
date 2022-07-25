@@ -4,13 +4,12 @@ import static com.duanxr.pgcon.config.ConstantConfig.MAIN_PANEL_TITLE;
 
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.OutputConfig;
-import com.duanxr.pgcon.core.script.Script;
-import com.duanxr.pgcon.core.script.ScriptRunner;
-import com.duanxr.pgcon.input.CameraImageInput;
-import com.duanxr.pgcon.input.StreamImageInput;
+import com.duanxr.pgcon.script.api.MainScript;
+import com.duanxr.pgcon.script.component.ScriptRunner;
+import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.output.Controller;
-import com.duanxr.pgcon.output.SerialPort;
-import com.duanxr.pgcon.output.sc.SerialConProtocol;
+import com.duanxr.pgcon.output.impl.ec.EasyConProtocol;
+import com.duanxr.pgcon.util.SystemUtil;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.List;
@@ -35,7 +34,7 @@ public class ControlPanel extends JFrame {
   private final Controller controller;
   private final GuiConfig guiConfig;
 
-  private final ControlBox<Script> controlBox;
+  private final ControlBox<MainScript> controlBox;
 
   private JPanel extraPanel;
 
@@ -80,15 +79,15 @@ public class ControlPanel extends JFrame {
     this.add(controlBox, bagConstraints);
   }
 
-  private void selectScript(Script script) {
+  private void selectScript(MainScript mainScript) {
     scriptRunner.stopScript();
     if (extraPanel != null) {
       this.remove(extraPanel);
     }
-    if (script == null) {
+    if (mainScript == null) {
       return;
     }
-    scriptRunner.runScript(script);
+    scriptRunner.runScript(mainScript);
   }
 
   @SneakyThrows
@@ -100,7 +99,7 @@ public class ControlPanel extends JFrame {
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
     bagConstraints.gridy = 1;
-    List<String> portList = SerialPort.getSerialList();
+    List<String> portList = SystemUtil.getSerialList();
     ControlBox<String> controlBox = new ControlBox<>(
         this::selectOutputPort, "选择输出端口");
     for (String name : portList) {
@@ -112,7 +111,7 @@ public class ControlPanel extends JFrame {
   @SneakyThrows
   private void selectOutputPort(String portName) {
     if (portName != null) {
-      this.controller.setProtocol(new SerialConProtocol(portName, outputConfig.getBaudRate()));
+      this.controller.setProtocol(new EasyConProtocol(portName, outputConfig.getBaudRate()));
     }
   }
 
@@ -125,7 +124,7 @@ public class ControlPanel extends JFrame {
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
     bagConstraints.gridy = 0;
-    List<String> cameraList = StreamImageInput.getCameraList();
+    List<String> cameraList = SystemUtil.getCameraList();
     ControlBox<String> controlBox = new ControlBox<>(
         this::selectVideo, "选择视频源");
     for (String name : cameraList) {
@@ -152,8 +151,8 @@ public class ControlPanel extends JFrame {
     this.setVisible(true);
   }
 
-  public void addScript(Script script) {
-    controlBox.addItem(script, script.getName());
+  public void addScript(MainScript mainScript) {
+    controlBox.addItem(mainScript, mainScript.getScriptName());
   }
 
 }

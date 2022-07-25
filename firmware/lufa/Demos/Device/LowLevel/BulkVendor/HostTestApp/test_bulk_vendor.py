@@ -7,7 +7,7 @@
 """
 
 """
-    LUFA Bulk Vendor device demo host test script. This script will send and
+    LUFA Bulk Vendor device demo host test mainScript. This mainScript will send and
     receive a continuous stream of packets to/from to the device, to show
     bidirectional communications.
 

@@ -2,12 +2,11 @@ package com.duanxr.pgcon.gui;
 
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.core.PGPool;
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.event.FrameEvent;
 import com.duanxr.pgcon.gui.draw.Drawable;
-import com.duanxr.pgcon.input.CameraImageInput;
-import com.duanxr.pgcon.input.StaticImageInput;
+import com.duanxr.pgcon.input.impl.CameraImageInput;
+import com.duanxr.pgcon.input.impl.StaticImageInput;
 import com.google.common.base.Strings;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -17,6 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,23 +38,23 @@ public class DisplayHandler {
 
   private final Map<String, Drawable> drawableHashMap;
 
+  private final ExecutorService executorService;
+
   private final AtomicBoolean frozen;
 
   private final DisplayScreen displayScreen;
 
   private final GuiConfig guiConfig;
 
-  private final PGPool pgPool;
-
   @Getter
   private CameraImageInput imageInput;
 
   @Autowired
   public DisplayHandler(DisplayScreen displayScreen,
-      InputConfig inputConfig, GuiConfig guiConfig, PGPool pgPool,
-      EventBus eventBus) {
+      InputConfig inputConfig, GuiConfig guiConfig,
+      EventBus eventBus, ExecutorService executorService) {
     this.guiConfig = guiConfig;
-    this.pgPool = pgPool;
+    this.executorService = executorService;
     this.drawableHashMap = new ConcurrentHashMap<>();
     this.frozen = new AtomicBoolean(false);
     this.displayScreen = displayScreen;
@@ -81,7 +81,7 @@ public class DisplayHandler {
 
   @Subscribe
   public void handleDrawEvent(DrawEvent drawEvent) {
-    pgPool.getExecutors().execute(() -> {
+    executorService.execute(() -> {
       if (!Strings.isNullOrEmpty(drawEvent.getKey())) {
         if (drawEvent.getDrawable() == null) {
           drawableHashMap.remove(drawEvent.getKey());
@@ -129,7 +129,7 @@ public class DisplayHandler {
 
   @Subscribe
   public void repaint(FrameEvent event) {
-    pgPool.getExecutors().execute(() -> {
+    executorService.execute(() -> {
       if (event.getFrame() != null) {
         BufferedImage draw = draw(event.getFrame());
         BufferedImage resize = resize(draw, guiConfig.getWidth(),

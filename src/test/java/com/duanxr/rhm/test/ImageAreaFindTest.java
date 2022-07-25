@@ -1,6 +1,6 @@
 package com.duanxr.rhm.test;
 
-import com.duanxr.pgcon.core.detect.Area;
+import com.duanxr.pgcon.core.detect.model.Area;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.SneakyThrows;

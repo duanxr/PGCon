@@ -666,7 +666,7 @@ SHOW_FILES             = YES
 
 SHOW_NAMESPACES        = YES
 
-# The FILE_VERSION_FILTER tag can be used to specify a program or script that
+# The FILE_VERSION_FILTER tag can be used to specify a program or mainScript that
 # doxygen should invoke to get the current version for each file (typically from
 # the version control system). Doxygen will invoke the program by executing (via
 # popen()) the command command imageInput-file, where command is the value of the
@@ -1471,7 +1471,7 @@ MATHJAX_FORMAT         = HTML-CSS
 
 # When MathJax is enabled you need to specify the location relative to the HTML
 # output directory using the MATHJAX_RELPATH option. The destination directory
-# should contain the MathJax.js script. For instance, if the mathjax directory
+# should contain the MathJax.js mainScript. For instance, if the mathjax directory
 # is located at the same level as the HTML output directory, then
 # MATHJAX_RELPATH should be ../mathjax. The default value points to the MathJax
 # Content Delivery Network so you can quickly see the result without installing
@@ -1521,8 +1521,8 @@ SEARCHENGINE           = NO
 # When the SERVER_BASED_SEARCH tag is enabled the search engine will be
 # implemented using a web server instead of a web client using Javascript. There
 # are two flavors of web server based searching depending on the EXTERNAL_SEARCH
-# setting. When disabled, doxygen will generate a PHP script for searching and
-# an index file used by the script. When EXTERNAL_SEARCH is enabled the indexing
+# setting. When disabled, doxygen will generate a PHP mainScript for searching and
+# an index file used by the mainScript. When EXTERNAL_SEARCH is enabled the indexing
 # and searching needs to be provided by external tools. See the section
 # "External Indexing and Searching" for details.
 # The default value is: NO.
@@ -1531,7 +1531,7 @@ SEARCHENGINE           = NO
 SERVER_BASED_SEARCH    = NO
 
 # When EXTERNAL_SEARCH tag is enabled doxygen will no longer generate the PHP
-# script for searching. Instead the search results are written to an XML file
+# mainScript for searching. Instead the search results are written to an XML file
 # which needs to be processed by an external indexer. Doxygen will invoke an
 # external search engine pointed to by the SEARCHENGINE_URL option to obtain the
 # search results.
@@ -2081,7 +2081,7 @@ EXTERNAL_GROUPS        = YES
 
 EXTERNAL_PAGES         = YES
 
-# The PERL_PATH should be the absolute path and name of the perl script
+# The PERL_PATH should be the absolute path and name of the perl mainScript
 # interpreter (i.e. the result of 'which perl').
 # The default file (with absolute path) is: /usr/bin/perl.
 

@@ -29,7 +29,7 @@ InputEEData.o: InputEEData.bin $(TARGET).o $(MAKEFILE_LIST)
 	@echo $(MSG_OBJCPY_CMD) Converting \"$<\" to a object file \"$@\"
 	avr-objcopy -I binary -O elf32-avr -B $(call FIND_AVR_SUBARCH) --rename-section .data=.progmem.data,contents,alloc,readonly,data $< $@
 
-# Include LUFA build script makefiles
+# Include LUFA build mainScript makefiles
 include ../core.mk
 include ../gcc.mk
 include ../hid.mk

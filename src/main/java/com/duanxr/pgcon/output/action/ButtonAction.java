@@ -27,15 +27,15 @@ public enum ButtonAction {
   HOME(33, 34,0x1000,false),
   CAPTURE(35, 36,0x2000,false);
 
-  private byte pgcHoldCommand;
-  private byte pgcReleaseCommand;
-  private int scCommand;
-  private boolean isHat;
+  private final byte pcHoldCommand;
+  private final byte pcReleaseCommand;
+  private final int ecCommand;
+  private final boolean isHat;
 
-  ButtonAction(int pgcHoldCommand, int pgcReleaseCommand,int scCommand, boolean isHat) {
-    this.pgcHoldCommand = (byte) pgcHoldCommand;
-    this.pgcReleaseCommand = (byte) pgcReleaseCommand;
-    this.scCommand = scCommand;
+  ButtonAction(int pcHoldCommand, int pcReleaseCommand,int ecCommand, boolean isHat) {
+    this.pcHoldCommand = (byte) pcHoldCommand;
+    this.pcReleaseCommand = (byte) pcReleaseCommand;
+    this.ecCommand = ecCommand;
     this.isHat = isHat;
   }
 }

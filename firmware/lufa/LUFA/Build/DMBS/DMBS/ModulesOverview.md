@@ -21,7 +21,7 @@ The following modules are currently included:
 To use a module, it is recommended to add the following boilerplate to your
 makefile:
 
-    # Include DMBS build script makefiles
+    # Include DMBS build mainScript makefiles
     DMBS_PATH   ?= ../DMBS
 
 Which can then used to indicate the location of your DMBS installation, relative

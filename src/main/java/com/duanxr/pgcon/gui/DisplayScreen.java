@@ -2,7 +2,7 @@ package com.duanxr.pgcon.gui;
 
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.core.detect.Area;
+import com.duanxr.pgcon.core.detect.model.Area;
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.gui.draw.Rectangle;
 import com.google.common.eventbus.EventBus;
@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,12 +24,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class DisplayScreen extends JLabel {
-
   private static final String MOUSE_DRAGGED_KEY = "mouseDragged";
-
   private final double xScale;
   private final double yScale;
-
   private final ImageIcon imageIcon;
   private Point pointStart = null;
   private Point pointEnd = null;

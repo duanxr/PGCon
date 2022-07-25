@@ -7,7 +7,7 @@
 """
 
 """
-    Front-end configuration app for the TempDataLogger project. This script
+    Front-end configuration app for the TempDataLogger project. This mainScript
     configures the logger to the current system time and date, with a user
     defined logging interval.
 

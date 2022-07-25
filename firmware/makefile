@@ -25,7 +25,7 @@ LD_FLAGS     =
 # Default target
 all:
 
-# Include LUFA build script makefiles
+# Include LUFA build mainScript makefiles
 include $(LUFA_PATH)/Build/lufa_core.mk
 include $(LUFA_PATH)/Build/lufa_sources.mk
 include $(LUFA_PATH)/Build/lufa_build.mk

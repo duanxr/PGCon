@@ -12,7 +12,7 @@
   <groupId>com.duanxr</groupId>
   <artifactId>pokemon-game-control</artifactId>
   <name>pokemon-game-control</name>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.0.0</version>
   <description>Automatic hunting and hatching shiny Pokémon for Pokémon games on nintendo switch, based on image recognition and
     OCR.
   </description>
@@ -36,12 +36,12 @@
     <dependency>
       <groupId>org.boofcv</groupId>
       <artifactId>boofcv-all</artifactId>
-      <version>0.39.1</version>
+      <version>0.40.1</version>
     </dependency>
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.78</version>
+      <version>2.0.7</version>
     </dependency>
     <dependency>
       <groupId>com.github.purejavacomm</groupId>
@@ -56,12 +56,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>31.0.1-jre</version>
+      <version>31.1-jre</version>
     </dependency>
     <dependency>
       <groupId>net.coobird</groupId>
       <artifactId>thumbnailator</artifactId>
-      <version>0.4.15</version>
+      <version>0.4.17</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -76,22 +76,22 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
-      <version>2.17.0</version>
+      <version>2.17.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.17.0</version>
+      <version>2.17.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-jcl</artifactId>
-      <version>2.17.0</version>
+      <version>2.17.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
-      <version>2.17.0</version>
+      <version>2.17.2</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -106,8 +106,6 @@
       <artifactId>opencv</artifactId>
       <version>4.5.1-2</version>
     </dependency>
-
-
     <dependency>
       <groupId>org.bytedeco.javacpp-presets</groupId>
       <artifactId>leptonica</artifactId>
@@ -128,12 +126,12 @@
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>javacpp</artifactId>
-      <version>1.5.6</version>
+      <version>1.5.7</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>javacv</artifactId>
-      <version>1.5.6</version>
+      <version>1.5.7</version>
       <exclusions>
         <exclusion>
           <artifactId>opencv</artifactId>
@@ -186,6 +184,11 @@
           <groupId>org.junit.vintage</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>3.1.1</version>
     </dependency>
   </dependencies>
   <properties>

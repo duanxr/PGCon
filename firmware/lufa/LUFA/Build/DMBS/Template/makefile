@@ -20,7 +20,7 @@ LD_FLAGS     =
 # Default target
 all:
 
-# Include DMBS build script makefiles
+# Include DMBS build mainScript makefiles
 DMBS_PATH   ?= ../DMBS
 include $(DMBS_PATH)/core.mk
 include $(DMBS_PATH)/gcc.mk
