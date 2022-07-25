@@ -40,6 +40,7 @@ public class EasyConSerialPort implements SerialPort<byte[]> {
   @Override
   @SneakyThrows
   public synchronized void sendCommand(byte[] command) {
+    log.info("sendCommand: {}", command);
     outputStream.write(convert(command));
     outputStream.flush();
   }

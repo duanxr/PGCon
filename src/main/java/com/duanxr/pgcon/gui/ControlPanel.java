@@ -5,6 +5,7 @@ import static com.duanxr.pgcon.config.ConstantConfig.MAIN_PANEL_TITLE;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.script.api.MainScript;
+import com.duanxr.pgcon.script.component.ScriptManager;
 import com.duanxr.pgcon.script.component.ScriptRunner;
 import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.output.Controller;
@@ -13,6 +14,7 @@ import com.duanxr.pgcon.util.SystemUtil;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -30,6 +32,7 @@ public class ControlPanel extends JFrame {
   private final DisplayHandler displayHandler;
   private final OutputConfig outputConfig;
   private final ScriptRunner scriptRunner;
+  private final ScriptManager scriptManager;
   private final DisplayScreen screen;
   private final Controller controller;
   private final GuiConfig guiConfig;
@@ -40,13 +43,15 @@ public class ControlPanel extends JFrame {
 
   public ControlPanel(DisplayHandler displayHandler,
       Controller controller, ScriptRunner scriptRunner,
-      DisplayScreen screen, GuiConfig guiConfig, OutputConfig outputConfig) {
+      DisplayScreen screen, GuiConfig guiConfig, OutputConfig outputConfig,
+      ScriptManager scriptManager) {
     this.displayHandler = displayHandler;
     this.scriptRunner = scriptRunner;
     this.outputConfig = outputConfig;
     this.controller = controller;
     this.guiConfig = guiConfig;
     this.screen = screen;
+    this.scriptManager = scriptManager;
 
     this.controlBox = new ControlBox<>(this::selectScript, "选择执行脚本");
   }
@@ -69,6 +74,7 @@ public class ControlPanel extends JFrame {
 
   @SneakyThrows
   private void addScriptSelection() {
+    scriptManager.getMainScripts().values().forEach(this::addScript);
     GridBagConstraints bagConstraints = new GridBagConstraints();
     bagConstraints.fill = GridBagConstraints.BOTH;
     bagConstraints.anchor = GridBagConstraints.WEST;

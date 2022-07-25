@@ -48,7 +48,7 @@ public class Controller {
     releaseTime = new long[index];
     executors.execute(() -> {
       try {
-        while (!Thread.currentThread().isInterrupted() && protocol != null) {
+        while (!Thread.currentThread().isInterrupted()) {
           for (int i = 0, releaseTimeLength = releaseTime.length; i < releaseTimeLength; i++) {
             long t = releaseTime[i];
             if (t != 0 && t < System.currentTimeMillis()) {
@@ -63,7 +63,6 @@ public class Controller {
   }
 
   private synchronized void release(int index) {
-    releaseTime[index] = 0;
     if (index >= stickMap.size()) {
       release(reversedButtonMap.get(index));
     } else {
