@@ -13,8 +13,8 @@ public class PressA extends ScriptEngine implements MainScript {
 
   @Override
   public void run() {
-    controller.press(ButtonAction.D_BOTTOM);
-    sleep(150);
+    controller.press(ButtonAction.D_RIGHT);
+    sleep(1050);
   }
 
   @Override

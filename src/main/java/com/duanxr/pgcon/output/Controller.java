@@ -81,6 +81,13 @@ public class Controller {
     }
   }
 
+  public synchronized void hold(ButtonAction action) {
+    if (readAndSetMax(releaseTime, buttonMap.get(action),
+        Long.MAX_VALUE)) {
+      protocol.hold(action);
+    }
+  }
+
   public synchronized void release(ButtonAction action) {
     if (setToZero(releaseTime, buttonMap.get(action))) {
       protocol.release(action);
@@ -94,6 +101,13 @@ public class Controller {
   public synchronized void hold(StickAction action, int time) {
     if (readAndSetMax(releaseTime, stickMap.get(action),
         System.currentTimeMillis() + time)) {
+      protocol.set(action);
+    }
+  }
+
+  public synchronized void hold(StickAction action) {
+    if (readAndSetMax(releaseTime, stickMap.get(action),
+        Long.MAX_VALUE)) {
       protocol.set(action);
     }
   }

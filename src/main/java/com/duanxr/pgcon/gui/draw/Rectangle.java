@@ -30,7 +30,6 @@ public class Rectangle extends  BaseDrawable implements Drawable {
   @Override
   public void draw(Graphics graphics) {
     graphics.setColor(this.getColor());
-    graphics.fillRect(this.getArea().getX(), this.getArea().getY(),
-        this.getArea().getWidth(), this.getArea().getHeight());
+    graphics.fillRect(this.getArea().getX(), this.getArea().getY(), this.getArea().getWidth(), this.getArea().getHeight());
   }
 }

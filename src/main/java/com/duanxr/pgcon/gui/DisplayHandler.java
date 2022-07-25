@@ -12,6 +12,8 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -126,15 +128,23 @@ public class DisplayHandler {
     this.imageInput = imageInput;
   }
 
+  static BufferedImage deepCopy(BufferedImage bi) {
+    ColorModel cm = bi.getColorModel();
+    boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+    WritableRaster raster = bi.copyData(null);
+    return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+  }
 
+  //todo 透明叠加画布
   @Subscribe
   public void repaint(FrameEvent event) {
     executorService.execute(() -> {
       if (event.getFrame() != null) {
-        BufferedImage draw = draw(event.getFrame());
+        BufferedImage frame = event.getFrame();
+        BufferedImage draw = draw(deepCopy(frame));
         BufferedImage resize = resize(draw, guiConfig.getWidth(),
             guiConfig.getHeight());
-        displayScreen.repaint(resize);
+        displayScreen.repaint(resize,frame);
       } else {
         repaint(DEFAULT_FRAME);
       }

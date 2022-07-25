@@ -26,7 +26,7 @@ public class EasyConProtocol implements Protocol {
     int command = buttonType.getEcCommand();
     byte[] bytes = currentBytes;
     if (buttonType.isHat()) {
-      bytes[2] |= (byte) command;
+      bytes[2] = (byte) command;
     } else {
       if (command <= 0x80) {
         bytes[1] |= (byte) command;
@@ -42,7 +42,7 @@ public class EasyConProtocol implements Protocol {
     int command = buttonType.getEcCommand();
     byte[] bytes = currentBytes;
     if (buttonType.isHat()) {
-      bytes[2] &= ~(byte) command;
+      bytes[2] = 8;
     } else {
       if (command <= 0x80) {
         bytes[1] &= ~(byte) command;

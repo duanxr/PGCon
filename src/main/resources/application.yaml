@@ -10,5 +10,5 @@ pgcon:
     cacheSize: 100
   output:
     baudRate: 9600
-    pressTime: 200
+    pressTime: 85
     captureTime: 5000

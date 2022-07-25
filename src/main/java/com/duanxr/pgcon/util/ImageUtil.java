@@ -5,8 +5,9 @@ import com.duanxr.pgcon.core.detect.model.Area;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
-import org.bytedeco.javacpp.lept;
-import org.bytedeco.javacpp.lept.PIX;
+import jtermios.JTermios.JTermiosInterface.NativeSize;
+import org.bytedeco.leptonica.PIX;
+import org.bytedeco.leptonica.global.lept;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -31,8 +32,9 @@ public class ImageUtil {
     MatOfByte bytes = new MatOfByte();
     Imgcodecs.imencode(".tif", mat, bytes);
     ByteBuffer buff = ByteBuffer.wrap(bytes.toArray());
-    return lept.pixReadMem(buff, buff.limit());
+    return lept.pixReadMem(buff,buff.capacity());
   }
+
   public static Mat matToMask(Mat origin) {
     Mat mask = new Mat();
     origin.copyTo(mask);
