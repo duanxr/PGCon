@@ -14,6 +14,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Rect;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 //TODO 优化转换速度?
 /**
@@ -29,8 +30,10 @@ public class ImageUtil {
   }
 
   public static PIX matToPix(Mat mat) {
+    Mat rbga = new Mat();
+    Imgproc.cvtColor(mat, rbga, Imgproc.COLOR_RGB2GRAY);
     MatOfByte bytes = new MatOfByte();
-    Imgcodecs.imencode(".tif", mat, bytes);
+    Imgcodecs.imencode(".tif", rbga, bytes);
     ByteBuffer buff = ByteBuffer.wrap(bytes.toArray());
     return lept.pixReadMem(buff,buff.capacity());
   }

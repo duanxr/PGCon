@@ -55,6 +55,7 @@ public class Controller {
               release(i);
             }
           }
+          Thread.sleep(5);
         }
       } catch (Exception e) {
         log.error("", e);

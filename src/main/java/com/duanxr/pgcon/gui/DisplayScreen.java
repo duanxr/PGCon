@@ -5,6 +5,7 @@ import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.core.detect.model.Area;
 import com.duanxr.pgcon.event.DrawEvent;
 import com.duanxr.pgcon.gui.draw.Rectangle;
+import com.duanxr.pgcon.util.TempFileUtil;
 import com.google.common.eventbus.EventBus;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -57,8 +58,7 @@ public class DisplayScreen extends JLabel {
               (pointEnd.x * xScale),  (pointEnd.y * yScale));
           BufferedImage subImage = frame.getSubimage(area.getX(), area.getY(), area.getWidth(),
               area.getHeight());
-          File file = File.createTempFile("PGCon", ".png");
-          ImageIO.write(subImage, "png", file);
+          File file = TempFileUtil.saveTempImage(subImage);
           log.info("拖动区域ofPoints: {},{},{},{}, 已保存到: {}",
               (int) (pointStart.x * xScale), (int) (pointStart.y * yScale),
               (int) (pointEnd.x * xScale), (int) (pointEnd.y * yScale), file.getAbsolutePath());

@@ -15,6 +15,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.tesseract.TessBaseAPI;
+import org.bytedeco.tesseract.global.tesseract;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -45,10 +46,11 @@ public class TesseractOCR implements OCR {
     TessBaseAPI tessBaseAPI = new TessBaseAPI();
     File file = resourceManager.getFile(path);
     long length = file.length();
-    int init = tessBaseAPI.Init(file.getAbsolutePath(), method.name().toLowerCase());
+    int init = tessBaseAPI.Init(file.getAbsolutePath(), method.name().toLowerCase(),tesseract.OEM_LSTM_ONLY);
     if (init != 0) {
       log.error("Could not initialize tesseract.");
     }
+    tessBaseAPI.SetPageSegMode(tesseract.PSM_SINGLE_LINE);
     apiMap.put(method, tessBaseAPI);
   }
 

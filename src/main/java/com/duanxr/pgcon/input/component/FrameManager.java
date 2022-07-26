@@ -2,6 +2,7 @@ package com.duanxr.pgcon.input.component;
 
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.event.FrameEvent;
+import com.duanxr.pgcon.gui.DisplayHandler;
 import com.duanxr.pgcon.util.ImageUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Component;
  * @author 段然 2021/12/28
  */
 @Component
+@Slf4j
 public class FrameManager {
 
   private final LoadingCache<BufferedImage, Mat> matLoadingCache;
@@ -35,11 +38,14 @@ public class FrameManager {
 
   private final EventBus eventBus;
 
+private final DisplayHandler displayHandler;
   @Autowired
-  public FrameManager(ExecutorService executorService, EventBus eventBus, InputConfig inputConfig) {
+  public FrameManager(ExecutorService executorService, EventBus eventBus, InputConfig inputConfig,
+      DisplayHandler displayHandler) {
     this.executorService = executorService;
     this.eventBus = eventBus;
     this.inputConfig = inputConfig;
+    this.displayHandler = displayHandler;
     this.readWriteLock = new ReentrantReadWriteLock();
     this.cache = new ArrayDeque<>();
     this.matLoadingCache = Caffeine.newBuilder().maximumSize(inputConfig.getCacheSize())
@@ -66,6 +72,14 @@ public class FrameManager {
     readWriteLock.readLock().lock();
     CachedFrame frame = cache.getFirst();
     readWriteLock.readLock().unlock();
+   /* try {
+      BufferedImage display = displayHandler.getDisplay();
+      FrameEvent frame = new FrameEvent(display,System.currentTimeMillis());
+      CachedFrame imageEvent = new CachedFrame(matLoadingCache,frame);
+      return imageEvent;
+    }catch (Exception e) {
+     log.error("", e);
+    }*/
     return frame;
   }
 
@@ -102,7 +116,7 @@ public class FrameManager {
     }
 
     public Mat getMat() {
-      return matLoadingCache.get(bufferedImage);
+      return ImageUtil.bufferedImageToMat(bufferedImage);
     }
 
   }
