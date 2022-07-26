@@ -1,9 +1,10 @@
-package com.duanxr.pgcon.script;
+package com.duanxr.pgcon.script.component;
 
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.output.action.ButtonAction;
+import com.duanxr.pgcon.script.api.Script;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -25,7 +26,6 @@ public abstract class ScriptEngine {
 
   protected ScriptEngine() {
   }
-
 
   @SneakyThrows
   protected void sleep(long millis) {
@@ -53,13 +53,6 @@ public abstract class ScriptEngine {
         () -> sleep(200)).getText());
   }
 
-  private Long parseNumber(String str) {
-    try {
-      return Long.valueOf(str);
-    } catch (Exception ignored) {
-      return null;
-    }
-  }
 
   protected void async(Runnable runnable) {
     executorService.submit(runnable);
@@ -68,4 +61,13 @@ public abstract class ScriptEngine {
   protected <R> Future<R> async(Callable<R> callable) {
     return executorService.submit(callable);
   }
+
+  private Long parseNumber(String str) {
+    try {
+      return Long.valueOf(str);
+    } catch (Exception ignored) {
+      return null;
+    }
+  }
+
 }

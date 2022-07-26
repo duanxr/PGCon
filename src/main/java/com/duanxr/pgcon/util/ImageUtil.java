@@ -30,10 +30,10 @@ public class ImageUtil {
   }
 
   public static PIX matToPix(Mat mat) {
-    Mat rbga = new Mat();
-    Imgproc.cvtColor(mat, rbga, Imgproc.COLOR_RGB2GRAY);
+    Mat gray = new Mat();
+    Imgproc.cvtColor(mat, gray, Imgproc.COLOR_RGB2GRAY);
     MatOfByte bytes = new MatOfByte();
-    Imgcodecs.imencode(".tif", rbga, bytes);
+    Imgcodecs.imencode(".tif", gray, bytes);
     ByteBuffer buff = ByteBuffer.wrap(bytes.toArray());
     return lept.pixReadMem(buff,buff.capacity());
   }
@@ -44,7 +44,6 @@ public class ImageUtil {
     Core.bitwise_not(mask, mask);
     return mask;
   }
-
   public static BufferedImage matToBufferedImage(Mat mat) {
     int type = BufferedImage.TYPE_BYTE_GRAY;
     if (mat.channels() > 1) {

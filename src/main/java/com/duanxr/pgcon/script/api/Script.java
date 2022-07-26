@@ -5,7 +5,7 @@ package com.duanxr.pgcon.script.api;
  */
 public interface Script {
 
-  void run();
+  void execute() throws InterruptedException;
 
   String getScriptName();
 

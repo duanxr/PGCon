@@ -2,7 +2,7 @@ package com.duanxr.pgcon.script.impl.common;
 
 import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.output.action.ButtonAction;
-import com.duanxr.pgcon.script.ScriptEngine;
+import com.duanxr.pgcon.script.component.ScriptEngine;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 public class PressA extends ScriptEngine implements MainScript {
 
   @Override
-  public void run() {
-    controller.press(ButtonAction.D_RIGHT);
-    sleep(1050);
+  public void execute() {
+    controller.press(ButtonAction.A);
+    sleep(150);
   }
 
   @Override

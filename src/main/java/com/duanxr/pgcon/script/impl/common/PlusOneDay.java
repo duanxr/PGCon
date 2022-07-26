@@ -2,13 +2,11 @@ package com.duanxr.pgcon.script.impl.common;
 
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
-import com.duanxr.pgcon.core.detect.api.OCR.Method;
 import com.duanxr.pgcon.core.detect.api.OCR.Result;
 import com.duanxr.pgcon.core.detect.model.Area;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.script.api.MainScript;
-import com.duanxr.pgcon.script.ScriptEngine;
-import com.google.common.base.Strings;
+import com.duanxr.pgcon.script.component.ScriptEngine;
 import java.time.LocalDate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -60,7 +58,7 @@ public class PlusOneDay extends ScriptEngine implements MainScript {
   }
 
   @Override
-  public void run() {
+  public void execute() {
     while (true) {
       try {
         toMainMenu();

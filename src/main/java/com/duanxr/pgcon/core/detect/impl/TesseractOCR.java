@@ -6,7 +6,6 @@ import com.duanxr.pgcon.input.component.FrameManager;
 import com.duanxr.pgcon.input.component.FrameManager.CachedFrame;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.detect.model.Area;
-import com.duanxr.pgcon.util.DebugUtil;
 import com.duanxr.pgcon.util.ImageUtil;
 import com.google.common.base.Strings;
 import java.io.File;

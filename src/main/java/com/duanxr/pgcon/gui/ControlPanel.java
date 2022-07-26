@@ -14,7 +14,6 @@ import com.duanxr.pgcon.util.SystemUtil;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -86,14 +85,14 @@ public class ControlPanel extends JFrame {
   }
 
   private void selectScript(MainScript mainScript) {
-    scriptRunner.stopScript();
+    scriptRunner.stop();
     if (extraPanel != null) {
       this.remove(extraPanel);
     }
     if (mainScript == null) {
       return;
     }
-    scriptRunner.runScript(mainScript);
+    scriptRunner.run(mainScript);
   }
 
   @SneakyThrows

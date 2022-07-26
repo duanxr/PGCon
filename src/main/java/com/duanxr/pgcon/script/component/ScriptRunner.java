@@ -7,33 +7,39 @@ import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.Executors;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 /**
  * @author Duanran 2019/12/13
  */
 @Slf4j
-@Service
+@Component
 public class ScriptRunner {
 
-  @Getter
   private final ListeningExecutorService listeningExecutorService;
+  private ListenableFuture<?> currentScriptListenable;
+  private ScriptTask currentScriptTask;
 
-  private ListenableFuture<?> currentScriptSubmit;
 
   public ScriptRunner() {
-    this.listeningExecutorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+    listeningExecutorService = MoreExecutors.listeningDecorator(
+        Executors.newSingleThreadExecutor());
   }
 
-  public synchronized void runScript(MainScript mainScript) {
-    stopScript();
-    currentScriptSubmit = listeningExecutorService.submit(mainScript);
+  public synchronized void run(MainScript mainScript) {
+    stop();
+    currentScriptTask = new ScriptTask(mainScript);
+    currentScriptListenable = listeningExecutorService.submit(currentScriptTask);
   }
 
-  public synchronized void stopScript() {
-    if (currentScriptSubmit != null) {
-      currentScriptSubmit.cancel(true);
-      currentScriptSubmit=null;
+  public synchronized void stop() {
+    if (currentScriptTask != null) {
+      currentScriptTask.stop();
+      currentScriptTask = null;
+      currentScriptListenable.cancel(true);
     }
   }
+
+
 }

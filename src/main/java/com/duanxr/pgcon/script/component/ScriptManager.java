@@ -5,7 +5,6 @@ import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.api.Script;
-import com.duanxr.pgcon.script.ScriptEngine;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
