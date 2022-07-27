@@ -1,4 +1,4 @@
-package d;
+package com.duanxr.pgcon.test.algo;
 
 import com.duanxr.pgcon.util.ImageUtil;
 import java.io.File;
@@ -14,7 +14,7 @@ import org.opencv.imgcodecs.Imgcodecs;
  * @author 段然 2022/7/26
  */
 @Slf4j
-public class Test {
+public class OCR {
 
   public static void main(String[] args) {
     OpenCV.loadLocally();

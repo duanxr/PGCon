@@ -21,4 +21,9 @@ public class PressA extends ScriptEngine implements MainScript {
   public String getScriptName() {
     return "Press A";
   }
+
+  @Override
+  public boolean isLoop() {
+    return true;
+  }
 }

@@ -1,4 +1,4 @@
-package com.duanxr.rhm.test;
+package com.duanxr.pgcon.test.algo;
 
 /**
  * @author 段然 2021/12/23
@@ -20,7 +20,6 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import nu.pattern.OpenCV;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;

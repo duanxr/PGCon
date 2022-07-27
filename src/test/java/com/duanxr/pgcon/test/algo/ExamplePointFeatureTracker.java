@@ -1,4 +1,4 @@
-package boofCV;
+package com.duanxr.pgcon.test.algo;
 
 import boofcv.abst.feature.detect.interest.ConfigFastHessian;
 import boofcv.abst.feature.detect.interest.ConfigPointDetector;

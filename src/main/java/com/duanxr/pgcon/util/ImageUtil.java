@@ -16,7 +16,6 @@ import org.opencv.core.Rect;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-//TODO 优化转换速度?
 /**
  * @author Duanran 2019/12/13
  */

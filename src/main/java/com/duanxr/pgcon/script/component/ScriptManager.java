@@ -7,6 +7,7 @@ import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.api.Script;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
@@ -26,6 +27,8 @@ public class ScriptManager {
   private final OCR ocr;
   private final ImageCompare imageCompare;
   private final Controller controller;
+
+  private final ExecutorService  executorService;
   @Getter
   private Map<String, MainScript> mainScripts;
   @Getter
@@ -33,13 +36,15 @@ public class ScriptManager {
 
   @Autowired
   public ScriptManager(List<ScriptEngine> scriptEngineList, List<MainScript> mainScriptList,
-      List<Script> scriptList, OCR ocr, ImageCompare imageCompare, Controller controller) {
+      List<Script> scriptList, OCR ocr, ImageCompare imageCompare, Controller controller,
+      ExecutorService executorService) {
     this.scriptEngineList = scriptEngineList;
     this.mainScriptList = mainScriptList;
     this.scriptList = scriptList;
     this.ocr = ocr;
     this.imageCompare = imageCompare;
     this.controller = controller;
+    this.executorService = executorService;
   }
 
   @PostConstruct
@@ -55,5 +60,7 @@ public class ScriptManager {
     scriptEngine.setOcr(ocr);
     scriptEngine.setImageCompare(imageCompare);
     scriptEngine.setController(controller);
+    scriptEngine.setScriptManager(this);
+    scriptEngine.setExecutorService(executorService);
   }
 }

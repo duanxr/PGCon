@@ -17,7 +17,6 @@ public class TempFileUtil {
   public static File saveTempImage(BufferedImage image) {
     File file = File.createTempFile("PGCon", ".png");
     ImageIO.write(image, "png", file);
-    log.info("保存到: {}", file.getAbsolutePath());
     return file;
   }
 

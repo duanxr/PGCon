@@ -72,14 +72,6 @@ private final DisplayHandler displayHandler;
     readWriteLock.readLock().lock();
     CachedFrame frame = cache.getFirst();
     readWriteLock.readLock().unlock();
-   /* try {
-      BufferedImage display = displayHandler.getDisplay();
-      FrameEvent frame = new FrameEvent(display,System.currentTimeMillis());
-      CachedFrame imageEvent = new CachedFrame(matLoadingCache,frame);
-      return imageEvent;
-    }catch (Exception e) {
-     log.error("", e);
-    }*/
     return frame;
   }
 

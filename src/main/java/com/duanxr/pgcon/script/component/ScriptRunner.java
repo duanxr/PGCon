@@ -1,14 +1,13 @@
 package com.duanxr.pgcon.script.component;
 
+import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.script.api.MainScript;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.Executors;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 /**
  * @author Duanran 2019/12/13
@@ -21,8 +20,11 @@ public class ScriptRunner {
   private ListenableFuture<?> currentScriptListenable;
   private ScriptTask currentScriptTask;
 
+  private final Controller controller;
 
-  public ScriptRunner() {
+
+  public ScriptRunner(Controller controller) {
+    this.controller = controller;
     listeningExecutorService = MoreExecutors.listeningDecorator(
         Executors.newSingleThreadExecutor());
   }
@@ -38,6 +40,7 @@ public class ScriptRunner {
       currentScriptTask.stop();
       currentScriptTask = null;
       currentScriptListenable.cancel(true);
+      controller.clear();
     }
   }
 

@@ -1,4 +1,4 @@
-package image;
+package com.duanxr.pgcon.test.algo;
 
 import java.util.ArrayList;
 import java.util.Random;

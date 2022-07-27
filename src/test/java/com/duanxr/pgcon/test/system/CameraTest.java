@@ -1,4 +1,4 @@
-package com.duanxr.rhm.test;
+package com.duanxr.pgcon.test.system;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;

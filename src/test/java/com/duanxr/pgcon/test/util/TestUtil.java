@@ -1,4 +1,4 @@
-package com.duanxr.rhm.test;
+package com.duanxr.pgcon.test.util;
 
 import java.awt.FlowLayout;
 import java.awt.Image;

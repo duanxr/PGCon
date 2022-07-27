@@ -53,4 +53,9 @@ public class Test extends ScriptEngine implements MainScript {
   public String getScriptName() {
     return "Test";
   }
+
+  @Override
+  public boolean isLoop() {
+    return false;
+  }
 }

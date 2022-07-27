@@ -3,8 +3,7 @@ package com.duanxr.pgcon.script.component;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.output.Controller;
-import com.duanxr.pgcon.output.action.ButtonAction;
-import com.duanxr.pgcon.script.api.Script;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -20,9 +19,10 @@ import lombok.SneakyThrows;
 public abstract class ScriptEngine {
 
   protected OCR ocr;
-  protected ImageCompare imageCompare;
   protected Controller controller;
+  protected ImageCompare imageCompare;
   protected ExecutorService executorService;
+  protected ScriptManager scriptManager;
 
   protected ScriptEngine() {
   }
@@ -41,16 +41,51 @@ public abstract class ScriptEngine {
     return d;
   }
 
+  protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action,
+      long maxMillis) {
+    D d = supplier.get();
+    long limit = System.currentTimeMillis() + maxMillis;
+    while (!checker.apply(d)) {
+      if (System.currentTimeMillis() > limit) {
+        return null;
+      }
+      action.run();
+      d = supplier.get();
+    }
+    return d;
+  }
+
+  protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action,
+      int maxTimes) {
+    D d = supplier.get();
+    int times = 0;
+    while (!checker.apply(d)) {
+      if (times >= maxTimes) {
+        return null;
+      }
+      action.run();
+      d = supplier.get();
+      times++;
+    }
+    return d;
+  }
+
+  @SneakyThrows
+  protected void script(String script) {
+    Objects.requireNonNull(scriptManager.getScripts().get(script),
+        "cannot find subscript " + script).execute();
+  }
+
   protected Long ocrNumber(OCR.Param param, int length) {
-    return parseNumber(until(() -> ocr.detect(param),
-        input -> input.getText().length() == length && parseNumber(input.getText()) != null,
-        () -> sleep(200)).getText());
+    return until(() -> ocr.detect(param),
+        input -> input.getTextWithoutSpace().length() == length &&  input.getTextAsNumber() != null,
+        () -> sleep(200)).getTextAsNumber();
   }
 
   protected Long ocrNumber(OCR.Param param) {
-    return parseNumber(until(() -> ocr.detect(param),
-        input -> parseNumber(input.getText()) != null,
-        () -> sleep(200)).getText());
+    return until(() -> ocr.detect(param),
+        input -> input.getTextAsNumber() != null,
+        () -> sleep(200)).getTextAsNumber();
   }
 
 
@@ -62,12 +97,5 @@ public abstract class ScriptEngine {
     return executorService.submit(callable);
   }
 
-  private Long parseNumber(String str) {
-    try {
-      return Long.valueOf(str);
-    } catch (Exception ignored) {
-      return null;
-    }
-  }
 
 }
