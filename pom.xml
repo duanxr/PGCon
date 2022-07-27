@@ -5,7 +5,7 @@
   <parent>
     <artifactId>spring-boot-starter-parent</artifactId>
     <groupId>org.springframework.boot</groupId>
-    <version>2.6.1</version>
+    <version>2.6.4</version>
     <relativePath/>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -13,35 +13,117 @@
   <artifactId>pokemon-game-control</artifactId>
   <name>pokemon-game-control</name>
   <version>2.0.0</version>
-  <description>Automatic hunting and hatching shiny Pokémon for Pokémon games on nintendo switch, based on image recognition and
+  <description>Automatic hunting and hatching shiny Pokémon for Pokémon games on nintendo switch,
+    based on image recognition and
     OCR.
   </description>
   <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
+        <artifactId>maven-resources-plugin</artifactId>
         <configuration>
-          <source>17</source>
-          <target>17</target>
+          <nonFilteredFileExtensions>
+            <nonFilteredFileExtension>traineddata</nonFilteredFileExtension>
+            <nonFilteredFileExtension>fxml</nonFilteredFileExtension>
+          </nonFilteredFileExtensions>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>**/Log4j2Plugins.dat</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <finalName>${project.artifactId}</finalName>
+              <transformers>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.handlers</resource>
+                </transformer>
+                <transformer
+                  implementation="org.springframework.boot.maven.PropertiesMergingResourceTransformer">
+                  <resource>META-INF/spring.factories</resource>
+                </transformer>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.schemas</resource>
+                </transformer>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.bestpay.media.platform.azathoth.web.AzathothWebApplication
+                  </mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>2.6.4</version>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>4.9.10</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <dateFormat>yyyyMMddHHmmss</dateFormat>
+          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+          <generateGitPropertiesFile>false</generateGitPropertiesFile>
+          <skipPoms>false</skipPoms>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
     <dependency>
-      <groupId>org.boofcv</groupId>
-      <artifactId>boofcv-all</artifactId>
-      <version>0.40.1</version>
-    </dependency>
-    <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
       <version>2.0.7</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>3.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.github.purejavacomm</groupId>
@@ -54,14 +136,19 @@
       <version>0.3.12</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.12.0</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>31.1-jre</version>
+    </dependency>
+    <dependency>
+      <groupId>com.lmax</groupId>
+      <artifactId>disruptor</artifactId>
+      <version>3.4.4</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.11.0</version>
     </dependency>
     <dependency>
       <groupId>net.coobird</groupId>
@@ -70,13 +157,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
-      <artifactId>commons-math3</artifactId>
-      <version>3.6.1</version>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.12.0</version>
     </dependency>
     <dependency>
-      <groupId>com.lmax</groupId>
-      <artifactId>disruptor</artifactId>
-      <version>3.4.4</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.6.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -99,21 +186,18 @@
       <version>2.17.2</version>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-autoconfigure</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-configuration-processor</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.openpnp</groupId>
-      <artifactId>opencv</artifactId>
-      <version>4.5.1-2</version>
+      <groupId>org.boofcv</groupId>
+      <artifactId>boofcv-all</artifactId>
+      <version>0.40.1</version>
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>javacpp</artifactId>
+      <version>1.5.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>javacv</artifactId>
       <version>1.5.7</version>
     </dependency>
     <dependency>
@@ -123,8 +207,28 @@
     </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
-      <artifactId>javacv</artifactId>
-      <version>1.5.7</version>
+      <artifactId>tesseract-platform</artifactId>
+      <version>5.0.1-1.5.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+      <version>19-ea+9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+      <version>19-ea+9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-swing</artifactId>
+      <version>19-ea+9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openpnp</groupId>
+      <artifactId>opencv</artifactId>
+      <version>4.5.1-2</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -142,6 +246,14 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-autoconfigure</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -172,22 +284,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-      <version>3.1.1</version>
-    </dependency><!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.11.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bytedeco</groupId>
-      <artifactId>tesseract-platform</artifactId>
-      <version>5.0.1-1.5.7</version>
-    </dependency>
-
   </dependencies>
   <properties>
     <java.version>17</java.version>

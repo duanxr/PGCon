@@ -14,4 +14,5 @@ public class BeanConfig {
   public ExecutorService executorService() {
     return Executors.newCachedThreadPool();
   }
+
 }

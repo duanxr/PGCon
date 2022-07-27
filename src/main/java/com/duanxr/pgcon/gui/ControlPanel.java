@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
  * @author Duanran 2019/12/16
  */
 @Slf4j
-@Service
 public class ControlPanel extends JFrame {
 
   private final DisplayHandler displayHandler;

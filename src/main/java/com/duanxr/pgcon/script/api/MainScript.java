@@ -7,4 +7,12 @@ public interface MainScript extends Script {
 
   boolean isLoop();
 
+  default void load() {
+    // do nothing
+  }
+
+  default void clear() {
+    // do nothing
+  }
+
 }

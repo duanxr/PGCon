@@ -16,11 +16,13 @@ public class ScriptTask implements Runnable {
   ScriptTask(MainScript mainScript) {
     this.mainScript = mainScript;
     this.running = new AtomicBoolean(mainScript.isLoop());
+    mainScript.load();
     log.info("Script {} loaded.", mainScript.getScriptName());
   }
 
   public void stop() {
     running.set(false);
+    mainScript.clear();
   }
 
   @Override

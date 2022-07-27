@@ -19,10 +19,7 @@ public class ScriptRunner {
   private final ListeningExecutorService listeningExecutorService;
   private ListenableFuture<?> currentScriptListenable;
   private ScriptTask currentScriptTask;
-
   private final Controller controller;
-
-
   public ScriptRunner(Controller controller) {
     this.controller = controller;
     listeningExecutorService = MoreExecutors.listeningDecorator(

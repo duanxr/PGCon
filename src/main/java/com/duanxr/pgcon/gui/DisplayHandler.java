@@ -31,7 +31,6 @@ import org.springframework.stereotype.Service;
 /**
  * @author Duanran 2019/12/21
  */
-@Service
 public class DisplayHandler {
 
   private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(

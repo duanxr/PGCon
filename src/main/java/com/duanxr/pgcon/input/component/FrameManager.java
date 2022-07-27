@@ -38,14 +38,11 @@ public class FrameManager {
 
   private final EventBus eventBus;
 
-private final DisplayHandler displayHandler;
   @Autowired
-  public FrameManager(ExecutorService executorService, EventBus eventBus, InputConfig inputConfig,
-      DisplayHandler displayHandler) {
+  public FrameManager(ExecutorService executorService, EventBus eventBus, InputConfig inputConfig) {
     this.executorService = executorService;
     this.eventBus = eventBus;
     this.inputConfig = inputConfig;
-    this.displayHandler = displayHandler;
     this.readWriteLock = new ReentrantReadWriteLock();
     this.cache = new ArrayDeque<>();
     this.matLoadingCache = Caffeine.newBuilder().maximumSize(inputConfig.getCacheSize())

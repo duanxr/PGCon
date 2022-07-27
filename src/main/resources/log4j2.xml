@@ -2,7 +2,7 @@
 <configuration status="INFO" monitorInterval="600" xmlns:xi="http://www.w3.org/2001/XInclude">
   <Properties>
     <property name="logDirect">.</property>
-    <property name="logFileName">nug</property>
+    <property name="logFileName">PGCon</property>
     <property name="loggerLogLevel">INFO</property>
   </Properties>
   <Appenders>

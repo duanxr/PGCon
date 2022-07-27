@@ -172,9 +172,7 @@ public class AutoCharm extends ScriptEngine implements MainScript {
       skill.trim().chars().boxed().map(input -> (char) input.intValue()).forEach(characterSet::add);
     }
     StringBuilder sb = new StringBuilder();
-    for (Character character : characterSet) {
-      sb.append(character);
-    }
+    characterSet.stream().sorted().forEach(sb::append);
     log.info("skills whitelist: {}", sb);
     return sb.toString();
   }

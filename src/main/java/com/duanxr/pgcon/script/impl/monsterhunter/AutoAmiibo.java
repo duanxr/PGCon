@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class AutoAmiibo extends ScriptEngine implements MainScript {
-
   private static final OCR.Param AMIIBO_READ = OCR.Param.builder()
       .area(Area.ofPoints(763, 888, 915, 948))
       .apiConfig(ApiConfig.builder()

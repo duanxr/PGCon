@@ -26,7 +26,6 @@ import org.springframework.stereotype.Component;
  * @author 段然 2021/12/9
  */
 @Slf4j
-@Component
 public class DisplayScreen extends JLabel {
 
   private static final String MOUSE_DRAGGED_KEY = "mouseDragged";

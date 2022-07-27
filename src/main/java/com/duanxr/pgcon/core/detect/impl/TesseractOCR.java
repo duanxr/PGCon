@@ -48,9 +48,8 @@ public class TesseractOCR implements OCR {
     this.resourceManager = resourceManager;
     this.defaultApiMap = new HashMap<>();
     this.specialApiMap = Caffeine.newBuilder().build(this::createTessBaseAPI);
-    ApiConfig config = ApiConfig.builder().build();
     for (Method method : Method.values()) {
-      config.setMethod(method);
+      ApiConfig config = ApiConfig.builder().method(method).build();
       defaultApiMap.put(method, createTessBaseAPI(config));
     }
   }
