@@ -330,7 +330,7 @@ public class AutoCharm extends ScriptEngine implements MainScript {
 
   @Override
   public String getScriptName() {
-    return "MHR auto charm";
+    return "MHR auto charm(CHS.Ver)";
   }
 
   @Override
@@ -341,8 +341,7 @@ public class AutoCharm extends ScriptEngine implements MainScript {
     for (int i = 0; i < 10; i++) {
       fillPot();
     }
-    boolean find = checkCHARM_S();
-    if (!find) {
+    if (!checkCharm()) {
       abortGame();
       launchGame();
       walkToShop();
@@ -408,7 +407,7 @@ public class AutoCharm extends ScriptEngine implements MainScript {
     sleep(200);
   }
 
-  private boolean checkCHARM_S() {
+  private boolean checkCharm() {
     controller.press(ButtonAction.D_TOP);
     sleep(200);
     controller.press(ButtonAction.A);

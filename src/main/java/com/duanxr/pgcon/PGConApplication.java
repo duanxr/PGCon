@@ -1,8 +1,8 @@
 package com.duanxr.pgcon;
 
-import com.duanxr.pgcon.gui.Camera;
-import com.duanxr.pgcon.gui.MainPanel;
+import com.duanxr.pgcon.gui.PGConGUI;
 import javafx.application.Application;
+import javax.annotation.PreDestroy;
 import nu.pattern.OpenCV;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,7 +18,7 @@ public class PGConApplication {
 
   public static void main(String[] args) {
     OpenCV.loadLocally();
-    Application.launch(MainPanel.class, args);
+    Application.launch(PGConGUI.class, args);
   }
 
 }

@@ -1,8 +1,9 @@
-package com.duanxr.pgcon.gui.draw;
+package com.duanxr.pgcon.gui.display.canvas.impl;
 
+import com.duanxr.pgcon.gui.display.canvas.api.BaseDrawable;
+import com.duanxr.pgcon.gui.display.canvas.api.Drawable;
 import java.awt.Color;
 import java.awt.Graphics;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

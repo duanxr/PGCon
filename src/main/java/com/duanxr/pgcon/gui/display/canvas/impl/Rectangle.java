@@ -1,6 +1,8 @@
-package com.duanxr.pgcon.gui.draw;
+package com.duanxr.pgcon.gui.display.canvas.impl;
 
 import com.duanxr.pgcon.core.detect.model.Area;
+import com.duanxr.pgcon.gui.display.canvas.api.BaseDrawable;
+import com.duanxr.pgcon.gui.display.canvas.api.Drawable;
 import java.awt.Color;
 import java.awt.Graphics;
 import lombok.Getter;
@@ -11,18 +13,18 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class Oval extends BaseDrawable implements Drawable {
+public class Rectangle extends BaseDrawable implements Drawable {
 
   private Area area;
   private Color color;
 
-  public Oval(Area area, Color color, int duration) {
+  public Rectangle(Area area, Color color, int duration) {
     super(duration);
     this.area = area;
     this.color = color;
   }
 
-  public Oval(Area area, Color color) {
+  public Rectangle(Area area, Color color) {
     this.area = area;
     this.color = color;
   }
@@ -30,6 +32,6 @@ public class Oval extends BaseDrawable implements Drawable {
   @Override
   public void draw(Graphics graphics) {
     graphics.setColor(this.getColor());
-    graphics.fillOval(area.getX(), area.getY(), area.getWidth(), area.getHeight());
+    graphics.fillRect(this.getArea().getX(), this.getArea().getY(), this.getArea().getWidth(), this.getArea().getHeight());
   }
 }

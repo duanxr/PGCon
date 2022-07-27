@@ -1,12 +1,13 @@
 pgcon:
   gui:
-    width: 1280
-    height: 720
+    width: 960
+    height: 540
   input:
     width: 1920
     height: 1080
     ppi: 237
-    frameInterval: 65
+    frameInterval: 5
+    renderInterval: 5
     cacheSize: 100
   output:
     baudRate: 9600

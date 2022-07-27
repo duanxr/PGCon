@@ -39,6 +39,11 @@ public class PGConProtocol implements Protocol {
     send(49);
   }
 
+  @Override
+  public String getName() {
+    return "PGCon";
+  }
+
   private void send(int pgcCommand) {
     serialPort.sendCommand(pgcCommand);
   }

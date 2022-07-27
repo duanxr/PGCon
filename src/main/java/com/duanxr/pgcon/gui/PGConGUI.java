@@ -2,34 +2,13 @@ package com.duanxr.pgcon.gui;
 
 
 import com.duanxr.pgcon.PGConApplication;
-import com.github.sarxos.webcam.Webcam;
-import java.awt.image.BufferedImage;
+import com.duanxr.pgcon.config.ConstantConfig;
 import java.net.URL;
 import javafx.application.Application;
 import javafx.application.HostServices;
-import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +22,7 @@ import org.springframework.context.support.GenericApplicationContext;
  * @author 段然 2022/7/27
  */
 @Slf4j
-public class MainPanel extends Application {
+public class PGConGUI extends Application {
 
   private ConfigurableApplicationContext context;
 
@@ -61,19 +40,21 @@ public class MainPanel extends Application {
   @Override
   public void stop() {
     context.close();
+    System.exit(0);
   }
 
   @Override
   @SneakyThrows
   public void start(Stage primaryStage) {
-    primaryStage.setTitle("Connecting WebCam Using Sarxos API");
+    primaryStage.setTitle(ConstantConfig.MAIN_PANEL_TITLE);
     FXMLLoader loader = new FXMLLoader();
     loader.setControllerFactory(context::getBean);
-    URL resource = MainPanel.class.getResource("/fxml/Panel.fxml");
+    URL resource = PGConGUI.class.getResource("/javafx/MainPanel.fxml");
     loader.setLocation(resource);
     AnchorPane load = loader.load();
     Scene scene = new Scene(load);
     primaryStage.setScene(scene);
+    primaryStage.setResizable(false);
     primaryStage.show();
   }
 

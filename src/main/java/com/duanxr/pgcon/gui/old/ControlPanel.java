@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.gui;
+package com.duanxr.pgcon.gui.old;
 
 import static com.duanxr.pgcon.config.ConstantConfig.MAIN_PANEL_TITLE;
 
@@ -19,7 +19,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 /**
  * @author Duanran 2019/12/16
@@ -27,16 +26,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ControlPanel extends JFrame {
 
-  private final DisplayHandler displayHandler;
-  private final OutputConfig outputConfig;
-  private final ScriptRunner scriptRunner;
-  private final ScriptManager scriptManager;
-  private final DisplayScreen screen;
-  private final Controller controller;
-  private final GuiConfig guiConfig;
-
   private final ControlBox<MainScript> controlBox;
-
+  private final Controller controller;
+  private final DisplayHandler displayHandler;
+  private final GuiConfig guiConfig;
+  private final OutputConfig outputConfig;
+  private final DisplayScreen screen;
+  private final ScriptManager scriptManager;
+  private final ScriptRunner scriptRunner;
   private JPanel extraPanel;
 
   public ControlPanel(DisplayHandler displayHandler,
@@ -50,8 +47,18 @@ public class ControlPanel extends JFrame {
     this.guiConfig = guiConfig;
     this.screen = screen;
     this.scriptManager = scriptManager;
-
     this.controlBox = new ControlBox<>(this::selectScript, "选择执行脚本");
+  }
+
+  private void selectScript(MainScript mainScript) {
+    scriptRunner.stop();
+    if (extraPanel != null) {
+      this.remove(extraPanel);
+    }
+    if (mainScript == null) {
+      return;
+    }
+    scriptRunner.run(mainScript);
   }
 
   @SneakyThrows
@@ -71,27 +78,33 @@ public class ControlPanel extends JFrame {
   }
 
   @SneakyThrows
-  private void addScriptSelection() {
-    scriptManager.getMainScripts().values().forEach(this::addScript);
+  private void addDisplayScreen() {
+    GridBagConstraints bagConstraints = new GridBagConstraints();
+    bagConstraints.fill = GridBagConstraints.NONE;
+    bagConstraints.anchor = GridBagConstraints.EAST;
+    bagConstraints.gridheight = 12;
+    bagConstraints.gridwidth = 1;
+    bagConstraints.gridx = 0;
+    bagConstraints.gridy = 0;
+    this.setVisible(true);
+  }
+
+  @SneakyThrows
+  private void addVideoSelection() {
     GridBagConstraints bagConstraints = new GridBagConstraints();
     bagConstraints.fill = GridBagConstraints.BOTH;
     bagConstraints.anchor = GridBagConstraints.WEST;
     bagConstraints.gridheight = 1;
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
-    bagConstraints.gridy = 2;
+    bagConstraints.gridy = 0;
+    List<String> cameraList = SystemUtil.getCameraList();
+    ControlBox<String> controlBox = new ControlBox<>(
+        this::selectVideo, "选择视频源");
+    for (String name : cameraList) {
+      controlBox.addItem(name, name);
+    }
     this.add(controlBox, bagConstraints);
-  }
-
-  private void selectScript(MainScript mainScript) {
-    scriptRunner.stop();
-    if (extraPanel != null) {
-      this.remove(extraPanel);
-    }
-    if (mainScript == null) {
-      return;
-    }
-    scriptRunner.run(mainScript);
   }
 
   @SneakyThrows
@@ -113,27 +126,15 @@ public class ControlPanel extends JFrame {
   }
 
   @SneakyThrows
-  private void selectOutputPort(String portName) {
-    if (portName != null) {
-      this.controller.setProtocol(new EasyConProtocol(portName, outputConfig.getBaudRate()));
-    }
-  }
-
-  @SneakyThrows
-  private void addVideoSelection() {
+  private void addScriptSelection() {
+    scriptManager.getMainScripts().values().forEach(this::addScript);
     GridBagConstraints bagConstraints = new GridBagConstraints();
     bagConstraints.fill = GridBagConstraints.BOTH;
     bagConstraints.anchor = GridBagConstraints.WEST;
     bagConstraints.gridheight = 1;
     bagConstraints.gridwidth = 1;
     bagConstraints.gridx = 1;
-    bagConstraints.gridy = 0;
-    List<String> cameraList = SystemUtil.getCameraList();
-    ControlBox<String> controlBox = new ControlBox<>(
-        this::selectVideo, "选择视频源");
-    for (String name : cameraList) {
-      controlBox.addItem(name, name);
-    }
+    bagConstraints.gridy = 2;
     this.add(controlBox, bagConstraints);
   }
 
@@ -143,16 +144,10 @@ public class ControlPanel extends JFrame {
   }
 
   @SneakyThrows
-  private void addDisplayScreen() {
-    GridBagConstraints bagConstraints = new GridBagConstraints();
-    bagConstraints.fill = GridBagConstraints.NONE;
-    bagConstraints.anchor = GridBagConstraints.EAST;
-    bagConstraints.gridheight = 12;
-    bagConstraints.gridwidth = 1;
-    bagConstraints.gridx = 0;
-    bagConstraints.gridy = 0;
-    this.add(screen, bagConstraints);
-    this.setVisible(true);
+  private void selectOutputPort(String portName) {
+    if (portName != null) {
+      this.controller.setProtocol(new EasyConProtocol(portName, outputConfig.getBaudRate()));
+    }
   }
 
   public void addScript(MainScript mainScript) {

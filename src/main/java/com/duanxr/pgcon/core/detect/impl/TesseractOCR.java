@@ -14,6 +14,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.math3.util.Pair;
@@ -143,5 +145,11 @@ public class TesseractOCR implements OCR {
     }
     tessBaseAPI.SetPageSegMode(DEFAULT_PAGE_SEG_MODE);
     apiMap.put(method, tessBaseAPI);
+  }
+
+  @PreDestroy
+  public void close() {
+    defaultApiMap.values().forEach(TessBaseAPI::close);
+    specialApiMap.asMap().values().forEach(TessBaseAPI::close);
   }
 }

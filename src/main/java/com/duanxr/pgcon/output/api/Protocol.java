@@ -9,6 +9,7 @@ import lombok.SneakyThrows;
  * @author Duanran 2019/12/17
  */
 public interface Protocol {
+
   void hold(ButtonAction buttonType);
 
   void release(ButtonAction buttonType);
@@ -17,4 +18,5 @@ public interface Protocol {
 
   void clear();
 
+  String getName();
 }

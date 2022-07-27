@@ -22,6 +22,8 @@ public class InputConfig {
 
   private Integer frameInterval;
 
+  private Integer renderInterval;
+
   private Integer cacheSize;
 
 }

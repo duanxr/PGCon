@@ -7,6 +7,7 @@ import com.duanxr.pgcon.output.api.Protocol;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import java.util.concurrent.ExecutorService;
+import javax.annotation.PreDestroy;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class Controller {
-
   private final OutputConfig outputConfig;
   private final BiMap<StickAction, Integer> stickMap;
   private final BiMap<ButtonAction, Integer> buttonMap;
@@ -144,7 +144,7 @@ public class Controller {
   private int getDefaultPressTime() {
     return outputConfig.getPressTime();
   }
-
+  @PreDestroy
   @SneakyThrows
   public void clear() {
     if (protocol != null) {

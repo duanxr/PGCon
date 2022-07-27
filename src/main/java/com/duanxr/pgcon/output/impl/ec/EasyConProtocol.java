@@ -71,6 +71,11 @@ public class EasyConProtocol implements Protocol {
     serialPort.sendCommand(getDefault());
   }
 
+  @Override
+  public String getName() {
+    return "EasyCon(推荐)";
+  }
+
   private byte[] getDefault() {
     return new byte[]{0, 0, 8, -128, -128, -128, -128};
   }

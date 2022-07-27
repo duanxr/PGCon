@@ -16,8 +16,8 @@ public class OutputConfig {
 
   private Integer baudRate;
 
-  public Integer pressTime;
+  private Integer pressTime;
 
-  public Integer captureTime;
+  private Integer captureTime;
 
 }

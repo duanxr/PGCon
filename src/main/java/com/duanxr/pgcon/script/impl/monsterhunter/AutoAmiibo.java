@@ -37,7 +37,7 @@ public class AutoAmiibo extends ScriptEngine implements MainScript {
 
   @Override
   public String getScriptName() {
-    return "MHR auto amiibo";
+    return "MHR auto amiibo(CHS.Ver)";
   }
 
   @Override
