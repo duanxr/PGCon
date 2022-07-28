@@ -12,41 +12,41 @@ public class Test extends ScriptEngine implements MainScript {
 
   @Override
   public void execute() {
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(150);
-    controller.press(ButtonAction.B);
+    press(B);
     sleep(150);
-    controller.press(ButtonAction.X);
+    press(X);
     sleep(150);
-    controller.press(ButtonAction.Y);
+    press(Y);
     sleep(150);
-    controller.press(ButtonAction.L);
+    press(L);
     sleep(150);
-    controller.press(ButtonAction.R);
+    press(R);
     sleep(150);
-    controller.press(ButtonAction.ZL);
+    press(ZL);
     sleep(150);
-    controller.press(ButtonAction.ZR);
+    press(ZR);
     sleep(150);
-    controller.press(ButtonAction.L_STICK);
+    press(L_STICK);
     sleep(150);
-    controller.press(ButtonAction.R_STICK);
+    press(R_STICK);
     sleep(150);
-    controller.press(ButtonAction.D_TOP);
+    press(D_TOP);
     sleep(150);
-    controller.press(ButtonAction.D_BOTTOM);
+    press(D_BOTTOM);
     sleep(150);
-    controller.press(ButtonAction.D_RIGHT);
+    press(D_RIGHT);
     sleep(150);
-    controller.press(ButtonAction.D_LEFT);
+    press(D_LEFT);
     sleep(150);
-    controller.press(ButtonAction.PLUS);
+    press(PLUS);
     sleep(150);
-    controller.press(ButtonAction.MINUS);
+    press(MINUS);
     sleep(150);
-    controller.press(ButtonAction.CAPTURE);
+    press(CAPTURE);
     sleep(5000);
-    controller.press(ButtonAction.HOME);
+    press(HOME);
   }
 
   @Override

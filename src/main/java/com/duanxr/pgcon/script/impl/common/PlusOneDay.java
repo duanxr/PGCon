@@ -69,58 +69,58 @@ public class PlusOneDay extends ScriptEngine implements Script {
   }
 
   private void toMainMenu() {
-    until(() -> imageCompare.detect(MAIN_MENU),
+    until(() -> imageCompare(MAIN_MENU),
         input -> input.getSimilarity() > 0.8,
         () -> {
-          controller.press(ButtonAction.HOME);
+          press(HOME);
           sleep(1000);
         });
   }
 
   private void toDateMenu() {
-    controller.press(ButtonAction.D_BOTTOM);
+    press(D_BOTTOM);
     sleep(150);
-    controller.press(ButtonAction.D_RIGHT);
+    press(D_RIGHT);
     sleep(150);
-    controller.press(ButtonAction.D_RIGHT);
+    press(D_RIGHT);
     sleep(150);
-    controller.press(ButtonAction.D_RIGHT);
+    press(D_RIGHT);
     sleep(150);
-    controller.press(ButtonAction.D_RIGHT);
+    press(D_RIGHT);
     sleep(150);
-    controller.press(ButtonAction.D_RIGHT);
+    press(D_RIGHT);
     sleep(150);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(1000);
-    controller.hold(ButtonAction.D_BOTTOM);
+    hold(D_BOTTOM);
     sleep(1300);
-    controller.release(ButtonAction.D_BOTTOM);
+    release(D_BOTTOM);
     sleep(30);
-    controller.press(ButtonAction.D_RIGHT);
+    press(D_RIGHT);
     sleep(200);
-    controller.hold(ButtonAction.D_BOTTOM);
+    hold(D_BOTTOM);
     sleep(700);
-    controller.release(ButtonAction.D_BOTTOM);
+    release(D_BOTTOM);
     sleep(100);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(500);
   }
 
   private void checkIfDateIsSyncByInternet() {
-    until(() -> ocr.detect(ENABLE_TIME_SYNC),
+    until(() -> ocr(ENABLE_TIME_SYNC),
         input -> !"开启".equals(input.getTextWithoutSpace()),
         () -> {
-          controller.press(ButtonAction.A);
+          press(A);
           sleep(500);
         });
   }
 
   private void toDateSetting() {
-    controller.press(ButtonAction.D_BOTTOM);
+    press(D_BOTTOM);
     sleep(150);
-    controller.press(ButtonAction.D_BOTTOM);
+    press(D_BOTTOM);
     sleep(150);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(150);
   }
 
@@ -131,40 +131,40 @@ public class PlusOneDay extends ScriptEngine implements Script {
     LocalDate currentDay = LocalDate.of(year.intValue(), month.intValue(), day.intValue());
     LocalDate nextDay = currentDay.plusDays(1);
     if (currentDay.getYear() != nextDay.getYear()) {
-      controller.press(ButtonAction.D_TOP);
+      press(D_TOP);
       sleep(300);
     }
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(150);
     if (currentDay.getMonthValue() != nextDay.getMonthValue()) {
-      controller.press(ButtonAction.D_TOP);
+      press(D_TOP);
       sleep(300);
     }
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(150);
     if (currentDay.getDayOfMonth() != nextDay.getDayOfMonth()) {
       until(() -> ocrNumber(TIME_DAY, 2),
           input -> input == nextDay.getDayOfMonth(),
           () -> {
-            controller.press(ButtonAction.D_TOP);
+            press(D_TOP);
             sleep(800);
           });
     }
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(150);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(150);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(150);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(150);
     log.info("new date is: {}", nextDay);
   }
 
   private void backToGame() {
-    controller.press(ButtonAction.HOME);
+    press(HOME);
     sleep(1000);
-    controller.press(ButtonAction.HOME);
+    press(HOME);
     sleep(1000);
   }
 

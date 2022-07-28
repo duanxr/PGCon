@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * @author 段然 2022/7/25
+ * @author  2022/7/25
  */
 @Slf4j
 @Component
@@ -51,36 +51,36 @@ public class AutoAmiibo extends ScriptEngine implements MainScript {
   }
 
   private void checkIfAmiiboUsed() {
-    if (containAmiibo(ocr.detect(AMIIBO_USED))) {
-      controller.press(ButtonAction.B);
+    if (containAmiibo(ocr(AMIIBO_USED))) {
+      press(ButtonAction.B);
       sleep(150);
-      controller.press(ButtonAction.D_LEFT);
+      press(ButtonAction.D_LEFT);
       sleep(150);
-      controller.press(ButtonAction.A);
+      press(ButtonAction.A);
       sleep(150);
-      controller.press(ButtonAction.A);
+      press(ButtonAction.A);
       sleep(150);
     }
   }
 
   private void checkIfInAmiiboReading() {
-    until(() -> ocr.detect(AMIIBO_READ),
+    until(() -> ocr(AMIIBO_READ),
         this::containAmiibo,
         () -> {
-          controller.press(ButtonAction.A);
+          press(ButtonAction.A);
           sleep(150);
         });
   }
 
   private void checkIfAmiiboSuccess() {
-    until(() -> ocr.detect(AMIIBO_SUCCESS),
+    until(() -> ocr(AMIIBO_SUCCESS),
         this::containAmiibo,
         () -> sleep(150));
   }
 
   private void lottery() {
     for (int i = 0; i < 12; i++) {
-      controller.press(ButtonAction.A);
+      press(ButtonAction.A);
       sleep(100);
     }
   }

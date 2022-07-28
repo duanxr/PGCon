@@ -354,146 +354,146 @@ public class AutoCharm extends ScriptEngine implements MainScript {
   }
 
   private void launchGame() {
-    until(() -> imageCompare.detect(MHR_IN_GAME_MENU),
+    until(() -> imageCompare(MHR_IN_GAME_MENU),
         input -> input.getSimilarity() > MHR_IN_GAME_MENU_THRESHOLD,
         () -> {
-          controller.press(ButtonAction.A);
+          press(A);
           sleep(150);
         });
   }
 
   private void walkToShop() {
-    controller.clear();
+    clear();
     sleep(1000);
-    controller.hold(StickAction.L_TOP);
+    hold(StickAction.L_TOP);
     sleep(5350);
-    controller.hold(StickAction.L_LEFT);
+    hold(StickAction.L_LEFT);
     sleep(1300);
-    controller.release(StickAction.L_LEFT);
+    release(StickAction.L_LEFT);
 
   }
 
   private void toMeldingPot() {
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(1500);
-    until(() -> ocr.detect(MELDING_POT_SELECTION),
+    until(() -> ocr(MELDING_POT_SELECTION),
         input -> input.getTextWithoutSpace().contains(MELDING_POT_WHITELIST),
         () -> {
-          controller.press(ButtonAction.D_TOP);
+          press(D_TOP);
           sleep(350);
         });
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(500);
   }
 
   private void fillPot() {
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.D_BOTTOM);
+    press(D_BOTTOM);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.D_TOP);
+    press(D_TOP);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.D_LEFT);
+    press(D_LEFT);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
   }
 
   private boolean checkCharm() {
-    controller.press(ButtonAction.D_TOP);
+    press(D_TOP);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(2000);
     AtomicBoolean find = new AtomicBoolean(false);
-    until(() -> ocr.detect(MELDING_POT_DONE),
+    until(() -> ocr(MELDING_POT_DONE),
         input -> !input.getTextWithoutSpace().contains(MELDING_POT_WHITELIST),
         () -> {
           find.set(charmAnalyze());
-          controller.press(ButtonAction.A);
+          press(A);
           sleep(200);
         });
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     return find.get();
   }
 
   private void abortGame() {
     toMainMenu();
-    controller.press(ButtonAction.X);
+    press(X);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
   }
 
   private void getAllCHARM_S() {
     sleep(1000);
-    controller.press(ButtonAction.D_TOP);
+    press(D_TOP);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
   }
 
   private void backToGameMenu() {
-    until(() -> imageCompare.detect(MHR_IN_GAME_MENU),
+    until(() -> imageCompare(MHR_IN_GAME_MENU),
         input -> input.getSimilarity() > MHR_IN_GAME_MENU_THRESHOLD,
         () -> {
-          controller.press(ButtonAction.B);
+          press(B);
           sleep(150);
         });
   }
 
   private void saveAndExit() {
-    controller.press(ButtonAction.PLUS);
+    press(PLUS);
     sleep(500);
-    controller.press(ButtonAction.D_LEFT);
+    press(D_LEFT);
     sleep(150);
-    controller.press(ButtonAction.D_TOP);
+    press(D_TOP);
     sleep(150);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
-    controller.press(ButtonAction.A);
+    press(A);
     sleep(200);
   }
 
   @SneakyThrows
   private boolean charmAnalyze() {
     boolean isTarget = false;
-    Future<OCR.Result> rareF = async(() -> ocr.detect(CHARM_RARE));
-    Future<OCR.Result> level1F = async(() -> ocr.detect(CHARM_LEVEL_1));
+    Future<OCR.Result> rareF = async(() -> ocr(CHARM_RARE));
+    Future<OCR.Result> level1F = async(() -> ocr(CHARM_LEVEL_1));
     Future<String> skill1F = async(() -> detectSkill(CHARM_SKILL_1));
-    Future<OCR.Result> level2F = async(() -> ocr.detect(CHARM_LEVEL_2));
+    Future<OCR.Result> level2F = async(() -> ocr(CHARM_LEVEL_2));
     Future<String> skill2F = async(() -> detectSkill(CHARM_SKILL_2));
-    Future<ImageCompare.Result> s0o1F = async(() -> imageCompare.detect(CHARM_S0O1));
-    Future<ImageCompare.Result> s1o1F = async(() -> imageCompare.detect(CHARM_S1O1));
-    Future<ImageCompare.Result> s2o1F = async(() -> imageCompare.detect(CHARM_S2O1));
-    Future<ImageCompare.Result> s3o1F = async(() -> imageCompare.detect(CHARM_S3O1));
-    Future<ImageCompare.Result> s4o1F = async(() -> imageCompare.detect(CHARM_S4O1));
-    Future<ImageCompare.Result> s0o2F = async(() -> imageCompare.detect(CHARM_S0O2));
-    Future<ImageCompare.Result> s1o2F = async(() -> imageCompare.detect(CHARM_S1O2));
-    Future<ImageCompare.Result> s2o2F = async(() -> imageCompare.detect(CHARM_S2O2));
-    Future<ImageCompare.Result> s3o2F = async(() -> imageCompare.detect(CHARM_S3O2));
-    Future<ImageCompare.Result> s4o2F = async(() -> imageCompare.detect(CHARM_S4O2));
-    Future<ImageCompare.Result> s0o3F = async(() -> imageCompare.detect(CHARM_S0O3));
-    Future<ImageCompare.Result> s1o3F = async(() -> imageCompare.detect(CHARM_S1O3));
-    Future<ImageCompare.Result> s2o3F = async(() -> imageCompare.detect(CHARM_S2O3));
-    Future<ImageCompare.Result> s3o3F = async(() -> imageCompare.detect(CHARM_S3O3));
-    Future<ImageCompare.Result> s4o3F = async(() -> imageCompare.detect(CHARM_S4O3));
+    Future<ImageCompare.Result> s0o1F = async(() -> imageCompare(CHARM_S0O1));
+    Future<ImageCompare.Result> s1o1F = async(() -> imageCompare(CHARM_S1O1));
+    Future<ImageCompare.Result> s2o1F = async(() -> imageCompare(CHARM_S2O1));
+    Future<ImageCompare.Result> s3o1F = async(() -> imageCompare(CHARM_S3O1));
+    Future<ImageCompare.Result> s4o1F = async(() -> imageCompare(CHARM_S4O1));
+    Future<ImageCompare.Result> s0o2F = async(() -> imageCompare(CHARM_S0O2));
+    Future<ImageCompare.Result> s1o2F = async(() -> imageCompare(CHARM_S1O2));
+    Future<ImageCompare.Result> s2o2F = async(() -> imageCompare(CHARM_S2O2));
+    Future<ImageCompare.Result> s3o2F = async(() -> imageCompare(CHARM_S3O2));
+    Future<ImageCompare.Result> s4o2F = async(() -> imageCompare(CHARM_S4O2));
+    Future<ImageCompare.Result> s0o3F = async(() -> imageCompare(CHARM_S0O3));
+    Future<ImageCompare.Result> s1o3F = async(() -> imageCompare(CHARM_S1O3));
+    Future<ImageCompare.Result> s2o3F = async(() -> imageCompare(CHARM_S2O3));
+    Future<ImageCompare.Result> s3o3F = async(() -> imageCompare(CHARM_S3O3));
+    Future<ImageCompare.Result> s4o3F = async(() -> imageCompare(CHARM_S4O3));
     String rare = rareF.get().getTextAsUpperCase();
     rare = rare.startsWith("RARE") ? rare.substring(4) : "?";
     Long level1 = level1F.get().getTextAsNumber();
@@ -515,27 +515,26 @@ public class AutoCharm extends ScriptEngine implements MainScript {
     isTarget = checkSkill(skill1, level1, skill2, level2) && checkGem(o1, o2, o3);
     String result = String.format("R%s %s%s %s%s S%s%s%s", rare, skill1, level1, skill2, level2, o1,
         o2, o3);
-    log.info("译验丁真,鉴定为:{}", result);
-    //log.info("Identified as {}", result);
+    log.info("Identified as {}", result);
     if (isTarget) {
-      log.info("This one is that we are looking for, let's lock it.");
-      controller.press(ButtonAction.PLUS);
+      log.info("This charm is good, let's lock it.");
+      press(PLUS);
       sleep(200);
     }
     return isTarget;
   }
 
   private void toMainMenu() {
-    until(() -> imageCompare.detect(MAIN_MENU),
+    until(() -> imageCompare(MAIN_MENU),
         input -> input.getSimilarity() > 0.8,
         () -> {
-          controller.press(ButtonAction.HOME);
+          press(HOME);
           sleep(1000);
         });
   }
 
   private String detectSkill(OCR.Param param) {
-    OCR.Result until = until(() -> ocr.detect(param),
+    OCR.Result until = until(() -> ocr(param),
         input -> {
           String text = input.getTextWithoutSpace();
           boolean b = SKILLS.containsKey(text);
