@@ -9,6 +9,6 @@ import javafx.beans.property.Property;
  */
 public interface DynamicScript extends MainScript {
 
-  Serializable registerConfigBean();
+  Object registerConfigBean();
 
 }

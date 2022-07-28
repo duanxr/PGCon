@@ -1,5 +1,7 @@
 package com.duanxr.pgcon.script.impl.monsterhunter;
 
+import com.dooapp.fxform.annotation.FormFactory;
+import com.dooapp.fxform.view.factory.impl.TextAreaFactory;
 import com.duanxr.pgcon.algo.detect.api.ImageCompare;
 import com.duanxr.pgcon.algo.detect.api.OCR;
 import com.duanxr.pgcon.algo.detect.api.OCR.ApiConfig;
@@ -8,6 +10,7 @@ import com.duanxr.pgcon.algo.detect.api.OCR.Param;
 import com.duanxr.pgcon.algo.detect.model.Area;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.DynamicScript;
+import com.duanxr.pgcon.script.component.ConfigBeanExample;
 import com.duanxr.pgcon.script.component.ScriptEngine;
 import com.google.common.collect.Maps;
 import java.io.Serializable;
@@ -20,7 +23,14 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -589,33 +599,29 @@ public class AutoCharm extends ScriptEngine implements DynamicScript {
   }
 
   @Override
-  public Serializable registerConfigBean() {
+  public Object registerConfigBean() {
     return config;
   }
 
   @Data
-  public static class Config implements Serializable {
+  public static class Config {
 
-    private SimpleStringProperty targetCharms = new SimpleStringProperty("""
-                    攻击2
-                    看破2
-                    超会心2
-                    弱点特效2
-                    提供1
-                    翔虫使2
-                    击晕术2
-        """);
-    private SimpleStringProperty targetSlots = new SimpleStringProperty("""
-         220
-         400
-        """);
+    private IntegerProperty How_Many_Pot_To_Change = new SimpleIntegerProperty(10);
+
+    @FormFactory(TextAreaFactory.class)
+    private StringProperty Target_Skills = new SimpleStringProperty();
+
+    @FormFactory(TextAreaFactory.class)
+    private StringProperty Target_Slots = new SimpleStringProperty();
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SkillConfig {
-      private IntegerProperty level;
+
+      private IntegerProperty level = new SimpleIntegerProperty();
+
     }
 
   }
