@@ -1,6 +1,6 @@
-package com.duanxr.pgcon.core.detect.api;
+package com.duanxr.pgcon.algo.detect.api;
 
-import com.duanxr.pgcon.core.detect.model.Area;
+import com.duanxr.pgcon.algo.detect.model.Area;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;

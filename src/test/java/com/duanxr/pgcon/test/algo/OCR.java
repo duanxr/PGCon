@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.test.algo;
 
-import com.duanxr.pgcon.util.ImageUtil;
+import com.duanxr.pgcon.util.ImageConvertUtil;
 import java.io.File;
 import lombok.extern.slf4j.Slf4j;
 import nu.pattern.OpenCV;
@@ -27,7 +27,7 @@ public class OCR {
     }
     String path ="C:\\tmp\\PGCon15701522213659889941.png";
     Mat imread = Imgcodecs.imread(path, Imgcodecs.IMREAD_COLOR);
-    tessBaseAPI.SetImage(ImageUtil.matToPix(imread));
+    tessBaseAPI.SetImage(ImageConvertUtil.matToPix(imread));
     tessBaseAPI.SetPageSegMode(tesseract.PSM_SINGLE_LINE);
     BytePointer outText = tessBaseAPI.GetUTF8Text();
     String text = outText.getString();

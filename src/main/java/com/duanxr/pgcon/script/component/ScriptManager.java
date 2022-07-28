@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.script.component;
 
-import com.duanxr.pgcon.core.detect.api.ImageCompare;
-import com.duanxr.pgcon.core.detect.api.OCR;
+import com.duanxr.pgcon.algo.detect.api.ImageCompare;
+import com.duanxr.pgcon.algo.detect.api.OCR;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.api.Script;

@@ -1,6 +1,4 @@
-package com.duanxr.pgcon.core.detect.api;
-
-import java.util.List;
+package com.duanxr.pgcon.algo.detect.api;
 
 /**
  * @author 段然 2022/7/25

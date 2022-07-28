@@ -21,7 +21,7 @@ public class TempFileUtil {
   }
 
   public static void saveTempImage(Mat m) {
-    saveTempImage(ImageUtil.matToBufferedImage(m));
+    saveTempImage(ImageConvertUtil.matToBufferedImage(m));
   }
 
 

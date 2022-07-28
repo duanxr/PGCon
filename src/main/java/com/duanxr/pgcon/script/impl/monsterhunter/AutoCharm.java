@@ -1,11 +1,11 @@
 package com.duanxr.pgcon.script.impl.monsterhunter;
 
-import com.duanxr.pgcon.core.detect.api.ImageCompare;
-import com.duanxr.pgcon.core.detect.api.OCR;
-import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
-import com.duanxr.pgcon.core.detect.api.OCR.Method;
-import com.duanxr.pgcon.core.detect.api.OCR.Param;
-import com.duanxr.pgcon.core.detect.model.Area;
+import com.duanxr.pgcon.algo.detect.api.ImageCompare;
+import com.duanxr.pgcon.algo.detect.api.OCR;
+import com.duanxr.pgcon.algo.detect.api.OCR.ApiConfig;
+import com.duanxr.pgcon.algo.detect.api.OCR.Method;
+import com.duanxr.pgcon.algo.detect.api.OCR.Param;
+import com.duanxr.pgcon.algo.detect.model.Area;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.MainScript;

@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.core.fitting;
+package com.duanxr.pgcon.algo.fitting;
 
 /**
  * @author 段然 2021/12/10

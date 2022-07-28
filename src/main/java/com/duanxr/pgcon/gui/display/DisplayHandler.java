@@ -1,8 +1,8 @@
-package com.duanxr.pgcon.gui.old;
+package com.duanxr.pgcon.gui.display;
 
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.event.DrawEvent;
+import com.duanxr.pgcon.gui.display.canvas.DrawEvent;
 import com.duanxr.pgcon.gui.display.canvas.api.Drawable;
 import com.duanxr.pgcon.input.component.FrameManager;
 import com.duanxr.pgcon.input.component.FrameManager.CachedFrame;
@@ -15,14 +15,11 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -53,8 +50,7 @@ public class DisplayHandler {
   private Consumer<BufferedImage> screen;
 
   @Autowired
-  public DisplayHandler(DisplayScreen displayScreen,
-      InputConfig inputConfig, GuiConfig guiConfig, ExecutorService executorService,
+  public DisplayHandler(InputConfig inputConfig, GuiConfig guiConfig, ExecutorService executorService,
       AtomicBoolean frozenScreen, FrameManager frameManager) {
     this.guiConfig = guiConfig;
     this.executorService = executorService;

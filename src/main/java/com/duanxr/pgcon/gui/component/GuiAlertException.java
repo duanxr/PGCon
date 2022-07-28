@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.gui;
+package com.duanxr.pgcon.gui.component;
 
 /**
  * @author 段然 2022/7/28

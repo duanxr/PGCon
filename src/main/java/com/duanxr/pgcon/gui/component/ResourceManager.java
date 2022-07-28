@@ -1,13 +1,10 @@
-package com.duanxr.pgcon.core;
+package com.duanxr.pgcon.gui.component;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
-import javax.imageio.ImageIO;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.opencv.core.Mat;

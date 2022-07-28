@@ -1,11 +1,11 @@
-package com.duanxr.pgcon.core.detect.impl;
+package com.duanxr.pgcon.algo.detect.impl;
 
-import com.duanxr.pgcon.core.ResourceManager;
+import com.duanxr.pgcon.gui.component.ResourceManager;
 import com.duanxr.pgcon.input.component.FrameManager;
 import com.duanxr.pgcon.input.component.FrameManager.CachedFrame;
-import com.duanxr.pgcon.core.detect.api.ImageCompare;
-import com.duanxr.pgcon.core.detect.model.Area;
-import com.duanxr.pgcon.util.ImageUtil;
+import com.duanxr.pgcon.algo.detect.api.ImageCompare;
+import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.util.ImageConvertUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -128,7 +128,7 @@ public class OpenCvImageCompare implements ImageCompare {
 
   private Mat getTarget(CachedFrame cachedFrame, Area area) {
     Mat originMat = cachedFrame.getMat();
-    return area == null ? originMat : ImageUtil.splitMat(originMat, area);
+    return area == null ? originMat : ImageConvertUtil.splitMat(originMat, area);
   }
 
 

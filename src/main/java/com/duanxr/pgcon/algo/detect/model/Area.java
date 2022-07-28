@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.core.detect.model;
+package com.duanxr.pgcon.algo.detect.model;
 
 import lombok.Data;
 

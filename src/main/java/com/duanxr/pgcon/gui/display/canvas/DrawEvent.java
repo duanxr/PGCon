@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.event;
+package com.duanxr.pgcon.gui.display.canvas;
 
 import com.duanxr.pgcon.gui.display.canvas.api.Drawable;
 import lombok.AllArgsConstructor;

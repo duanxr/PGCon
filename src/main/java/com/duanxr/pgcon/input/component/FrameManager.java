@@ -1,20 +1,11 @@
 package com.duanxr.pgcon.input.component;
 
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.event.FrameEvent;
-import com.duanxr.pgcon.util.ImageUtil;
+import com.duanxr.pgcon.util.ImageConvertUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import com.google.common.eventbus.Subscribe;
 import java.awt.image.BufferedImage;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
@@ -34,7 +25,7 @@ public class FrameManager {
   @Autowired
   public FrameManager(InputConfig inputConfig) {
     this.matCache = Caffeine.newBuilder().maximumSize(inputConfig.getCacheSize())
-        .expireAfterAccess(30, TimeUnit.SECONDS).build(ImageUtil::bufferedImageToMat);
+        .expireAfterAccess(30, TimeUnit.SECONDS).build(ImageConvertUtil::bufferedImageToMat);
   }
 
   public void setFrame(BufferedImage frame) {

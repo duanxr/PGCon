@@ -5,6 +5,7 @@ import boofcv.io.wrapper.DefaultMediaManager;
 import boofcv.struct.image.GrayF32;
 import boofcv.struct.image.ImageType;
 import com.duanxr.pgcon.config.GuiConfig;
+import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.input.api.ImageInput;
 import com.github.sarxos.webcam.Webcam;
 import java.awt.image.BufferedImage;
@@ -18,18 +19,18 @@ import java.util.stream.Collectors;
 public class CameraImageInput implements ImageInput<BufferedImage> {
   private SimpleImageSequence<GrayF32> camera;
 
-  public CameraImageInput(String device, GuiConfig guiConfig) {
-    camera = DefaultMediaManager.INSTANCE.openCamera(device, guiConfig.getWidth(),
-        guiConfig.getHeight(), ImageType.single(GrayF32.class));
+  public CameraImageInput(String device, InputConfig inputConfig) {
+    camera = DefaultMediaManager.INSTANCE.openCamera(device, inputConfig.getWidth(),
+        inputConfig.getHeight(), ImageType.single(GrayF32.class));
     camera.setLoop(false);
   }
 
   @Override
   public BufferedImage read() {
-    if (camera == null || !camera.hasNext()) {
-      return null;
+    if (camera != null && camera.hasNext()) {
+      return camera.getGuiImage();
     }
-    return camera.getGuiImage();
+    return null;
   }
 
   public void close() {

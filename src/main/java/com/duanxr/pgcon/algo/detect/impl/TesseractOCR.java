@@ -1,12 +1,12 @@
-package com.duanxr.pgcon.core.detect.impl;
+package com.duanxr.pgcon.algo.detect.impl;
 
 
-import com.duanxr.pgcon.core.ResourceManager;
+import com.duanxr.pgcon.gui.component.ResourceManager;
 import com.duanxr.pgcon.input.component.FrameManager;
 import com.duanxr.pgcon.input.component.FrameManager.CachedFrame;
-import com.duanxr.pgcon.core.detect.api.OCR;
-import com.duanxr.pgcon.core.detect.model.Area;
-import com.duanxr.pgcon.util.ImageUtil;
+import com.duanxr.pgcon.algo.detect.api.OCR;
+import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.util.ImageConvertUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Strings;
@@ -14,7 +14,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -95,7 +94,7 @@ public class TesseractOCR implements OCR {
 
   private PIX getImage(CachedFrame cachedFrame, Area area) {
     Mat imageMat = splitMat(cachedFrame, area);
-    return ImageUtil.matToPix(imageMat);
+    return ImageConvertUtil.matToPix(imageMat);
   }
 
   private TessBaseAPI getApi(ApiConfig apiConfig) {
@@ -124,7 +123,7 @@ public class TesseractOCR implements OCR {
 
   private Mat splitMat(CachedFrame cachedFrame, Area area) {
     Mat originMat = cachedFrame.getMat();
-    return area == null ? originMat : ImageUtil.splitMat(originMat, area);
+    return area == null ? originMat : ImageConvertUtil.splitMat(originMat, area);
   }
 
   private boolean isDefaultApi(ApiConfig apiConfig) {

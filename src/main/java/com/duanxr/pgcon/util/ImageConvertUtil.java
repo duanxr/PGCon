@@ -1,11 +1,10 @@
 package com.duanxr.pgcon.util;
 
 
-import com.duanxr.pgcon.core.detect.model.Area;
+import com.duanxr.pgcon.algo.detect.model.Area;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
-import jtermios.JTermios.JTermiosInterface.NativeSize;
 import org.bytedeco.leptonica.PIX;
 import org.bytedeco.leptonica.global.lept;
 import org.opencv.core.Core;
@@ -19,7 +18,7 @@ import org.opencv.imgproc.Imgproc;
 /**
  * @author Duanran 2019/12/13
  */
-public class ImageUtil {
+public class ImageConvertUtil {
 
   /**
    * 返回引用而非新的矩阵

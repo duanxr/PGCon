@@ -3,12 +3,11 @@ package com.duanxr.pgcon.gui.controller;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.config.OutputConfig;
-import com.duanxr.pgcon.core.detect.model.Area;
-import com.duanxr.pgcon.event.DrawEvent;
-import com.duanxr.pgcon.gui.GuiAlertException;
+import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.gui.display.canvas.DrawEvent;
+import com.duanxr.pgcon.gui.component.GuiAlertException;
 import com.duanxr.pgcon.gui.display.canvas.impl.Rectangle;
-import com.duanxr.pgcon.gui.old.DisplayHandler;
-import com.duanxr.pgcon.gui.old.DisplayScreen;
+import com.duanxr.pgcon.gui.display.DisplayHandler;
 import com.duanxr.pgcon.input.component.FrameManager;
 import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.input.impl.StaticImageInput;
@@ -28,7 +27,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.embed.swing.SwingFXUtils;
@@ -69,7 +67,6 @@ public class MainPanel {
   private final ProtocolManager protocolManager;
   private final DisplayHandler displayHandler;
   //private final DisplayHandler displayHandler;
-  private final DisplayScreen displayScreen;
   private final AtomicBoolean enableDebug;
   private final FrameManager frameManager;
   private final GuiConfig guiConfig;
@@ -78,6 +75,7 @@ public class MainPanel {
   private final ObjectProperty<Image> screenProperty;
   private final ScriptManager scriptManager;
   private final ScriptRunner scriptRunner;
+  private final InputConfig inputConfig;
   private final double xScale;
   private final double yScale;
   @FXML
@@ -106,18 +104,17 @@ public class MainPanel {
   private ComboBox<String> videoSelection;
 
   public MainPanel(@Qualifier("enableDebug") AtomicBoolean enableDebug,
-      OutputConfig outputConfig, ScriptRunner scriptRunner, ScriptManager scriptManager,
-      DisplayScreen displayScreen, Controller controller, ProtocolManager protocolManager,
+      OutputConfig outputConfig, ScriptRunner scriptRunner, ScriptManager scriptManager, Controller controller, ProtocolManager protocolManager,
       GuiConfig guiConfig,
       DisplayHandler displayHandler, FrameManager frameManager, InputConfig inputConfig) {
     this.enableDebug = enableDebug;
     this.outputConfig = outputConfig;
     this.scriptRunner = scriptRunner;
     this.scriptManager = scriptManager;
-    this.displayScreen = displayScreen;
     this.controller = controller;
     this.protocolManager = protocolManager;
     this.guiConfig = guiConfig;
+    this.inputConfig=inputConfig;
     this.protocols = protocolManager.getProtocolList();
     this.displayHandler = displayHandler;
     this.frameManager = frameManager;
@@ -267,7 +264,7 @@ public class MainPanel {
 
   private void openCam(String camera) {
     if (!Strings.isNullOrEmpty(camera)) {
-      displayHandler.setImageInput(new CameraImageInput(camera, guiConfig));
+      displayHandler.setImageInput(new CameraImageInput(camera, inputConfig));
     }
   }
   private void loadScript(String observable) {
