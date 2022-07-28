@@ -42,7 +42,7 @@
               <items>
                 <AnchorPane maxHeight="740.0" maxWidth="260.0" minHeight="740.0" minWidth="260.0" prefHeight="740.0" prefWidth="260.0" SplitPane.resizableWithParent="false">
                   <children>
-                    <GridPane fx:id="capture" alignment="CENTER" layoutY="10.0" maxWidth="260.0" minWidth="260.0" prefWidth="260.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
+                    <GridPane alignment="CENTER" layoutY="10.0" maxWidth="260.0" minWidth="260.0" prefWidth="260.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
                       <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

@@ -15,7 +15,7 @@ public class ImageResizeUtil {
    * resize cost 95 ms
    */
   @SneakyThrows
-  public static BufferedImage resize0(BufferedImage original, int newWidth, int newHeight) {
+  public static BufferedImage resizeV1(BufferedImage original, int newWidth, int newHeight) {
     return Thumbnails.of(original).size(newWidth, newHeight).asBufferedImage();
   }
 
@@ -28,7 +28,7 @@ public class ImageResizeUtil {
    * <a href="https://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image">...</a>
    */
   @SneakyThrows
-  public static BufferedImage resize1(BufferedImage original, int newWidth, int newHeight) {
+  public static BufferedImage resizeV2(BufferedImage original, int newWidth, int newHeight) {
     int[] rawInput = convertBufferedImageTo1D(original);
     int[] rawOutput = new int[newWidth * newHeight];
     // YD compensates for the x loop by subtracting the width back out

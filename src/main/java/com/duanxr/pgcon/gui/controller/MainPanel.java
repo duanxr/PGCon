@@ -1,6 +1,5 @@
 package com.duanxr.pgcon.gui.controller;
 
-import boofcv.struct.flow.ImageFlow.D;
 import com.dooapp.fxform.FXForm;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
@@ -34,7 +33,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +40,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -55,7 +51,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.SplitPane;
@@ -127,7 +122,7 @@ public class MainPanel {
   @FXML
   private Label scriptConfigLabel;
   @FXML
-  private FlowPane scriptPane;
+  private FlowPane scriptConfig;
   @FXML
   private ComboBox<String> scriptSelection;
   @FXML
@@ -346,9 +341,10 @@ public class MainPanel {
   }
 
   private void initializeCheckBoxes() {
-    debug.selectedProperty()
-        .setValue(Boolean.TRUE.toString().equalsIgnoreCase(CacheUtil.get(CACHE_KEY_ENABLE_DEBUG)));
-    debug.indeterminateProperty().addListener(
+    boolean enableDebugCache = Boolean.TRUE.toString().equalsIgnoreCase(CacheUtil.get(CACHE_KEY_ENABLE_DEBUG));
+    enableDebug.set(enableDebugCache);
+    debug.selectedProperty().setValue(enableDebugCache);
+    debug.selectedProperty().addListener(
         (observable, oldValue, newValue) -> {
           if (newValue != null) {
             CacheUtil.set(CACHE_KEY_ENABLE_DEBUG, newValue.toString());
@@ -377,10 +373,10 @@ public class MainPanel {
       if (script == null) {
         throw new GuiAlertException("cannot find script: " + scriptName);
       }
-      scriptPane.getChildren().clear();
+      scriptConfig.getChildren().clear();
       if (script instanceof DynamicScript) {
         scriptConfigLabel.setVisible(false);
-        scriptPane.getChildren().addAll(dynamicConfigurationMap.get(scriptName));
+        scriptConfig.getChildren().addAll(dynamicConfigurationMap.get(scriptName));
       } else {
         scriptConfigLabel.setVisible(true);
         scriptConfigLabel.setText("The loaded script is not configurable");

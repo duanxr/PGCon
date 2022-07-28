@@ -34,11 +34,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class DisplayHandler {
-
   private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(
       "/img/no_input.bmp");
   private final Map<String, Drawable> drawableHashMap;
-  private final ExecutorService executorService;
   private final long frameInterval;
   private final FrameManager frameManager;
   private final AtomicBoolean frozenScreen;
@@ -46,14 +44,13 @@ public class DisplayHandler {
   private final long renderInterval;
   private Consumer<BufferedImage> canvas;
   @Getter
-  private CameraImageInput imageInput;
-  private Consumer<BufferedImage> screen;
+  private volatile CameraImageInput imageInput;
+  private volatile Consumer<BufferedImage> screen;
 
   @Autowired
   public DisplayHandler(InputConfig inputConfig, GuiConfig guiConfig, ExecutorService executorService,
       AtomicBoolean frozenScreen, FrameManager frameManager) {
     this.guiConfig = guiConfig;
-    this.executorService = executorService;
     this.frozenScreen = frozenScreen;
     this.frameManager = frameManager;
     this.drawableHashMap = new ConcurrentHashMap<>();
@@ -65,7 +62,8 @@ public class DisplayHandler {
   }
 
   /**
-   * readFrame cost 8-30 ms
+   * v1 readFrame cost 8-30 ms,
+   * v2 readFrame cost 8-15 ms
    */
   private void readFrame() {
     while (!Thread.currentThread().isInterrupted()) {
@@ -140,11 +138,14 @@ public class DisplayHandler {
     }
   }
 
+  /**
+   * v1 resize cost 95 ms
+   * v2 resize cost 6 ms, the fastest so far,
+   */
   @Subscribe
   public void repaint(BufferedImage frame) {
     if (screen != null && !frozenScreen.get()) {
-      BufferedImage resize = ImageResizeUtil.resize1(frame, guiConfig.getWidth(),
-          guiConfig.getHeight());
+      BufferedImage resize = ImageResizeUtil.resizeV2(frame, guiConfig.getWidth(), guiConfig.getHeight());
       screen.accept(resize);
     }
   }

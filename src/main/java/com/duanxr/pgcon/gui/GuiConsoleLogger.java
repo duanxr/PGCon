@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.gui.log;
+package com.duanxr.pgcon.gui;
 
 
 import com.duanxr.pgcon.gui.PGConGUI;

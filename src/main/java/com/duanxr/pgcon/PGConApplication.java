@@ -1,8 +1,9 @@
 package com.duanxr.pgcon;
 
+import com.duanxr.pgcon.gui.GuiConsoleLogger.LogViewer;
 import com.duanxr.pgcon.gui.PGConGUI;
+import com.duanxr.pgcon.gui.WebCamAppLauncher;
 import javafx.application.Application;
-import javax.annotation.PreDestroy;
 import nu.pattern.OpenCV;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
