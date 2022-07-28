@@ -1,5 +1,6 @@
 package com.duanxr.pgcon.gui.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dooapp.fxform.FXForm;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
@@ -33,8 +34,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,10 +52,12 @@ import javafx.collections.FXCollections;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
@@ -62,7 +68,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -78,6 +86,7 @@ public class MainPanel {
   private static final String CACHE_KEY_LOG_LEVEL = "CACHE_KEY_LOG_LEVEL";
   private static final String CACHE_KEY_LOG_PAUSE = "CACHE_KEY_LOG_PAUSE";
   private static final String CACHE_KEY_LOG_SHOWTIME = "CACHE_KEY_LOG_SHOWTIME";
+  private static final String CACHE_KEY_SCRIPT_CONFIG_CACHE_PREFIX = "CACHE_KEY_SCRIPT_CONFIG_CACHE_";
   private static final String CACHE_KEY_SELECTED_PORT = "SELECTED_PORT";
   private static final String CACHE_KEY_SELECTED_PROTOCOL = "SELECTED_PROTOCOL";
   private static final String CACHE_KEY_SELECTED_SCRIPT = "SELECTED_SCRIPT";
@@ -89,7 +98,7 @@ public class MainPanel {
   private final ObjectProperty<Image> canvasProperty;
   private final Controller controller;
   private final DisplayHandler displayHandler;
-  private final Map<String, List<Node>> dynamicConfigurationMap;
+  private final Map<String, Node> dynamicConfigurationMap;
   private final AtomicBoolean enableDebug;
   private final FrameManager frameManager;
   private final GuiConfig guiConfig;
@@ -105,7 +114,22 @@ public class MainPanel {
   @FXML
   private ImageView canvas;
   @FXML
+  private Button capture;
+  @FXML
+  private Button clearLog;
+  @FXML
   private AnchorPane console;
+  @FXML
+  private ToggleButton debug;
+  private GuiLogger guiLogger;
+  @FXML
+  private ToggleButton logFollow;
+  @FXML
+  private ComboBox<GuiLogLevel> logLevel;
+  @FXML
+  private ToggleButton logPause;
+  @FXML
+  private ToggleButton logShowTime;
   private Point pointEnd;
   private Point pointStart;
   @FXML
@@ -115,39 +139,21 @@ public class MainPanel {
   @FXML
   private Button run;
   @FXML
-  private Button capture;
-
-  @FXML
-  private Button clearLog;
-  @FXML
   private ImageView screen;
   @FXML
-  private Label scriptConfigLabel;
-  @FXML
-  private FlowPane scriptConfig;
+  private Button scriptConfig;
+  private Scene scriptConfigurationScene;
+  private Stage scriptConfigurationWindow;
   @FXML
   private ComboBox<String> scriptSelection;
   @FXML
   private SplitPane splitPaneX;
   @FXML
   private SplitPane splitPaneY;
-
-  @FXML
-  private ToggleButton logFollow;
-
-  @FXML
-  private ToggleButton logPause;
-
-  @FXML
-  private ToggleButton logShowTime;
-  @FXML
-  private ToggleButton debug;
-  @FXML
-  private ComboBox<GuiLogLevel> logLevel;
   @FXML
   private ComboBox<String> videoSelection;
 
-  private GuiLogger guiLogger;
+  private ScrollPane scriptConfigurationPane;
 
   public MainPanel(@Qualifier("enableDebug") AtomicBoolean enableDebug,
       OutputConfig outputConfig, ScriptRunner scriptRunner, ScriptManager scriptManager,
@@ -190,11 +196,49 @@ public class MainPanel {
         .filter(script -> script instanceof DynamicScript)
         .map(script -> (DynamicScript) script).forEach(script -> {
           Object configBean = script.registerConfigBean();
+          String cacheKey =
+              CACHE_KEY_SCRIPT_CONFIG_CACHE_PREFIX + DigestUtils.sha1Hex(script.getScriptName())
+                  .toUpperCase();
+          String cache = CacheUtil.get(cacheKey);
+          if (!Strings.isNullOrEmpty(cache)) {
+            try {
+              configBean = JSONObject.parseObject(Base64.getDecoder().decode(cache),configBean.getClass());
+            } catch (Exception e) {
+              log.error("", e);
+            }
+          }
           FXForm configForm = new FXForm(configBean);
-          configForm.setVisible(false);
-          //TODO flow
-          dynamicConfigurationMap.put(script.getScriptName(), Collections.singletonList(configForm));
+          configForm.setPrefWidth(320);
+          dynamicConfigurationMap.put(script.getScriptName(), configForm);
         });
+    scriptConfigurationWindow = new Stage();
+    scriptConfigurationWindow.setTitle("Script Configuration");
+    scriptConfigurationWindow.setResizable(false);
+    scriptConfigurationPane = new ScrollPane();
+    scriptConfigurationPane.setPrefHeight(640);
+    scriptConfigurationPane.setMinWidth(350);
+    scriptConfigurationPane.setMaxWidth(640);
+    scriptConfigurationScene = new Scene(scriptConfigurationPane);
+    scriptConfigurationWindow.setScene(scriptConfigurationScene);
+    scriptConfig.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+      if (scriptConfigurationWindow.isShowing()) {
+        String cacheKey = CACHE_KEY_SCRIPT_CONFIG_CACHE_PREFIX + DigestUtils.sha1Hex(
+            scriptSelection.getSelectionModel().getSelectedItem()).toUpperCase();
+        Node content = scriptConfigurationPane.getContent();
+        if (content instanceof FXForm<?>) {
+          try {
+            CacheUtil.set(cacheKey, Base64.getEncoder()
+                .encodeToString(JSONObject.toJSONString(((FXForm) content).getSource()).getBytes(
+                    StandardCharsets.UTF_8)));
+          } catch (Exception e) {
+            log.error("", e);
+          }
+        }
+        scriptConfigurationWindow.hide();
+      } else {
+        scriptConfigurationWindow.show();
+      }
+    });
   }
 
   private void initializeGuiLogViewer() {
@@ -220,6 +264,8 @@ public class MainPanel {
         && (guiLogLevelCache = Arrays.stream(GuiLogLevel.values()).collect(
         Collectors.toMap(Enum::name, Function.identity())).get(selectedItemCache)) != null) {
       logLevel.getSelectionModel().select(guiLogLevelCache);
+    } else {
+      logLevel.getSelectionModel().select(GuiLogLevel.INFO);
     }
     logLevel.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> {
@@ -329,6 +375,7 @@ public class MainPanel {
     if (!Strings.isNullOrEmpty(selectedItemCache) && scriptManager.getMainScripts()
         .containsKey(selectedItemCache)) {
       scriptSelection.getSelectionModel().select(selectedItemCache);
+      loadScript(selectedItemCache);
     }
     scriptSelection.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> {
@@ -355,16 +402,6 @@ public class MainPanel {
         });
   }
 
-  private void capture() {
-    CachedFrame frame = frameManager.get();
-    if (frame != null) {
-      BufferedImage image = frame.getImage();
-      File file = SaveUtil.saveImage(image);
-      guiLogger.info("capture image saved to: {}", file.getAbsolutePath());
-    }
-  }
-
-
   private void openCam(String camera) {
     if (!Strings.isNullOrEmpty(camera)) {
       displayHandler.setImageInput(new CameraImageInput(camera, inputConfig));
@@ -385,18 +422,27 @@ public class MainPanel {
       if (script == null) {
         throw new GuiAlertException("cannot find script: " + scriptName);
       }
-      scriptConfig.getChildren().clear();
+      scriptConfig.setDisable(true);
       if (script instanceof DynamicScript) {
-        scriptConfigLabel.setVisible(false);
-        scriptConfig.getChildren().addAll(dynamicConfigurationMap.get(scriptName));
-      } else {
-        scriptConfigLabel.setVisible(true);
-        scriptConfigLabel.setText("The loaded script is not configurable");
+        Node node = dynamicConfigurationMap.get(scriptName);
+        if (node != null) {
+          scriptConfigurationPane.setContent(node);
+          scriptConfig.setDisable(false);
+        }
       }
     }
   }
 
   private void run() {
+  }
+
+  private void capture() {
+    CachedFrame frame = frameManager.get();
+    if (frame != null) {
+      BufferedImage image = frame.getImage();
+      File file = SaveUtil.saveImage(image);
+      guiLogger.info("capture image saved to: {}", file.getAbsolutePath());
+    }
   }
 
   private void stopScript() {

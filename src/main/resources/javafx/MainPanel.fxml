@@ -78,6 +78,7 @@
                                     <ToggleButton fx:id="logPause" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Pause Logs" GridPane.halignment="CENTER" GridPane.rowIndex="10" GridPane.valignment="CENTER" />
                                     <ToggleButton fx:id="logShowTime" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Show Time" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="12" GridPane.valignment="CENTER" />
                                     <Button fx:id="clearLog" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Clear Logs" GridPane.halignment="CENTER" GridPane.rowIndex="11" GridPane.valignment="CENTER" />
+                                    <Button fx:id="scriptConfig" disable="true" maxHeight="40.0" maxWidth="240.0" minHeight="40.0" minWidth="240.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="240.0" text="Script Configuration" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="CENTER" />
                       </children>
                     </GridPane>
                   </children>
@@ -94,28 +95,7 @@
                         </AnchorPane>
                         <AnchorPane maxHeight="190.0" maxWidth="960.0" minHeight="190.0" minWidth="960.0" prefHeight="190.0" prefWidth="960.0" SplitPane.resizableWithParent="false">
                                        <children>
-                                          <TabPane layoutY="-9.0" prefHeight="190.0" prefWidth="960.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                            <tabs>
-                                              <Tab text="Script Configuration">
-                                                <content>
-                                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                                         <children>
-                                                            <FlowPane fx:id="scriptConfig" layoutX="75.0" prefHeight="161.3445326430206" prefWidth="960.8066918891877" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                            <Label fx:id="scriptConfigLabel" alignment="CENTER" prefHeight="161.3445326430206" prefWidth="960.8066918891877" text="No Script Loaded" textFill="#00000061" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                               <font>
-                                                                  <Font size="24.0" />
-                                                               </font>
-                                                            </Label>
-                                                         </children></AnchorPane>
-                                                </content>
-                                              </Tab>
-                                              <Tab text="Console">
-                                                <content>
-                                                  <AnchorPane fx:id="console" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                                                </content>
-                                              </Tab>
-                                            </tabs>
-                                          </TabPane>
+                                      <AnchorPane fx:id="console" minHeight="0.0" minWidth="0.0" prefHeight="190.0" prefWidth="960.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                        </children></AnchorPane>
                       </items>
                     </SplitPane>

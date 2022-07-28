@@ -6,11 +6,11 @@ import com.duanxr.pgcon.algo.detect.api.OCR.ApiConfig;
 import com.duanxr.pgcon.algo.detect.api.OCR.Method;
 import com.duanxr.pgcon.algo.detect.api.OCR.Param;
 import com.duanxr.pgcon.algo.detect.model.Area;
-import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
-import com.duanxr.pgcon.script.api.MainScript;
+import com.duanxr.pgcon.script.api.DynamicScript;
 import com.duanxr.pgcon.script.component.ScriptEngine;
 import com.google.common.collect.Maps;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,6 +19,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,7 +34,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class AutoCharm extends ScriptEngine implements MainScript {
+public class AutoCharm extends ScriptEngine implements DynamicScript {
 
   private static final String CHARM_LEVEL_WHITELIST = "123456";
   private static final OCR.Param CHARM_LEVEL_1 = Param.builder()
@@ -163,8 +169,9 @@ public class AutoCharm extends ScriptEngine implements MainScript {
           .whitelist(SKILLS_WHITELIST)
           .build())
       .build();
-  private static List<int[]> gemTargets = getGemTargets();
   private static Map<String, Integer> skillTargets = getSkillTargets();
+  private static List<int[]> slotTargets = getSlotTargets();
+  private Config config = new Config();
 
   private static String getSkillsWhitelist() {
     Set<Character> characterSet = new HashSet<>();
@@ -173,11 +180,10 @@ public class AutoCharm extends ScriptEngine implements MainScript {
     }
     StringBuilder sb = new StringBuilder();
     characterSet.stream().sorted().forEach(sb::append);
-    log.info("skills whitelist: {}", sb);
     return sb.toString();
   }
 
-  private static List<int[]> getGemTargets() {
+  private static List<int[]> getSlotTargets() {
     List<int[]> list = new ArrayList<>();
     list.add(new int[]{2, 2, 0});
     list.add(new int[]{4, 0, 0});
@@ -186,13 +192,6 @@ public class AutoCharm extends ScriptEngine implements MainScript {
 
   private static Map<String, Integer> getSkillTargets() {
     Map<String, Integer> target = Maps.newHashMap();
-    target.put("攻击", 2);
-    target.put("看破", 2);
-    target.put("超会心", 2);
-    target.put("弱点特效", 2);
-    target.put("提供", 1);
-    target.put("翔虫使", 2);
-    target.put("击晕术", 2);
     return target;
   }
 
@@ -329,11 +328,6 @@ public class AutoCharm extends ScriptEngine implements MainScript {
   }
 
   @Override
-  public String getScriptName() {
-    return "MHR auto charm(CHS.Ver)";
-  }
-
-  @Override
   public void execute() {
     launchGame();
     walkToShop();
@@ -351,6 +345,11 @@ public class AutoCharm extends ScriptEngine implements MainScript {
     }
     backToGameMenu();
     saveAndExit();
+  }
+
+  @Override
+  public String getScriptName() {
+    return "MHR auto charm(CHS.Ver)";
   }
 
   private void launchGame() {
@@ -568,7 +567,7 @@ public class AutoCharm extends ScriptEngine implements MainScript {
   }
 
   private boolean checkGem(int o1, int o2, int o3) {
-    for (int[] target : gemTargets) {
+    for (int[] target : slotTargets) {
       if (o1 >= target[0] && o2 >= target[1] && o3 >= target[2]) {
         return true;
       }
@@ -580,4 +579,46 @@ public class AutoCharm extends ScriptEngine implements MainScript {
   public boolean isLoop() {
     return true;
   }
+
+  @Override
+  public void load() {
+  }
+
+  @Override
+  public void clear() {
+  }
+
+  @Override
+  public Serializable registerConfigBean() {
+    return config;
+  }
+
+  @Data
+  public static class Config implements Serializable {
+
+    private SimpleStringProperty targetCharms = new SimpleStringProperty("""
+                    攻击2
+                    看破2
+                    超会心2
+                    弱点特效2
+                    提供1
+                    翔虫使2
+                    击晕术2
+        """);
+    private SimpleStringProperty targetSlots = new SimpleStringProperty("""
+         220
+         400
+        """);
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SkillConfig {
+      private IntegerProperty level;
+    }
+
+  }
+
+
 }

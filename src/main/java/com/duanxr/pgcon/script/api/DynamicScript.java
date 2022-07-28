@@ -1,5 +1,6 @@
 package com.duanxr.pgcon.script.api;
 
+import java.io.Serializable;
 import java.util.Map;
 import javafx.beans.property.Property;
 
@@ -8,6 +9,6 @@ import javafx.beans.property.Property;
  */
 public interface DynamicScript extends MainScript {
 
-  Object registerConfigBean();
+  Serializable registerConfigBean();
 
 }

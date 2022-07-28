@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import javax.annotation.PreDestroy;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,6 +190,7 @@ public class DisplayHandler {
     this.imageInput = imageInput;
   }
 
+  @PreDestroy
   public void close() {
     if (imageInput != null) {
       imageInput.close();
