@@ -25,7 +25,7 @@ import com.duanxr.pgcon.script.component.ScriptManager;
 import com.duanxr.pgcon.script.component.ScriptRunner;
 import com.duanxr.pgcon.util.CacheUtil;
 import com.duanxr.pgcon.util.SystemUtil;
-import com.duanxr.pgcon.util.TempFileUtil;
+import com.duanxr.pgcon.util.SaveUtil;
 import com.google.common.base.Strings;
 import java.awt.Color;
 import java.awt.Point;
@@ -42,22 +42,16 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Slider;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
@@ -67,9 +61,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -286,7 +278,7 @@ public class MainPanel {
               try {
                 BufferedImage subImage = frameManager.get().getImage()
                     .getSubimage(area.getX(), area.getY(), area.getWidth(), area.getHeight());
-                File file = TempFileUtil.saveTempImage(subImage);
+                File file = SaveUtil.saveTempImage(subImage);
                 guiLogger.info("area of points: {},{},{},{}, saved to: {}",
                     (int) (pointStart.x * xScale), (int) (pointStart.y * yScale),
                     (int) (pointEnd.x * xScale), (int) (pointEnd.y * yScale),
@@ -367,7 +359,7 @@ public class MainPanel {
     CachedFrame frame = frameManager.get();
     if (frame != null) {
       BufferedImage image = frame.getImage();
-      File file = TempFileUtil.saveTempImage(image);
+      File file = SaveUtil.saveImage(image);
       guiLogger.info("capture image saved to: {}", file.getAbsolutePath());
     }
   }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<RollingRandomAccessFile name="${logFileName}" fileName="${logDirect}/${logFileName}.guiLog"
-  filePattern="${logDirect}/${logFileName}.%d{yyyy-MM-dd}.%i.guiLog">
+<RollingRandomAccessFile name="${logFileName}" fileName="${logDirect}/${logFileName}.log"
+  filePattern="${logDirect}/${logFileName}.%d{yyyy-MM-dd}.%i.log">
   <Filters>
     <ThresholdFilter level="${loggerLogLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
   </Filters>
   <PatternLayout charset="UTF-8"
-    pattern="[%date][%c{1.}][%t][%p] dstTraceId:[%X{dstTraceId}] [%X{TRACE_LOG_ID}] -%msg%xEx%n"/>
+    pattern="[%date][%c{1.}][%t][%p] %msg%xEx%n"/>
   <Policies>
     <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
     <SizeBasedTriggeringPolicy size="512MB"/>
