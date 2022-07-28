@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import javax.annotation.PreDestroy;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -64,8 +65,9 @@ public class PGConSerialPort implements SerialPort<Integer> {
     }
   }
 
-  @Override
-  protected void finalize() throws Throwable {
+  @PreDestroy
+  @SneakyThrows
+  protected void close() {
     try {
       if (outputStream != null) {
         outputStream.close();
@@ -78,7 +80,6 @@ public class PGConSerialPort implements SerialPort<Integer> {
       }
     } catch (Exception ignored) {
     }
-    super.finalize();
   }
 
 }

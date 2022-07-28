@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<RollingRandomAccessFile name="${logFileName}" fileName="${logDirect}/${logFileName}.log"
-  filePattern="${logDirect}/${logFileName}.%d{yyyy-MM-dd}.%i.log">
+<RollingRandomAccessFile name="${logFileName}" fileName="${logDirect}/${logFileName}.guiLog"
+  filePattern="${logDirect}/${logFileName}.%d{yyyy-MM-dd}.%i.guiLog">
   <Filters>
     <ThresholdFilter level="${loggerLogLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
   </Filters>

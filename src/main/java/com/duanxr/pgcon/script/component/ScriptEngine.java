@@ -3,6 +3,7 @@ package com.duanxr.pgcon.script.component;
 import com.duanxr.pgcon.algo.detect.api.ImageCompare;
 import com.duanxr.pgcon.algo.detect.api.OCR;
 import com.duanxr.pgcon.gui.component.GuiAlertException;
+import com.duanxr.pgcon.gui.log.GuiLogger;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
@@ -63,14 +64,26 @@ public abstract class ScriptEngine {
   private ImageCompare imageCompare;
   private OCR ocr;
   private ScriptManager scriptManager;
+  private GuiLogger guiLogger;
 
   protected ScriptEngine() {
+  }
+  protected void debug(Object msg) {
+    guiLogger.debug(msg.toString());
+  }
+  protected void info(Object msg) {
+    guiLogger.info(msg.toString());
+  }
+  protected void warn(Object msg) {
+    guiLogger.warn(msg.toString());
+  }
+  protected void error(Object msg) {
+    guiLogger.error(msg.toString());
   }
 
   protected OCR.Result ocr(OCR.Param param) {
     return ocr.detect(param);
   }
-
 
   protected ImageCompare.Result imageCompare(ImageCompare.Param param) {
     return imageCompare.detect(param);
@@ -79,12 +92,15 @@ public abstract class ScriptEngine {
   protected void press(ButtonAction action) {
     controller.press(action);
   }
+
   protected void hold(ButtonAction action) {
     controller.hold(action);
   }
+
   protected void hold(ButtonAction action, int time) {
-    controller.hold(action,time);
+    controller.hold(action, time);
   }
+
   protected void release(ButtonAction action) {
     controller.release(action);
   }
@@ -92,15 +108,19 @@ public abstract class ScriptEngine {
   protected void press(StickAction action) {
     controller.press(action);
   }
+
   protected void hold(StickAction action) {
     controller.hold(action);
   }
+
   protected void hold(StickAction action, int time) {
-    controller.hold(action,time);
+    controller.hold(action, time);
   }
+
   protected void release(StickAction action) {
     controller.release(action);
   }
+
   protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action,
       long maxMillis) {
     D d = supplier.get();

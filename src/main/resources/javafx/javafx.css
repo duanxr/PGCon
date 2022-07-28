@@ -1,3 +1,22 @@
 .split-pane-divider {
   -fx-background-color: transparent;
 }
+.log-view .list-cell {
+  -fx-background-color: null; // removes alternating list gray cells.
+}
+
+.log-view .list-cell:debug {
+  -fx-text-fill: #707070;
+}
+
+.log-view .list-cell:info {
+  -fx-text-fill: #f6f6f1;
+}
+
+.log-view .list-cell:warn {
+  -fx-text-fill: #4dceed;
+}
+
+.log-view .list-cell:error {
+  -fx-text-fill: #f52471;
+}

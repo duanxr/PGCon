@@ -3,11 +3,13 @@ package com.duanxr.pgcon.script.impl.common;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.script.component.ScriptEngine;
 import com.duanxr.pgcon.script.api.MainScript;
+import javafx.beans.property.SimpleStringProperty;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2021/12/9
  */
-//@Component
+@Component
 public class Test extends ScriptEngine implements MainScript {
 
   @Override

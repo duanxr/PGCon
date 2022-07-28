@@ -2,6 +2,8 @@ package com.duanxr.pgcon.script.component;
 
 import com.duanxr.pgcon.algo.detect.api.ImageCompare;
 import com.duanxr.pgcon.algo.detect.api.OCR;
+import com.duanxr.pgcon.gui.log.GuiLog;
+import com.duanxr.pgcon.gui.log.GuiLogger;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.api.Script;
@@ -22,13 +24,13 @@ import org.springframework.stereotype.Component;
 public class ScriptManager {
 
   private final List<ScriptEngine> scriptEngineList;
-  private final  List<MainScript> mainScriptList;
+  private final List<MainScript> mainScriptList;
   private final List<Script> scriptList;
   private final OCR ocr;
   private final ImageCompare imageCompare;
   private final Controller controller;
 
-  private final ExecutorService  executorService;
+  private final ExecutorService executorService;
   @Getter
   private Map<String, MainScript> mainScripts;
   @Getter
@@ -62,5 +64,9 @@ public class ScriptManager {
     scriptEngine.setController(controller);
     scriptEngine.setScriptManager(this);
     scriptEngine.setExecutorService(executorService);
+  }
+
+  public void register(GuiLogger guiLogger) {
+    scriptEngineList.forEach(scriptEngine -> scriptEngine.setGuiLogger(guiLogger));
   }
 }

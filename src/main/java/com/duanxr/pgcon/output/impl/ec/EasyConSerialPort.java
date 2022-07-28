@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import javax.annotation.PreDestroy;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -89,8 +90,9 @@ public class EasyConSerialPort implements SerialPort<byte[]> {
     }
   }
 
-  @Override
-  protected void finalize() throws Throwable {
+  @PreDestroy
+  @SneakyThrows
+  protected void close() {
     try {
       if (outputStream != null) {
         outputStream.close();
@@ -103,7 +105,6 @@ public class EasyConSerialPort implements SerialPort<byte[]> {
       }
     } catch (Exception ignored) {
     }
-    super.finalize();
   }
 
 }
