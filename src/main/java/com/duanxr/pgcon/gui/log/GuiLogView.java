@@ -26,7 +26,7 @@ public class GuiLogView extends ListView<GuiLogRecord> {
   private final static PseudoClass ERROR = PseudoClass.getPseudoClass("error");
   private final static PseudoClass INFO = PseudoClass.getPseudoClass("info");
   private static final int MAX_ENTRIES = 10_000;
-  private final static SimpleDateFormat TIMESTAMP_FORMATTER = new SimpleDateFormat("HH:mm:ss.SSS");
+  private final static SimpleDateFormat TIMESTAMP_FORMATTER = new SimpleDateFormat("[HH:mm:ss.SSS]");
   private final static PseudoClass WARN = PseudoClass.getPseudoClass("warn");
   private final ObjectProperty<GuiLogLevel> filterLevel = new SimpleObjectProperty<>(null);
   private final ObservableList<GuiLogRecord> logItems = FXCollections.observableArrayList();
@@ -77,16 +77,11 @@ public class GuiLogView extends ListView<GuiLogRecord> {
       }
     });
 
-    filterLevel.addListener((observable, oldValue, newValue) -> {
-      setItems(
-          new FilteredList<>(
-              logItems,
-              guiLogRecord ->
-                  guiLogRecord.getLevel().ordinal() >=
-                      filterLevel.get().ordinal()
-          )
-      );
-    });
+    filterLevel.addListener((observable, oldValue, newValue) -> setItems(
+        new FilteredList<>(
+            logItems, guiLogRecord -> guiLogRecord.getLevel().ordinal() >= filterLevel.get().ordinal()
+        )
+    ));
     filterLevel.set(GuiLogLevel.DEBUG);
 
     setCellFactory(param -> new ListCell<>() {
@@ -151,6 +146,10 @@ public class GuiLogView extends ListView<GuiLogRecord> {
 
   public BooleanProperty tailProperty() {
     return tail;
+  }
+
+  public void clearLogs(){
+    logItems.clear();
   }
 }
 

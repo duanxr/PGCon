@@ -30,14 +30,18 @@ import com.google.common.base.Strings;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -52,6 +56,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
@@ -77,6 +82,10 @@ import org.springframework.stereotype.Component;
 public class MainPanel {
 
   private static final String CACHE_KEY_ENABLE_DEBUG = "ENABLE_DEBUG";
+  private static final String CACHE_KEY_LOG_FOLLOW = "CACHE_KEY_LOG_FOLLOW";
+  private static final String CACHE_KEY_LOG_LEVEL = "CACHE_KEY_LOG_LEVEL";
+  private static final String CACHE_KEY_LOG_PAUSE = "CACHE_KEY_LOG_PAUSE";
+  private static final String CACHE_KEY_LOG_SHOWTIME = "CACHE_KEY_LOG_SHOWTIME";
   private static final String CACHE_KEY_SELECTED_PORT = "SELECTED_PORT";
   private static final String CACHE_KEY_SELECTED_PROTOCOL = "SELECTED_PROTOCOL";
   private static final String CACHE_KEY_SELECTED_SCRIPT = "SELECTED_SCRIPT";
@@ -105,8 +114,6 @@ public class MainPanel {
   private ImageView canvas;
   @FXML
   private AnchorPane console;
-  @FXML
-  private CheckBox debug;
   private Point pointEnd;
   private Point pointStart;
   @FXML
@@ -117,6 +124,9 @@ public class MainPanel {
   private Button run;
   @FXML
   private Button capture;
+
+  @FXML
+  private Button clearLog;
   @FXML
   private ImageView screen;
   @FXML
@@ -129,6 +139,19 @@ public class MainPanel {
   private SplitPane splitPaneX;
   @FXML
   private SplitPane splitPaneY;
+
+  @FXML
+  private ToggleButton logFollow;
+
+  @FXML
+  private ToggleButton logPause;
+
+  @FXML
+  private ToggleButton logShowTime;
+  @FXML
+  private ToggleButton debug;
+  @FXML
+  private ComboBox<GuiLogLevel> logLevel;
   @FXML
   private ComboBox<String> videoSelection;
 
@@ -168,7 +191,6 @@ public class MainPanel {
     initializePortSelection();
     initializeScriptSelection();
     initializeButtons();
-    initializeCheckBoxes();
   }
 
   private void initializeScriptConfigurations() {
@@ -185,37 +207,35 @@ public class MainPanel {
 
   private void initializeGuiLogViewer() {
     GuiLog guiLog = new GuiLog();
-    guiLogger = new GuiLogger(guiLog, "main");
-
+    guiLogger = new GuiLogger(guiLog, "");
     scriptManager.register(guiLogger);
     GuiLogView logView = new GuiLogView(guiLogger);
     logView.setPrefWidth(960);
-    ChoiceBox<GuiLogLevel> filterLevel = new ChoiceBox<>(
-        FXCollections.observableArrayList(GuiLogLevel.values()));
-    filterLevel.getSelectionModel().select(GuiLogLevel.DEBUG);
-    logView.filterLevelProperty().bind(filterLevel.getSelectionModel().selectedItemProperty());
-    ToggleButton showTimestamp = new ToggleButton("Show Timestamp");
-    logView.showTimeStampProperty().bind(showTimestamp.selectedProperty());
-    ToggleButton tail = new ToggleButton("Tail");
-    logView.tailProperty().bind(tail.selectedProperty());
-    ToggleButton pause = new ToggleButton("Pause");
-    logView.pausedProperty().bind(pause.selectedProperty());
-    Slider rate = new Slider(0.1, 60, 60);
-    logView.refreshRateProperty().bind(rate.valueProperty());
-    Label rateLabel = new Label();
-    rateLabel.textProperty().bind(Bindings.format("Update: %.2f fps", rate.valueProperty()));
-    rateLabel.setStyle("-fx-font-family: monospace;");
-    VBox rateLayout = new VBox(rate, rateLabel);
-    rateLayout.setAlignment(Pos.CENTER);
-    HBox controls = new HBox(10, filterLevel, showTimestamp, tail, pause, rateLayout);
-    controls.setMinHeight(HBox.USE_PREF_SIZE);
-    VBox layout = new VBox(
-        10,
-        logView,
-        controls
-    );
-    VBox.setVgrow(logView, Priority.ALWAYS);
-    console.getChildren().add(layout);
+    logView.setPrefHeight(160);
+    logLevel.setItems(FXCollections.observableArrayList(GuiLogLevel.values()));
+    logView.filterLevelProperty().bind(logLevel.getSelectionModel().selectedItemProperty());
+    logView.showTimeStampProperty().bind(logShowTime.selectedProperty());
+    logView.tailProperty().bind(logFollow.selectedProperty());
+    logView.pausedProperty().bind(logPause.selectedProperty());
+    console.getChildren().add(logView);
+    clearLog.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> logView.clearLogs());
+    CacheUtil.bindCache(CACHE_KEY_LOG_SHOWTIME, logShowTime.selectedProperty());
+    CacheUtil.bindCache(CACHE_KEY_LOG_FOLLOW, logFollow.selectedProperty());
+    CacheUtil.bindCache(CACHE_KEY_LOG_PAUSE, logPause.selectedProperty());
+    String selectedItemCache = CacheUtil.get(CACHE_KEY_LOG_LEVEL);
+    GuiLogLevel guiLogLevelCache = null;
+    if (!Strings.isNullOrEmpty(selectedItemCache)
+        && (guiLogLevelCache = Arrays.stream(GuiLogLevel.values()).collect(
+        Collectors.toMap(Enum::name, Function.identity())).get(selectedItemCache)) != null) {
+      logLevel.getSelectionModel().select(guiLogLevelCache);
+    }
+    logLevel.getSelectionModel().selectedItemProperty().addListener(
+        (observable, oldValue, newValue) -> {
+          if (newValue != null) {
+            CacheUtil.set(CACHE_KEY_LOG_LEVEL, newValue.name());
+          }
+        });
+
   }
 
   private void initializeVideoComponent() {
@@ -263,7 +283,7 @@ public class MainPanel {
             if (pointStart != null) {
               Area area = Area.ofPoints((pointStart.x * xScale), (pointStart.y * yScale),
                   (pointEnd.x * xScale), (pointEnd.y * yScale));
-              if (area.getWidth() > 0 && area.getHeight() > 0) {
+              try {
                 BufferedImage subImage = frameManager.get().getImage()
                     .getSubimage(area.getX(), area.getY(), area.getWidth(), area.getHeight());
                 File file = TempFileUtil.saveTempImage(subImage);
@@ -271,6 +291,7 @@ public class MainPanel {
                     (int) (pointStart.x * xScale), (int) (pointStart.y * yScale),
                     (int) (pointEnd.x * xScale), (int) (pointEnd.y * yScale),
                     file.getAbsolutePath());
+              } catch (RasterFormatException ignored) {
               }
             }
             pointStart = null;
@@ -329,6 +350,17 @@ public class MainPanel {
   private void initializeButtons() {
     run.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> run());
     capture.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> capture());
+    boolean enableDebugCache = Boolean.TRUE.toString()
+        .equalsIgnoreCase(CacheUtil.get(CACHE_KEY_ENABLE_DEBUG));
+    enableDebug.set(enableDebugCache);
+    debug.selectedProperty().setValue(enableDebugCache);
+    debug.selectedProperty().addListener(
+        (observable, oldValue, newValue) -> {
+          if (newValue != null) {
+            CacheUtil.set(CACHE_KEY_ENABLE_DEBUG, newValue.toString());
+            enableDebug.set(newValue);
+          }
+        });
   }
 
   private void capture() {
@@ -340,18 +372,6 @@ public class MainPanel {
     }
   }
 
-  private void initializeCheckBoxes() {
-    boolean enableDebugCache = Boolean.TRUE.toString().equalsIgnoreCase(CacheUtil.get(CACHE_KEY_ENABLE_DEBUG));
-    enableDebug.set(enableDebugCache);
-    debug.selectedProperty().setValue(enableDebugCache);
-    debug.selectedProperty().addListener(
-        (observable, oldValue, newValue) -> {
-          if (newValue != null) {
-            CacheUtil.set(CACHE_KEY_ENABLE_DEBUG, newValue.toString());
-            enableDebug.set(newValue);
-          }
-        });
-  }
 
   private void openCam(String camera) {
     if (!Strings.isNullOrEmpty(camera)) {

@@ -1,6 +1,8 @@
 package com.duanxr.pgcon.util;
 
 import java.io.File;
+import javafx.beans.property.BooleanProperty;
+import javax.swing.SingleSelectionModel;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
@@ -24,7 +26,8 @@ public class CacheUtil {
       if (!configFile.exists()) {
         configFile.createNewFile();
       }
-      FileBasedConfigurationBuilder<PropertiesConfiguration> builder = new Configurations().propertiesBuilder(configFile);
+      FileBasedConfigurationBuilder<PropertiesConfiguration> builder = new Configurations().propertiesBuilder(
+          configFile);
       builder.setAutoSave(true);
       return builder.getConfiguration();
     } catch (Exception e) {
@@ -32,7 +35,6 @@ public class CacheUtil {
     }
     return null;
   }
-
 
   public static String get(String key) {
     return CONFIG == null ? "" : CONFIG.getString(key, "");
@@ -43,4 +45,19 @@ public class CacheUtil {
       CONFIG.setProperty(key, value);
     }
   }
+
+  public static void bindCache(String key, BooleanProperty booleanProperty) {
+    loadCache(key,booleanProperty);
+    booleanProperty.addListener(
+        (observable, oldValue, newValue) -> {
+          if (newValue != null) {
+            set(key, newValue.toString());
+          }
+        });
+  }
+
+  public static void loadCache(String key, BooleanProperty booleanProperty) {
+    booleanProperty.setValue(Boolean.TRUE.toString().equalsIgnoreCase(CacheUtil.get(key)));
+  }
+
 }

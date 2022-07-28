@@ -1,8 +1,15 @@
-.split-pane-divider {
+.split-pane > .split-pane-divider {
+  -fx-padding: 0 0em 0 0em;
+  -fx-cursor: default;
   -fx-background-color: transparent;
 }
+
 .log-view .list-cell {
   -fx-background-color: null; // removes alternating list gray cells.
+}
+
+.log-view {
+  -fx-background-color: #272823;
 }
 
 .log-view .list-cell:debug {

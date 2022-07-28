@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import java.net.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="765.0" maxWidth="1230.0" minHeight="765.0" minWidth="1230.0" prefHeight="765.0" prefWidth="1230.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duanxr.pgcon.gui.controller.MainPanel">
+<AnchorPane maxHeight="765.0" maxWidth="1230.0" minHeight="765.0" minWidth="1230.0" prefHeight="765.0" prefWidth="1230.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duanxr.pgcon.gui.controller.MainPanel">
   <stylesheets>
     <URL value="@javafx.css" />
   </stylesheets>
@@ -42,10 +43,10 @@
               <items>
                 <AnchorPane maxHeight="740.0" maxWidth="260.0" minHeight="740.0" minWidth="260.0" prefHeight="740.0" prefWidth="260.0" SplitPane.resizableWithParent="false">
                   <children>
-                    <GridPane alignment="CENTER" layoutY="10.0" maxWidth="260.0" minWidth="260.0" prefWidth="260.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
+                    <GridPane alignment="CENTER" layoutY="10.0" maxWidth="260.0" minWidth="260.0" prefHeight="740.0" prefWidth="260.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="155.0" minWidth="10.0" prefWidth="130.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="138.0" minWidth="10.0" prefWidth="130.0" />
                       </columnConstraints>
                       <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -70,8 +71,13 @@
                         <ComboBox fx:id="portSelection" layoutX="25.0" layoutY="54.0" prefHeight="40.0" prefWidth="240.0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
                         <ComboBox fx:id="scriptSelection" layoutX="10.0" layoutY="94.0" prefHeight="40.0" prefWidth="240.0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
                         <Button fx:id="run" mnemonicParsing="false" prefHeight="65.0" prefWidth="240.0" text="Run!" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.rowSpan="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-                        <Button fx:id="capture" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Capture Screen" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="12" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-                        <CheckBox fx:id="debug" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Debug" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="12" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+                        <Button fx:id="capture" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Capture Screen" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+                                    <ComboBox fx:id="logLevel" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" prefHeight="40.0" prefWidth="110.0" GridPane.halignment="CENTER" GridPane.rowIndex="9" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="debug" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Debug" GridPane.halignment="CENTER" GridPane.rowIndex="12" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="logFollow" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Follow Logs" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="11" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="logPause" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Pause Logs" GridPane.halignment="CENTER" GridPane.rowIndex="10" GridPane.valignment="CENTER" />
+                                    <ToggleButton fx:id="logShowTime" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Show Time" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="12" GridPane.valignment="CENTER" />
+                                    <Button fx:id="clearLog" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Clear Logs" GridPane.halignment="CENTER" GridPane.rowIndex="11" GridPane.valignment="CENTER" />
                       </children>
                     </GridPane>
                   </children>
@@ -88,14 +94,14 @@
                         </AnchorPane>
                         <AnchorPane maxHeight="190.0" maxWidth="960.0" minHeight="190.0" minWidth="960.0" prefHeight="190.0" prefWidth="960.0" SplitPane.resizableWithParent="false">
                                        <children>
-                                          <TabPane layoutX="38.0" layoutY="-10.0" prefHeight="190.38654851876433" prefWidth="960.8066918891877" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <TabPane layoutY="-9.0" prefHeight="190.0" prefWidth="960.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                             <tabs>
                                               <Tab text="Script Configuration">
                                                 <content>
                                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                          <children>
                                                             <FlowPane fx:id="scriptConfig" layoutX="75.0" prefHeight="161.3445326430206" prefWidth="960.8066918891877" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                            <Label fx:id="scriptConfigLabel" alignment="CENTER" prefHeight="161.3445326430206" prefWidth="960.8066918891877" text="No Script Loaded" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                            <Label fx:id="scriptConfigLabel" alignment="CENTER" prefHeight="161.3445326430206" prefWidth="960.8066918891877" text="No Script Loaded" textFill="#00000061" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                <font>
                                                                   <Font size="24.0" />
                                                                </font>
@@ -105,10 +111,7 @@
                                               </Tab>
                                               <Tab text="Console">
                                                 <content>
-                                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                                         <children>
-                                                            <AnchorPane fx:id="console" layoutX="192.0" layoutY="-19.0" prefHeight="161.3445326430206" prefWidth="960.8066918891877" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                         </children></AnchorPane>
+                                                  <AnchorPane fx:id="console" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                                                 </content>
                                               </Tab>
                                             </tabs>
