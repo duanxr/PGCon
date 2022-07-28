@@ -28,13 +28,17 @@ public class PGConGUI extends Application {
 
   @Override
   public void init() {
-    ApplicationContextInitializer<GenericApplicationContext> initializer =
-        applicationContext -> {
-          applicationContext.registerBean(Parameters.class, this::getParameters);
-          applicationContext.registerBean(HostServices.class, this::getHostServices);
-        };
-    this.context = new SpringApplicationBuilder().sources(PGConApplication.class)
-        .initializers(initializer).run(getParameters().getRaw().toArray(new String[0]));
+    try {
+      ApplicationContextInitializer<GenericApplicationContext> initializer =
+          applicationContext -> {
+            applicationContext.registerBean(Parameters.class, this::getParameters);
+            applicationContext.registerBean(HostServices.class, this::getHostServices);
+          };
+      this.context = new SpringApplicationBuilder().sources(PGConApplication.class)
+          .initializers(initializer).run(getParameters().getRaw().toArray(new String[0]));
+    } catch (Exception e) {
+      log.error("PGCon GUI init error", e);
+    }
   }
 
   @Override
@@ -46,16 +50,20 @@ public class PGConGUI extends Application {
   @Override
   @SneakyThrows
   public void start(Stage primaryStage) {
-    primaryStage.setTitle(ConstantConfig.MAIN_PANEL_TITLE);
-    FXMLLoader loader = new FXMLLoader();
-    loader.setControllerFactory(context::getBean);
-    URL resource = PGConGUI.class.getResource("/javafx/MainPanel.fxml");
-    loader.setLocation(resource);
-    AnchorPane load = loader.load();
-    Scene scene = new Scene(load);
-    primaryStage.setScene(scene);
-    primaryStage.setResizable(false);
-    primaryStage.show();
+    try {
+      primaryStage.setTitle(ConstantConfig.MAIN_PANEL_TITLE);
+      FXMLLoader loader = new FXMLLoader();
+      loader.setControllerFactory(context::getBean);
+      URL resource = PGConGUI.class.getResource("/javafx/MainPanel.fxml");
+      loader.setLocation(resource);
+      AnchorPane load = loader.load();
+      Scene scene = new Scene(load);
+      primaryStage.setScene(scene);
+      primaryStage.setResizable(false);
+      primaryStage.show();
+    } catch (Exception e) {
+      log.error("PGCon GUI start error", e);
+    }
   }
 
 }

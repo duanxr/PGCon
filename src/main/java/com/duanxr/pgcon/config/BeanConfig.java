@@ -1,8 +1,12 @@
 package com.duanxr.pgcon.config;
 
+import com.duanxr.pgcon.output.api.Protocol;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,4 +30,5 @@ public class BeanConfig {
   public AtomicBoolean frozenScreen() {
     return new AtomicBoolean(false);
   }
+
 }
