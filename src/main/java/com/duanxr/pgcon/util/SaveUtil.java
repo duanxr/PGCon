@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
 
@@ -11,6 +12,7 @@ import org.opencv.core.Mat;
  * @author 段然 2022/7/26
  */
 @Slf4j
+@UtilityClass
 public class SaveUtil {
 
   @SneakyThrows
@@ -29,7 +31,6 @@ public class SaveUtil {
     ImageIO.write(image, "png", file);
     return file;
   }
-
 
   public static void saveTempImage(Mat m) {
     saveTempImage(ImageConvertUtil.matToBufferedImage(m));

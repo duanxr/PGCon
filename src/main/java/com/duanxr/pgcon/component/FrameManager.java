@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.input.component;
+package com.duanxr.pgcon.component;
 
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.util.ImageConvertUtil;
@@ -7,6 +7,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,27 +19,36 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class FrameManager {
-
   private final LoadingCache<BufferedImage, Mat> matCache;
   private CachedFrame cachedFrame;
-
   @Autowired
   public FrameManager(InputConfig inputConfig) {
     this.matCache = Caffeine.newBuilder().maximumSize(inputConfig.getCacheSize())
-        .expireAfterAccess(30, TimeUnit.SECONDS).build(ImageConvertUtil::bufferedImageToMat);
+        .expireAfterAccess(10, TimeUnit.SECONDS).build(ImageConvertUtil::bufferedImageToMat);
   }
 
   public void setFrame(BufferedImage frame) {
-    this.cachedFrame = new CachedFrame(frame, System.currentTimeMillis());
+    CachedFrame cachedFrame = new CachedFrame(frame, System.currentTimeMillis());
+    synchronized (this) {
+      this.cachedFrame = cachedFrame;
+      this.notifyAll();
+    }
   }
 
-  public CachedFrame get() {
+  public CachedFrame getFrame() {
     return this.cachedFrame;
+  }
+
+  @SneakyThrows
+  public CachedFrame getNewFrame() {
+    synchronized (this) {
+      this.wait();
+      return this.cachedFrame;
+    }
   }
 
   @AllArgsConstructor
   public class CachedFrame {
-
     private final BufferedImage bufferedImage;
     private final long timestamp;
 

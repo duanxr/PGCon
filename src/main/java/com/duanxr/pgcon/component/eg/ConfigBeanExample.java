@@ -1,6 +1,5 @@
-package com.duanxr.pgcon.script.component;
+package com.duanxr.pgcon.component.eg;
 
-import com.dooapp.fxform.adapter.FormAdapter;
 import com.dooapp.fxform.annotation.FormFactory;
 import com.dooapp.fxform.view.factory.impl.PasswordFieldFactory;
 import com.dooapp.fxform.view.factory.impl.TextAreaFactory;
@@ -24,7 +23,6 @@ import javafx.scene.paint.Color;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author 段然 2022/7/29

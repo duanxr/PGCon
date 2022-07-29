@@ -14,4 +14,6 @@ public interface SerialPort<C> {
 
   boolean checkConnection();
 
+  void close();
+
 }

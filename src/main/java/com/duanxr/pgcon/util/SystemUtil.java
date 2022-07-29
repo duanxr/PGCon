@@ -6,11 +6,13 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.experimental.UtilityClass;
 import purejavacomm.CommPortIdentifier;
 
 /**
  * @author 段然 2022/7/25
  */
+@UtilityClass
 public class SystemUtil {
   public static List<String> getCameraList() {
 

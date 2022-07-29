@@ -7,15 +7,15 @@ import com.duanxr.pgcon.algo.detect.model.Area;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.component.ScriptEngine;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * @author  2022/7/25
+ * @author 2022/7/25
  */
-@Slf4j
 @Component
 public class AutoAmiibo extends ScriptEngine implements MainScript {
+
+  private int times = 1;
   private static final OCR.Param AMIIBO_READ = OCR.Param.builder()
       .area(Area.ofPoints(763, 888, 915, 948))
       .apiConfig(ApiConfig.builder()
@@ -42,8 +42,8 @@ public class AutoAmiibo extends ScriptEngine implements MainScript {
 
   @Override
   public void execute() {
+    info("This is the " + (times++) + " times");
     script("PlusOneDay");
-    checkIfAmiiboUsed();
     checkIfInAmiiboReading();
     checkIfAmiiboSuccess();
     lottery();
@@ -69,6 +69,7 @@ public class AutoAmiibo extends ScriptEngine implements MainScript {
         () -> {
           press(ButtonAction.A);
           sleep(150);
+          checkIfAmiiboUsed();
         });
   }
 
@@ -79,7 +80,7 @@ public class AutoAmiibo extends ScriptEngine implements MainScript {
   }
 
   private void lottery() {
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 20; i++) {
       press(ButtonAction.A);
       sleep(100);
     }

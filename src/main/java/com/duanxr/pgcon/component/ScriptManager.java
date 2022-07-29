@@ -1,20 +1,23 @@
-package com.duanxr.pgcon.script.component;
+package com.duanxr.pgcon.component;
 
 import com.duanxr.pgcon.algo.detect.api.ImageCompare;
 import com.duanxr.pgcon.algo.detect.api.OCR;
-import com.duanxr.pgcon.gui.log.GuiLog;
+import com.duanxr.pgcon.gui.display.DisplayHandler;
 import com.duanxr.pgcon.gui.log.GuiLogger;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.api.Script;
+import com.duanxr.pgcon.script.component.ScriptEngine;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,23 +26,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScriptManager {
 
-  private final List<ScriptEngine> scriptEngineList;
-  private final List<MainScript> mainScriptList;
-  private final List<Script> scriptList;
-  private final OCR ocr;
-  private final ImageCompare imageCompare;
   private final Controller controller;
-
+  private final DisplayHandler displayHandler;
+  private final AtomicBoolean enableDebug;
   private final ExecutorService executorService;
+  private final ImageCompare imageCompare;
+  private final List<MainScript> mainScriptList;
+  private final OCR ocr;
+  private final List<ScriptEngine> scriptEngineList;
+  private final List<Script> scriptList;
   @Getter
   private Map<String, MainScript> mainScripts;
   @Getter
   private Map<String, Script> scripts;
 
   @Autowired
-  public ScriptManager(List<ScriptEngine> scriptEngineList, List<MainScript> mainScriptList,
+  public ScriptManager(@Qualifier("enableDebug") AtomicBoolean enableDebug,
+      List<ScriptEngine> scriptEngineList, List<MainScript> mainScriptList,
       List<Script> scriptList, OCR ocr, ImageCompare imageCompare, Controller controller,
-      ExecutorService executorService) {
+      ExecutorService executorService, DisplayHandler displayHandler) {
     this.scriptEngineList = scriptEngineList;
     this.mainScriptList = mainScriptList;
     this.scriptList = scriptList;
@@ -47,6 +52,8 @@ public class ScriptManager {
     this.imageCompare = imageCompare;
     this.controller = controller;
     this.executorService = executorService;
+    this.enableDebug = enableDebug;
+    this.displayHandler = displayHandler;
   }
 
   @PostConstruct
@@ -59,10 +66,12 @@ public class ScriptManager {
   }
 
   private void inject(ScriptEngine scriptEngine) {
+    scriptEngine.setEnableDebug(enableDebug);
     scriptEngine.setOcr(ocr);
     scriptEngine.setImageCompare(imageCompare);
     scriptEngine.setController(controller);
     scriptEngine.setScriptManager(this);
+    scriptEngine.setDisplayHandler(displayHandler);
     scriptEngine.setExecutorService(executorService);
   }
 

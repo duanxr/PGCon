@@ -21,11 +21,12 @@ public class PGConSerialPort implements SerialPort<Integer> {
   private final OutputStream outputStream;
   private final InputStream inputStream;
   private final Semaphore semaphore;
+  private final purejavacomm.SerialPort serialPort;
 
-  public PGConSerialPort(String portName,int baudRate) throws Exception {
+  public PGConSerialPort(String portName, int baudRate) throws Exception {
     semaphore = new Semaphore(0);
     CommPortIdentifier commPortIdentifier = CommPortIdentifier.getPortIdentifier(portName);
-    purejavacomm.SerialPort serialPort = (purejavacomm.SerialPort) commPortIdentifier.open("PGCon",
+    serialPort = (purejavacomm.SerialPort) commPortIdentifier.open("PGCon",
         500);
     serialPort.setSerialPortParams(
         baudRate,
@@ -67,17 +68,15 @@ public class PGConSerialPort implements SerialPort<Integer> {
 
   @PreDestroy
   @SneakyThrows
-  protected void close() {
+  public void close() {
     try {
       if (outputStream != null) {
         outputStream.close();
       }
-    } catch (Exception ignored) {
-    }
-    try {
       if (outputStream != null) {
         inputStream.close();
       }
+      serialPort.close();
     } catch (Exception ignored) {
     }
   }

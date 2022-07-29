@@ -5,6 +5,7 @@ import com.duanxr.pgcon.algo.detect.model.Area;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
+import lombok.experimental.UtilityClass;
 import org.bytedeco.leptonica.PIX;
 import org.bytedeco.leptonica.global.lept;
 import org.opencv.core.Core;
@@ -18,6 +19,7 @@ import org.opencv.imgproc.Imgproc;
 /**
  * @author Duanran 2019/12/13
  */
+@UtilityClass
 public class ImageConvertUtil {
 
   /**

@@ -6,6 +6,6 @@ import lombok.experimental.StandardException;
  * @author 段然 2022/7/28
  */
 @StandardException
-public class GuiAlertException extends RuntimeException{
+public class AbortScriptException extends GuiAlertException{
 
 }

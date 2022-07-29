@@ -1,11 +1,14 @@
 package com.duanxr.pgcon.util;
 
+import lombok.experimental.UtilityClass;
 import org.opencv.core.Point;
 
 /**
  * @author 段然 2021/12/29
  */
+@UtilityClass
 public class MatUtil {
+
   public static Point calculateInterceptionPoint(Point s1, Point s2, Point d1, Point d2) {
     double a1 = s2.y - s1.y;
     double b1 = s1.x - s2.x;

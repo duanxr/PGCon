@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.algo.detect.api;
 
 import com.duanxr.pgcon.algo.detect.model.Area;
-import com.duanxr.pgcon.input.component.FrameManager;
+import com.duanxr.pgcon.component.FrameManager;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -54,7 +54,7 @@ public interface OCR extends Detector<OCR.Result, OCR.Param> {
     private FrameManager.CachedFrame cachedFrame;
 
     public String getTextWithoutSpace() {
-      return text.trim().replaceAll(" ", "");
+      return text.trim().replaceAll(" ", "").replaceAll("\n", "");
     }
     public Long getTextAsNumber() {
       try {

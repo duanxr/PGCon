@@ -1,6 +1,7 @@
 
 package com.duanxr.pgcon.gui.log;
 
+import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -19,31 +20,36 @@ public class GuiLogger {
   }
 
   public void log(GuiLogRecord record) {
-    guiLog.offer(record);
+    Platform.runLater(()->guiLog.offer(record));
+  }
+
+  private String format(String msg, Object... args) {
+    String message = MessageFormatter.arrayFormat(msg, args).getMessage();
+    if (args != null && args.length != 0 && args[args.length - 1] instanceof Throwable) {
+      message += ":" + ((Throwable) args[args.length - 1]).getMessage();
+    }
+    return message;
   }
 
   public void debug(String msg, Object... args) {
-    String message = MessageFormatter.arrayFormat(msg, args).getMessage();
     log.debug(msg, args);
-    log(new GuiLogRecord(GuiLogLevel.DEBUG, context, msg));
+    log(new GuiLogRecord(GuiLogLevel.DEBUG, context, format(msg, args)));
   }
 
+
   public void info(String msg, Object... args) {
-    String message = MessageFormatter.arrayFormat(msg, args).getMessage();
     log.info(msg, args);
-    log(new GuiLogRecord(GuiLogLevel.INFO, context, message));
+    log(new GuiLogRecord(GuiLogLevel.INFO, context, format(msg, args)));
   }
 
   public void warn(String msg, Object... args) {
-    String message = MessageFormatter.arrayFormat(msg, args).getMessage();
     log.warn(msg, args);
-    log(new GuiLogRecord(GuiLogLevel.WARN, context, msg));
+    log(new GuiLogRecord(GuiLogLevel.WARN, context, format(msg, args)));
   }
 
   public void error(String msg, Object... args) {
-    String message = MessageFormatter.arrayFormat(msg, args).getMessage();
     log.error(msg, args);
-    log(new GuiLogRecord(GuiLogLevel.ERROR, context, msg));
+    log(new GuiLogRecord(GuiLogLevel.ERROR, context, format(msg, args)));
   }
 
   public GuiLog getLog() {

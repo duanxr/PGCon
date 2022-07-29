@@ -26,17 +26,21 @@ public class ScriptRunner {
         Executors.newSingleThreadExecutor());
   }
 
-  public synchronized void run(MainScript mainScript) {
+  public synchronized void run(MainScript mainScript,Runnable callback) {
     stop();
-    currentScriptTask = new ScriptTask(mainScript);
+    currentScriptTask = new ScriptTask(mainScript,callback);
     currentScriptListenable = listeningExecutorService.submit(currentScriptTask);
   }
 
+  public synchronized boolean isRunning() {
+    return currentScriptTask != null;
+  }
   public synchronized void stop() {
     if (currentScriptTask != null) {
       currentScriptTask.stop();
       currentScriptTask = null;
       currentScriptListenable.cancel(true);
+      currentScriptListenable = null;
       controller.clear();
     }
   }

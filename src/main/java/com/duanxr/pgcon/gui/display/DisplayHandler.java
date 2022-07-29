@@ -1,11 +1,12 @@
 package com.duanxr.pgcon.gui.display;
 
+import com.duanxr.pgcon.component.DaemonTask;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.gui.display.canvas.DrawEvent;
 import com.duanxr.pgcon.gui.display.canvas.api.Drawable;
-import com.duanxr.pgcon.input.component.FrameManager;
-import com.duanxr.pgcon.input.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.component.FrameManager;
+import com.duanxr.pgcon.component.FrameManager.CachedFrame;
 import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.input.impl.StaticImageInput;
 import com.duanxr.pgcon.util.ImageResizeUtil;
@@ -15,16 +16,19 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import javax.annotation.PreDestroy;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,118 +39,82 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class DisplayHandler {
+
   private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(
       "/img/no_input.bmp");
-  private final Map<String, Drawable> drawableHashMap;
-  private final long frameInterval;
+  private static final int NOTIFY_CANVAS_DELAY = 200;
+  private final Map<String, Drawable> canvasDrawables;
   private final FrameManager frameManager;
   private final AtomicBoolean frozenScreen;
   private final GuiConfig guiConfig;
-  private final long renderInterval;
+  private final ScheduledExecutorService scheduledExecutorService;
   private Consumer<BufferedImage> canvas;
   @Getter
   private volatile CameraImageInput imageInput;
   private volatile Consumer<BufferedImage> screen;
-
   @Autowired
-  public DisplayHandler(InputConfig inputConfig, GuiConfig guiConfig, ExecutorService executorService,
-      AtomicBoolean frozenScreen, FrameManager frameManager) {
+  public DisplayHandler(InputConfig inputConfig, GuiConfig guiConfig,
+      ExecutorService executorService, AtomicBoolean frozenScreen, FrameManager frameManager) {
     this.guiConfig = guiConfig;
     this.frozenScreen = frozenScreen;
     this.frameManager = frameManager;
-    this.drawableHashMap = new ConcurrentHashMap<>();
-    this.frameInterval = inputConfig.getFrameInterval();
-    this.renderInterval = inputConfig.getRenderInterval();
-    executorService.execute(this::readFrame);
-    executorService.execute(this::repaint);
-    executorService.execute(this::reDraw);
+    this.canvasDrawables = new HashMap<>();
+    this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    executorService.execute(DaemonTask.of("LOAD_FRAME", this::readFrame));
+    executorService.execute(DaemonTask.of("RENDER_SCREEN", this::renderScreen));
+    executorService.execute(DaemonTask.of("RENDER_CANVAS", this::renderCanvas));
   }
 
   /**
-   * v1 readFrame cost 8-30 ms,
-   * v2 readFrame cost 8-15 ms
+   * v1 readFrame cost 8-30 ms, v2 readFrame cost 8-15 ms
    */
   private void readFrame() {
-    while (!Thread.currentThread().isInterrupted()) {
-      try {
-        TimeUnit.MILLISECONDS.sleep(frameInterval);
-        if (screen != null && imageInput != null) {
-          BufferedImage read = imageInput.read();
-          if (read != null) {
-            this.frameManager.setFrame(read);
-          }
-        }
-      } catch (InterruptedException ignored) {
-      } catch (Exception e) {
-        log.info("readFrame error", e);
+    if (screen != null && imageInput != null) {
+      BufferedImage read = imageInput.read();
+      if (read != null) {
+        this.frameManager.setFrame(read);
       }
     }
   }
 
-  private void repaint() {
-    int last = DEFAULT_IMAGE_INPUT.read().hashCode();
-    while (!Thread.currentThread().isInterrupted()) {
-      try {
-        TimeUnit.MILLISECONDS.sleep(renderInterval);
-        if (screen != null && imageInput != null) {
-          CachedFrame cachedFrame = frameManager.get();
-          if (cachedFrame == null) {
-            continue;
-          }
-          int next = cachedFrame.hashCode();
-          if (last != next) {
-            repaint(cachedFrame.getImage());
-            last = next;
-          }
-        }
-      } catch (InterruptedException ignored) {
-      } catch (Exception e) {
-        log.info("repaint error", e);
+  private void renderScreen() {
+    if (screen != null && imageInput != null) {
+      CachedFrame cachedFrame = frameManager.getNewFrame();
+      if (cachedFrame != null) {
+        renderScreen(cachedFrame.getImage());
       }
     }
   }
 
-  private void reDraw() {
-    BufferedImage transparentCanvas = createTransparentCanvas();
-    int hash = 0;
-    while (!Thread.currentThread().isInterrupted()) {
-      try {
-        TimeUnit.MILLISECONDS.sleep(renderInterval);
-        if (screen != null && !frozenScreen.get() && !drawableHashMap.isEmpty()) {
-          int next = 0;
-          for (Iterator<Entry<String, Drawable>> iterator = drawableHashMap.entrySet().iterator();
-              iterator.hasNext(); ) {
-            Entry<String, Drawable> entry = iterator.next();
-            Drawable drawable = entry.getValue();
-            if (drawable.isExpired()) {
-              iterator.remove();
-            } else {
-              next ^= drawable.hashCode();
-            }
+  @SneakyThrows
+  private void renderCanvas() {
+    synchronized (canvasDrawables) {
+      canvasDrawables.wait();
+      if (canvas != null && !frozenScreen.get()) {
+        BufferedImage transparentCanvas = createTransparentCanvas();
+        Graphics graphics = transparentCanvas.getGraphics();
+        for (Iterator<Entry<String, Drawable>> iterator = canvasDrawables.entrySet().iterator();
+            iterator.hasNext(); ) {
+          Drawable drawable = iterator.next().getValue();
+          if (drawable.isExpired()) {
+            iterator.remove();
+          } else {
+            drawable.draw(graphics);
           }
-          if (next != hash) {
-            transparentCanvas = createTransparentCanvas();
-            Graphics graphics = transparentCanvas.getGraphics();
-            drawableHashMap.values().forEach(drawable -> drawable.draw(graphics));
-            canvas.accept(transparentCanvas);
-          }
-          hash = next;
         }
-      } catch (InterruptedException ignored) {
-      } catch (Exception e) {
-        log.info("reDraw error", e);
+        canvas.accept(transparentCanvas);
       }
     }
   }
 
   /**
-   * v1 resize cost 95 ms
-   * v2 resize cost 6 ms, the fastest so far,
+   * v1 resize cost 95 ms v2 resize cost 6 ms, the fastest so far,
    */
   @Subscribe
-  public void repaint(BufferedImage frame) {
+  public void renderScreen(BufferedImage frame) {
     if (screen != null && !frozenScreen.get()) {
-      BufferedImage resize = ImageResizeUtil.resizeV2(frame, guiConfig.getWidth(), guiConfig.getHeight());
+      BufferedImage resize = ImageResizeUtil.resizeV2(frame, guiConfig.getWidth(),
+          guiConfig.getHeight());
       screen.accept(resize);
     }
   }
@@ -176,14 +144,33 @@ public class DisplayHandler {
 
   public void draw(DrawEvent drawEvent) {
     if (!Strings.isNullOrEmpty(drawEvent.getKey())) {
-      if (drawEvent.getDrawable() != null) {
-        drawableHashMap.put(drawEvent.getKey(), drawEvent.getDrawable());
-      } else {
-        drawableHashMap.remove(drawEvent.getKey());
+      boolean drawNew = drawEvent.getDrawable() != null;
+      synchronized (canvasDrawables) {
+        if (drawNew) {
+          canvasDrawables.put(drawEvent.getKey(), drawEvent.getDrawable());
+        } else {
+          canvasDrawables.remove(drawEvent.getKey());
+        }
+        notifyCanvas();
+      }
+      if (drawNew && drawEvent.getDrawable().getDuration() > 0) {
+        notifyCanvasLater(drawEvent.getDrawable().getDuration());
       }
     }
   }
 
+  public void notifyCanvas() {
+    synchronized (canvasDrawables) {
+      canvasDrawables.notifyAll();
+    }
+  }
+
+  private void notifyCanvasLater(long duration) {
+    try {
+      scheduledExecutorService.schedule(this::notifyCanvas, duration + NOTIFY_CANVAS_DELAY, TimeUnit.MILLISECONDS);
+    } catch (Exception ignored) {
+    }
+  }
 
   public void setImageInput(CameraImageInput imageInput) {
     close();

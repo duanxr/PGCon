@@ -18,5 +18,5 @@ public interface Protocol {
 
   void clear();
 
-  String getName();
+  boolean isConnected();
 }

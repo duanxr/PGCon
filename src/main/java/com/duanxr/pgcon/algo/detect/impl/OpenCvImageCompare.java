@@ -1,8 +1,8 @@
 package com.duanxr.pgcon.algo.detect.impl;
 
-import com.duanxr.pgcon.gui.component.ResourceManager;
-import com.duanxr.pgcon.input.component.FrameManager;
-import com.duanxr.pgcon.input.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.component.ResourceManager;
+import com.duanxr.pgcon.component.FrameManager;
+import com.duanxr.pgcon.component.FrameManager.CachedFrame;
 import com.duanxr.pgcon.algo.detect.api.ImageCompare;
 import com.duanxr.pgcon.algo.detect.model.Area;
 import com.duanxr.pgcon.util.ImageConvertUtil;
@@ -56,7 +56,7 @@ public class OpenCvImageCompare implements ImageCompare {
   }
 
   private Result detectNow(Mat temple, Mat mask, Area area, Method method) {
-    CachedFrame cachedFrame = frameManager.get();
+    CachedFrame cachedFrame = frameManager.getFrame();
     Mat targetMat = getTarget(cachedFrame, area);
     Double score = doDetect(temple, targetMat, method);
     return Result.builder().similarity(score).timestamp(cachedFrame.getTimestamp()).build();

@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import java.net.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="765.0" maxWidth="1230.0" minHeight="765.0" minWidth="1230.0" prefHeight="765.0" prefWidth="1230.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duanxr.pgcon.gui.controller.MainPanel">
+<AnchorPane maxHeight="765.0" maxWidth="1230.0" minHeight="765.0" minWidth="1230.0" prefHeight="765.0" prefWidth="1230.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duanxr.pgcon.gui.controller.MainPanel">
   <stylesheets>
     <URL value="@javafx.css" />
   </stylesheets>
@@ -70,7 +68,7 @@
                         <ComboBox fx:id="protocolSelection" layoutX="25.0" layoutY="12.0" prefHeight="40.0" prefWidth="240.0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
                         <ComboBox fx:id="portSelection" layoutX="25.0" layoutY="54.0" prefHeight="40.0" prefWidth="240.0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
                         <ComboBox fx:id="scriptSelection" layoutX="10.0" layoutY="94.0" prefHeight="40.0" prefWidth="240.0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
-                        <Button fx:id="run" mnemonicParsing="false" prefHeight="65.0" prefWidth="240.0" text="Run!" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.rowSpan="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+                        <Button fx:id="run" mnemonicParsing="false" prefHeight="65.0" prefWidth="240.0" text="RUN!" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="13" GridPane.rowSpan="2" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
                         <Button fx:id="capture" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Capture Screen" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="10" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
                                     <ComboBox fx:id="logLevel" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" prefHeight="40.0" prefWidth="110.0" GridPane.halignment="CENTER" GridPane.rowIndex="9" GridPane.valignment="CENTER" />
                                     <ToggleButton fx:id="debug" maxHeight="40.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="110.0" text="Debug" GridPane.halignment="CENTER" GridPane.rowIndex="12" GridPane.valignment="CENTER" />

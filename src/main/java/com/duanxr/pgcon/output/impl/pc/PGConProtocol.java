@@ -37,11 +37,12 @@ public class PGConProtocol implements Protocol {
   @Override
   public void clear() {
     send(49);
+    serialPort.close();
   }
 
   @Override
-  public String getName() {
-    return "PGCon";
+  public boolean isConnected() {
+      return serialPort.checkConnection();
   }
 
   private void send(int pgcCommand) {

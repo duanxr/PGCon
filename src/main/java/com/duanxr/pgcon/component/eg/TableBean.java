@@ -1,6 +1,6 @@
-package com.duanxr.pgcon.script.component;
+package com.duanxr.pgcon.component.eg;
 
-import com.duanxr.pgcon.script.component.ConfigBeanExample.Subject;
+import com.duanxr.pgcon.component.eg.ConfigBeanExample.Subject;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -10,7 +10,6 @@ import javafx.beans.property.StringProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author 段然 2022/7/29

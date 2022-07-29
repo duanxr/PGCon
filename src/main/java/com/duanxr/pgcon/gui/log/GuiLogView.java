@@ -25,7 +25,7 @@ public class GuiLogView extends ListView<GuiLogRecord> {
   private final static PseudoClass DEBUG = PseudoClass.getPseudoClass("debug");
   private final static PseudoClass ERROR = PseudoClass.getPseudoClass("error");
   private final static PseudoClass INFO = PseudoClass.getPseudoClass("info");
-  private static final int MAX_ENTRIES = 10_000;
+  private static final int MAX_ENTRIES = 10000;
   private final static SimpleDateFormat TIMESTAMP_FORMATTER = new SimpleDateFormat("[HH:mm:ss.SSS]");
   private final static PseudoClass WARN = PseudoClass.getPseudoClass("warn");
   private final ObjectProperty<GuiLogLevel> filterLevel = new SimpleObjectProperty<>(null);

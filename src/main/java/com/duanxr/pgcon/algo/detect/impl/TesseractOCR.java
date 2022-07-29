@@ -1,9 +1,9 @@
 package com.duanxr.pgcon.algo.detect.impl;
 
 
-import com.duanxr.pgcon.gui.component.ResourceManager;
-import com.duanxr.pgcon.input.component.FrameManager;
-import com.duanxr.pgcon.input.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.component.ResourceManager;
+import com.duanxr.pgcon.component.FrameManager;
+import com.duanxr.pgcon.component.FrameManager.CachedFrame;
 import com.duanxr.pgcon.algo.detect.api.OCR;
 import com.duanxr.pgcon.algo.detect.model.Area;
 import com.duanxr.pgcon.util.ImageConvertUtil;
@@ -64,18 +64,19 @@ public class TesseractOCR implements OCR {
     Integer ocrEngineMode = ObjectUtils.firstNonNull(apiConfig.getOcrEngineMode(),
         DEFAULT_OCR_ENGINE_MODE);
     tessBaseAPI.SetPageSegMode(pageSegMode);
-    if (!Strings.isNullOrEmpty(apiConfig.getWhitelist())) {
-      tessBaseAPI.SetVariable(TESSEDIT_CHAR_WHITELIST, apiConfig.getWhitelist());
-    }
-    if (!Strings.isNullOrEmpty(apiConfig.getBlacklist())) {
-      tessBaseAPI.SetVariable(TESSEDIT_CHAR_BLACKLIST, apiConfig.getBlacklist());
-    }
     int initResult = tessBaseAPI.Init(resourceManager.getFile(path).getAbsolutePath(), method,
         ocrEngineMode);
     if (initResult != 0) {
       log.error("Could not initialize tesseract! config: {}", apiConfig);
       return null;
     }
+    if (!Strings.isNullOrEmpty(apiConfig.getWhitelist())) {
+      tessBaseAPI.SetVariable(TESSEDIT_CHAR_WHITELIST, apiConfig.getWhitelist());
+    }
+    if (!Strings.isNullOrEmpty(apiConfig.getBlacklist())) {
+      tessBaseAPI.SetVariable(TESSEDIT_CHAR_BLACKLIST, apiConfig.getBlacklist());
+    }
+
     return tessBaseAPI;
   }
 
@@ -89,7 +90,7 @@ public class TesseractOCR implements OCR {
   }
 
   private CachedFrame getFrame() {
-    return frameManager.get();
+    return frameManager.getFrame();
   }
 
   private PIX getImage(CachedFrame cachedFrame, Area area) {

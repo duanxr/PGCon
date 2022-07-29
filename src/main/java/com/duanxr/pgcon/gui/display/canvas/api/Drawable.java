@@ -10,4 +10,9 @@ public interface Drawable {
   void draw(Graphics graphics);
 
   boolean isExpired();
+
+  long getExpireTime();
+
+  long getDuration();
+
 }

@@ -18,6 +18,7 @@ import purejavacomm.CommPortIdentifier;
 @Slf4j
 public class EasyConSerialPort implements SerialPort<byte[]> {
 
+  private final purejavacomm.SerialPort serialPort;
   private final OutputStream outputStream;
   private final InputStream inputStream;
   private final Semaphore semaphore;
@@ -25,7 +26,7 @@ public class EasyConSerialPort implements SerialPort<byte[]> {
   public EasyConSerialPort(String portName, int baudRate) throws Exception {
     semaphore = new Semaphore(0);
     CommPortIdentifier commPortIdentifier = CommPortIdentifier.getPortIdentifier(portName);
-    purejavacomm.SerialPort serialPort = (purejavacomm.SerialPort) commPortIdentifier.open("SerialCon",
+    serialPort = (purejavacomm.SerialPort) commPortIdentifier.open("SerialCon",
         500);
     serialPort.setSerialPortParams(
         baudRate,
@@ -53,10 +54,9 @@ public class EasyConSerialPort implements SerialPort<byte[]> {
     for (byte b : command) {
       n = (n << 8) | (b & 0xFF);
       bits += 8;
-      while (bits >= 7)
-      {
+      while (bits >= 7) {
         bits -= 7;
-        packet[i++]=((byte) (n >>> bits));
+        packet[i++] = ((byte) (n >>> bits));
         n &= (1L << bits) - 1;
       }
     }
@@ -92,17 +92,15 @@ public class EasyConSerialPort implements SerialPort<byte[]> {
 
   @PreDestroy
   @SneakyThrows
-  protected void close() {
+  public void close() {
     try {
       if (outputStream != null) {
         outputStream.close();
       }
-    } catch (Exception ignored) {
-    }
-    try {
       if (outputStream != null) {
         inputStream.close();
       }
+      serialPort.close();
     } catch (Exception ignored) {
     }
   }

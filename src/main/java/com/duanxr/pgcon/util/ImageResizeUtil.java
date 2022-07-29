@@ -4,11 +4,13 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import net.coobird.thumbnailator.Thumbnails;
 
 /**
  * @author 段然 2022/7/27
  */
+@UtilityClass
 public class ImageResizeUtil {
 
   /**
@@ -21,10 +23,8 @@ public class ImageResizeUtil {
 
   /**
    * resize cost 6 ms, the fastest so far,
-   * <a
-   * href="https://web.archive.org/web/20170809062128/http://willperone.net/Code/codescaling.php">...</a>
-   * <a
-   * href="https://stackoverflow.com/questions/42615441/convert-2d-pixel-array-into-bufferedimage">...</a>
+   * <a href="https://web.archive.org/web/20170809062128/http://willperone.net/Code/codescaling.php">...</a>
+   * <a href="https://stackoverflow.com/questions/42615441/convert-2d-pixel-array-into-bufferedimage">...</a>
    * <a href="https://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image">...</a>
    */
   @SneakyThrows

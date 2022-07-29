@@ -1,15 +1,16 @@
 package com.duanxr.pgcon.output.impl.ec;
 
+import com.duanxr.pgcon.output.action.ButtonAction;
+import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.output.api.Protocol;
 import com.duanxr.pgcon.output.api.SerialPort;
-import com.duanxr.pgcon.output.action.ButtonAction;
-import com.duanxr.pgcon.output.action.PressAction;
-import com.duanxr.pgcon.output.action.StickAction;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author 段然 2021/12/7
  */
+@Slf4j
 public class EasyConProtocol implements Protocol {
 
   private final SerialPort<byte[]> serialPort;
@@ -69,12 +70,14 @@ public class EasyConProtocol implements Protocol {
   @Override
   public void clear() {
     serialPort.sendCommand(getDefault());
+    serialPort.close();
   }
 
   @Override
-  public String getName() {
-    return "EasyCon(推荐)";
+  public boolean isConnected() {
+    return serialPort.checkConnection();
   }
+
 
   private byte[] getDefault() {
     return new byte[]{0, 0, 8, -128, -128, -128, -128};

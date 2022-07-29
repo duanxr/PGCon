@@ -10,13 +10,10 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.duanxr</groupId>
-  <artifactId>pokemon-game-control</artifactId>
-  <name>pokemon-game-control</name>
-  <version>2.0.0</version>
-  <description>Automatic hunting and hatching shiny Pokémon for Pokémon games on nintendo switch,
-    based on image recognition and
-    OCR.
-  </description>
+  <artifactId>psyduck-game-controller</artifactId>
+  <name>psyduck-game-controller</name>
+  <version>3.0.0</version>
+  <description>Psyduck Game Controller From github.com/duanxr/PGCon</description>
   <build>
     <resources>
       <resource>
@@ -25,6 +22,50 @@
       </resource>
     </resources>
     <plugins>
+      <plugin>
+        <groupId>com.akathist.maven.plugins.launch4j</groupId>
+        <artifactId>launch4j-maven-plugin</artifactId>
+        <version>2.1.1</version>
+        <executions>
+          <execution>
+            <id>launch4j</id>
+            <phase>package</phase>
+            <goals>
+              <goal>launch4j</goal>
+            </goals>
+            <configuration>
+              <classPath>
+                <mainClass>com.duanxr.pgcon.PGConApplication</mainClass>
+              </classPath>
+              <headerType>gui</headerType>
+              <icon>target/classes/img/psyduck.ico</icon>
+              <jre>
+                <bundledJre64Bit>false</bundledJre64Bit>
+                <bundledJreAsFallback>false</bundledJreAsFallback>
+                <jdkPreference>preferJre</jdkPreference>
+                <minVersion>17</minVersion>
+                <runtimeBits>64</runtimeBits>
+              </jre>
+              <outfile>target/PGCon.exe</outfile>
+              <singleInstance>
+                <mutexName>${project.name}</mutexName>
+                <windowTitle>${project.name}</windowTitle>
+              </singleInstance>
+              <versionInfo>
+                <copyright>C</copyright>
+                <fileDescription>${project.description}</fileDescription>
+                <fileVersion>${project.version}.0</fileVersion>
+                <internalName>${project.name}</internalName>
+                <originalFilename>${project.name}.exe</originalFilename>
+                <productName>${project.name}</productName>
+                <productVersion>${project.version}.0</productVersion>
+                <txtFileVersion>${project.version}.0</txtFileVersion>
+                <txtProductVersion>${project.version}</txtProductVersion>
+              </versionInfo>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
@@ -75,8 +116,7 @@
                   implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                 <transformer
                   implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.bestpay.media.platform.azathoth.web.AzathothWebApplication
-                  </mainClass>
+                  <mainClass>com.duanxr.pgcon.PGConApplication</mainClass>
                 </transformer>
               </transformers>
             </configuration>

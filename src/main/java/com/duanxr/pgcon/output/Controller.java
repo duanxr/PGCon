@@ -1,12 +1,14 @@
 package com.duanxr.pgcon.output;
 
+import com.duanxr.pgcon.component.DaemonTask;
 import com.duanxr.pgcon.config.OutputConfig;
+import com.duanxr.pgcon.gui.display.DisplayHandler;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.output.api.Protocol;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -20,137 +22,186 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class Controller {
+
+  private static final int AUTO_RELEASE_DELAY = 10;
+  private static final ButtonAction[] BUTTON_ACTIONS = ButtonAction.values();
+  private final long[] buttonExpired;
+
+  private final ButtonAction[] hatDirections;
+  private final DisplayHandler displayHandler; //TODO DEBUG WITH CONTROLLER IN THE CANVAS
   private final OutputConfig outputConfig;
-  private final BiMap<StickAction, Integer> stickMap;
-  private final BiMap<ButtonAction, Integer> buttonMap;
-
-  private final BiMap<Integer, StickAction> reversedStickMap;
-  private final BiMap<Integer, ButtonAction> reversedButtonMap;
-
-  private final long[] releaseTime;
+  private final StickAction[] stickDirections;
+  private final long[] stickExpired;
   @Setter
-  private Protocol protocol;
+  private volatile Protocol protocol;
 
   @Autowired
-  public Controller(OutputConfig outputConfig, ExecutorService executors) {
+  public Controller(OutputConfig outputConfig, ExecutorService executorService,
+      DisplayHandler displayHandler) {
     this.outputConfig = outputConfig;
-    stickMap = HashBiMap.create();
-    buttonMap = HashBiMap.create();
-    int index = 0;
-    for (StickAction action : StickAction.values()) {
-      stickMap.put(action, index++);
-    }
-    for (ButtonAction action : ButtonAction.values()) {
-      buttonMap.put(action, index++);
-    }
-    reversedStickMap = stickMap.inverse();
-    reversedButtonMap = buttonMap.inverse();
-    releaseTime = new long[index];
-    executors.execute(() -> {
-      try {
-        while (!Thread.currentThread().isInterrupted()) {
-          for (int i = 0, releaseTimeLength = releaseTime.length; i < releaseTimeLength; i++) {
-            long t = releaseTime[i];
-            if (t != 0 && t < System.currentTimeMillis()) {
-              release(i);
-            }
-          }
-          Thread.sleep(5);
-        }
-      } catch (Exception e) {
-        log.error("", e);
-      }
-    });
+    this.displayHandler = displayHandler;
+    this.buttonExpired = new long[ButtonAction.values().length];
+    this.stickExpired = new long[2];
+    this.hatDirections = new ButtonAction[]{null};
+    this.stickDirections = new StickAction[]{StickAction.L_CENTER, StickAction.R_CENTER};
+    executorService.execute(DaemonTask.of("CHECK_CONTROLLER", this::autoRelease));
   }
 
-  private synchronized void release(int index) {
-    if (index >= stickMap.size()) {
-      release(reversedButtonMap.get(index));
-    } else {
-      release(reversedStickMap.get(index));
+  @SneakyThrows
+  private void autoRelease() {
+    for (int i = 0, length = stickExpired.length; i < length; i++) {
+      if(stickExpired[i] != 0 &&  System.currentTimeMillis() >= stickExpired[i]) {
+        release(i==0?StickAction.L_CENTER:StickAction.R_CENTER);
+      }
     }
+    for (int i = 0, length = buttonExpired.length; i < length; i++) {
+      if(buttonExpired[i] != 0 &&  System.currentTimeMillis() >= buttonExpired[i]) {
+        release(BUTTON_ACTIONS[i]);
+      }
+    }
+    TimeUnit.MILLISECONDS.sleep(5);
+  }
+
+  public synchronized void release(StickAction action) {
+    int index = getExpireTimeIndex(action);
+    long duration = stickExpired[index];
+    if (duration != 0) {
+      stickExpired[index] = 0;
+      if (protocol != null) {
+        protocol.set(getReleaseAction(action));
+      }
+      stickDirections[index] = getReleaseAction(action);
+    }
+  }
+
+  private int getExpireTimeIndex(StickAction action) {
+    return action.isLeft() ? 0 : 1;
+  }
+
+  private int getExpireTimeIndex(ButtonAction action) {
+    return action.isHat() ? ButtonAction.D_TOP.ordinal() : action.ordinal();
+  }
+
+  public synchronized void release(ButtonAction action) {
+    int index = getExpireTimeIndex(action);
+    if (buttonExpired[index] != 0) {
+      buttonExpired[index] = 0;
+      if (protocol != null) {
+        protocol.release(action);
+      }
+      if (action.isHat()) {
+        hatDirections[0] = null;
+      }
+    }
+  }
+
+  private StickAction getReleaseAction(StickAction action) {
+    return action.isLeft() ? StickAction.L_CENTER : StickAction.R_CENTER;
+  }
+
+  private ButtonAction getReleaseAction(ButtonAction action) {
+    return action.isHat() ? ButtonAction.D_TOP : action;
   }
 
   public synchronized void press(ButtonAction action) {
     hold(action, getDefaultPressTime());
   }
 
-  public synchronized void hold(ButtonAction action, int time) {
-    if (readAndSetMax(releaseTime, buttonMap.get(action),
-        System.currentTimeMillis() + time)) {
-      protocol.hold(action);
+  public synchronized void hold(ButtonAction action, int duration) {
+    long expiredTime = System.currentTimeMillis() + duration;
+    checkAndHold(action, expiredTime);
+  }
+
+  private int getDefaultPressTime() {
+    return outputConfig.getPressTime();
+  }
+
+  public synchronized void checkAndHold(ButtonAction action, long expiredTime) {
+    int index = getExpireTimeIndex(action);
+    if (buttonExpired[index] == 0) {
+      buttonExpired[index] = expiredTime;
+      if (protocol != null) {
+        protocol.hold(action);
+      }
+      if (action.isHat()) {
+        hatDirections[0] = action;
+      }
+    } else {
+      if (action.isHat()) {
+        if (hatDirections[0] == action) {
+          if (buttonExpired[index] < expiredTime) {
+            buttonExpired[index] = expiredTime;
+          }
+        } else {
+          buttonExpired[index] = expiredTime;
+          if (protocol != null) {
+            protocol.release(hatDirections[0]);
+            protocol.hold(action);
+          }
+          hatDirections[0] = action;
+        }
+      } else {
+        if (buttonExpired[index] < expiredTime) {
+          buttonExpired[index] = expiredTime;
+        }
+      }
     }
   }
 
   public synchronized void hold(ButtonAction action) {
-    if (readAndSetMax(releaseTime, buttonMap.get(action),
-        Long.MAX_VALUE)) {
-      protocol.hold(action);
-    }
-  }
-
-  public synchronized void release(ButtonAction action) {
-    if (setToZero(releaseTime, buttonMap.get(action))) {
-      protocol.release(action);
-    }
+    long expiredTime = Long.MAX_VALUE;
+    checkAndHold(action, expiredTime);
   }
 
   public synchronized void press(StickAction action) {
     hold(action, getDefaultPressTime());
   }
 
-  public synchronized void hold(StickAction action, int time) {
-    if (readAndSetMax(releaseTime, stickMap.get(action),
-        System.currentTimeMillis() + time)) {
-      protocol.set(action);
+  public void hold(StickAction action, int duration) {
+    long expiredTime = System.currentTimeMillis() + duration;
+    checkAndHold(action, expiredTime);
+  }
+
+  private synchronized void checkAndHold(StickAction action, long expiredTime) {
+    int index = getExpireTimeIndex(action);
+    if (stickExpired[index] == 0) {
+      stickExpired[index] = expiredTime;
+      if (protocol != null) {
+        protocol.set(action);
+      }
+    } else {
+      if (stickDirections[index] == action) {
+        if (stickExpired[index] < expiredTime) {
+          stickExpired[index] = expiredTime;
+        }
+      } else {
+        stickExpired[index] = expiredTime;
+        if (protocol != null) {
+          protocol.set(action);
+        }
+      }
     }
+    stickDirections[index] = action;
   }
 
-  public synchronized void hold(StickAction action) {
-    if (readAndSetMax(releaseTime, stickMap.get(action),
-        Long.MAX_VALUE)) {
-      protocol.set(action);
-    }
+  public void hold(StickAction action) {
+    long expiredTime = Long.MAX_VALUE;
+    checkAndHold(action, expiredTime);
   }
 
-  public synchronized void release(StickAction action) {
-    if (setToZero(releaseTime, stickMap.get(action))) {
-      protocol.set(getResetAction(action));
-    }
-  }
-
-  private StickAction getResetAction(StickAction action) {
-    return action.isLeft() ? StickAction.L_CENTER : StickAction.R_CENTER;
-  }
-
-  private boolean readAndSetMax(long[] array, int index, long value) {
-    long old = array[index];
-    if (value > old) {
-      array[index] = value;
-      return old == 0L;
-    }
-    return false;
-  }
-
-  private boolean setToZero(long[] array, int index) {
-    long old = array[index];
-    if (old != 0L) {
-      array[index] = 0L;
-      return true;
-    }
-    return false;
-  }
-
-  private int getDefaultPressTime() {
-    return outputConfig.getPressTime();
-  }
   @PreDestroy
   @SneakyThrows
   public void clear() {
     if (protocol != null) {
       protocol.clear();
       protocol = null;
+      Arrays.fill(stickExpired,0);
+      Arrays.fill(buttonExpired,0);
+      hatDirections[0]=null;
+      stickDirections[0]= StickAction.L_CENTER;
+      stickDirections[1]= StickAction.R_CENTER;
     }
   }
+
 
 }

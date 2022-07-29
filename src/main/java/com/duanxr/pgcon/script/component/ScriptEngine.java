@@ -2,16 +2,24 @@ package com.duanxr.pgcon.script.component;
 
 import com.duanxr.pgcon.algo.detect.api.ImageCompare;
 import com.duanxr.pgcon.algo.detect.api.OCR;
+import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.component.ScriptManager;
 import com.duanxr.pgcon.gui.component.GuiAlertException;
+import com.duanxr.pgcon.gui.display.DisplayHandler;
+import com.duanxr.pgcon.gui.display.canvas.DrawEvent;
+import com.duanxr.pgcon.gui.display.canvas.impl.Rectangle;
+import com.duanxr.pgcon.gui.display.canvas.impl.Text;
 import com.duanxr.pgcon.gui.log.GuiLogger;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.Script;
-import java.util.Objects;
+import com.duanxr.pgcon.util.LogUtil;
+import java.awt.Color;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.Setter;
@@ -59,34 +67,68 @@ public abstract class ScriptEngine {
   protected static StickAction R_TOP_LEFT = StickAction.R_TOP_LEFT;
   protected static StickAction L_CENTER = StickAction.L_CENTER;
   protected static StickAction R_CENTER = StickAction.R_CENTER;
+  protected AtomicBoolean enableDebug;
   private Controller controller;
+  private DisplayHandler displayHandler;
   private ExecutorService executorService;
+  private GuiLogger guiLogger;
   private ImageCompare imageCompare;
   private OCR ocr;
   private ScriptManager scriptManager;
-  private GuiLogger guiLogger;
 
   protected ScriptEngine() {
   }
-  protected void debug(Object msg) {
-    guiLogger.debug(msg.toString());
-  }
-  protected void info(Object msg) {
-    guiLogger.info(msg.toString());
-  }
-  protected void warn(Object msg) {
-    guiLogger.warn(msg.toString());
-  }
-  protected void error(Object msg) {
-    guiLogger.error(msg.toString());
+
+  protected void info(String msg, Object... args) {
+    guiLogger.info(msg, args);
   }
 
-  protected OCR.Result ocr(OCR.Param param) {
-    return ocr.detect(param);
+  protected void warn(String msg, Object... args) {
+    guiLogger.warn(msg, args);
+  }
+
+  protected void error(String msg, Object... args) {
+    guiLogger.error(msg, args);
   }
 
   protected ImageCompare.Result imageCompare(ImageCompare.Param param) {
-    return imageCompare.detect(param);
+    if (enableDebug.get()) {
+      long start = System.currentTimeMillis();
+      drawImageCompareParam(param);
+      ImageCompare.Result detect = imageCompare.detect(param);
+      drawImageCompareResult(param, detect);
+      debug("image compare {} similarity: {} , cost {} ms", param.hashCode(), detect.getSimilarity(), System.currentTimeMillis() - start);
+      return detect;
+    } else {
+      return imageCompare.detect(param);
+    }
+  }
+
+  private void drawImageCompareResult(ImageCompare.Param param, ImageCompare.Result detect) {
+    String similarity = LogUtil.format("%.02f", detect.getSimilarity()).toString();
+    Area rect = getDebugRectArea(param.getArea());
+    displayHandler.draw(
+        new DrawEvent("TEXT_" + param, new Text(
+            rect, similarity,
+            new Color(14, 37, 45, 255),
+            14, 3000)));
+  }
+
+  private Area getDebugRectArea(Area rect) {
+    return Area.ofRect(rect.getX() / 2, rect.getY() / 2, rect.getWidth() / 2, rect.getHeight() / 2);
+  }
+
+  private void drawImageCompareParam(ImageCompare.Param param) {
+    Area rect = getDebugRectArea(param.getArea());
+    displayHandler.draw(
+        new DrawEvent("RECT_" + param, new Rectangle(
+            rect,
+            new Color(84, 216, 255, 190),
+            3000)));
+  }
+
+  protected void debug(String msg, Object... args) {
+    guiLogger.debug(msg, args);
   }
 
   protected void press(ButtonAction action) {
@@ -158,9 +200,9 @@ public abstract class ScriptEngine {
     }
     subScript.execute();
   }
-
+//todo arrcur
   protected Long ocrNumber(OCR.Param param, int length) {
-    return until(() -> ocr.detect(param),
+    return until(() -> ocr(param),
         input -> input.getTextWithoutSpace().length() == length && input.getTextAsNumber() != null,
         () -> sleep(200)).getTextAsNumber();
   }
@@ -174,13 +216,47 @@ public abstract class ScriptEngine {
     return d;
   }
 
+  protected OCR.Result ocr(OCR.Param param) {
+    if (enableDebug.get()) {
+      long start = System.currentTimeMillis();
+      drawOCRParam(param);
+      OCR.Result detect = ocr.detect(param);
+      drawOCRResult(param, detect);
+      debug("ocr {} detected: {} , confidence: {}, cost {} ms", param.hashCode(),
+          detect.getTextWithoutSpace(), detect.getConfidence(), System.currentTimeMillis() - start);
+      return detect;
+    } else {
+      return ocr.detect(param);
+    }
+  }
+
+  private void drawOCRResult(OCR.Param param, OCR.Result detect) {
+    String result = detect.getTextWithoutSpace();
+    Area rect = getDebugRectArea(param.getArea());
+    displayHandler.draw(
+        new DrawEvent("TEXT_" + param, new Text(
+            rect, result,
+            new Color(66, 60, 19, 255),
+            14, 3000)));
+  }
+
+  private void drawOCRParam(OCR.Param param) {
+
+    Area rect = getDebugRectArea(param.getArea());
+    displayHandler.draw(
+        new DrawEvent("RECT_" + param, new Rectangle(
+            rect,
+            new Color(237, 224, 77, 190),
+            3000)));
+  }
+
   @SneakyThrows
   protected void sleep(long millis) {
     Thread.sleep(millis);
   }
 
   protected Long ocrNumber(OCR.Param param) {
-    return until(() -> ocr.detect(param),
+    return until(() -> ocr(param),
         input -> input.getTextAsNumber() != null,
         () -> sleep(200)).getTextAsNumber();
   }

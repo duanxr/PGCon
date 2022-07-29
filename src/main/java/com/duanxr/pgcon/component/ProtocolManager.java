@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.output;
+package com.duanxr.pgcon.component;
 
 import com.duanxr.pgcon.gui.component.GuiAlertException;
 import com.duanxr.pgcon.output.api.Protocol;

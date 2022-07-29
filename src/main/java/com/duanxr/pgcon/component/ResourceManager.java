@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.gui.component;
+package com.duanxr.pgcon.component;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ResourceManager {
-
+//TODO
   LoadingCache<String, Mat> imageCache = Caffeine.newBuilder()
       .maximumSize(1000)
       .build(this::loadImage);

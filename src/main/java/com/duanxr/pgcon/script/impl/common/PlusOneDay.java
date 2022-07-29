@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 /**
  * @author 段然 2022/7/25
  */
-@Slf4j
 @Component
 public class PlusOneDay extends ScriptEngine implements Script {
 
@@ -60,12 +59,18 @@ public class PlusOneDay extends ScriptEngine implements Script {
 
   @Override
   public void execute() {
+    initLocation();
     toMainMenu();
     toDateMenu();
     checkIfDateIsSyncByInternet();
     toDateSetting();
     plusOneDay();
     backToGame();
+  }
+
+  private void initLocation() {
+    press(HOME);
+    sleep(1000);
   }
 
   private void toMainMenu() {
@@ -91,17 +96,17 @@ public class PlusOneDay extends ScriptEngine implements Script {
     press(D_RIGHT);
     sleep(150);
     press(A);
-    sleep(1000);
+    sleep(700);
     hold(D_BOTTOM);
-    sleep(1300);
+    sleep(1500);
     release(D_BOTTOM);
-    sleep(30);
+    sleep(150);
     press(D_RIGHT);
-    sleep(200);
+    sleep(150);
     hold(D_BOTTOM);
     sleep(700);
     release(D_BOTTOM);
-    sleep(100);
+    sleep(150);
     press(A);
     sleep(500);
   }
@@ -119,7 +124,7 @@ public class PlusOneDay extends ScriptEngine implements Script {
     press(D_BOTTOM);
     sleep(150);
     press(D_BOTTOM);
-    sleep(150);
+    sleep(250);
     press(A);
     sleep(150);
   }
@@ -147,7 +152,7 @@ public class PlusOneDay extends ScriptEngine implements Script {
           input -> input == nextDay.getDayOfMonth(),
           () -> {
             press(D_TOP);
-            sleep(800);
+            sleep(300);
           });
     }
     press(A);
@@ -158,7 +163,7 @@ public class PlusOneDay extends ScriptEngine implements Script {
     sleep(150);
     press(A);
     sleep(150);
-    log.info("new date is: {}", nextDay);
+    info("date set to: {}", nextDay);
   }
 
   private void backToGame() {
