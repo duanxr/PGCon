@@ -1,9 +1,11 @@
 package com.duanxr.pgcon.core.preprocessing;
 
 import com.duanxr.pgcon.core.preprocessing.config.ChannelsFilterPreProcessorConfig;
+import com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.impl.ChannelsFilterPreProcessor;
+import com.duanxr.pgcon.core.preprocessing.impl.ColorPickFilterPreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.NormalizePreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.ThreshPreProcessor;
 import com.duanxr.pgcon.gui.exception.AbortScriptException;
@@ -37,6 +39,8 @@ public class PreprocessorFactory {
       return new ChannelsFilterPreProcessor((ChannelsFilterPreProcessorConfig) config);
     } else if (config instanceof NormalizePreProcessorConfig) {
       return new NormalizePreProcessor((NormalizePreProcessorConfig) config);
+    } else if (config instanceof ColorPickFilterPreProcessorConfig) {
+      return new ColorPickFilterPreProcessor((ColorPickFilterPreProcessorConfig) config);
     } else {
       throw new AbortScriptException("unknown preprocessor config: " + config.getClass());
     }

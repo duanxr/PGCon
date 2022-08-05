@@ -13,6 +13,7 @@ import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
+import com.duanxr.pgcon.gui.debug.DebugColorPickConfig;
 import com.duanxr.pgcon.gui.debug.DebugFilterConfig;
 import com.duanxr.pgcon.gui.debug.DebugMainConfig;
 import com.duanxr.pgcon.gui.debug.DebugNormalizeConfig;
@@ -213,6 +214,7 @@ public class MainPanel {
     this.debugFilterConfig = new DebugFilterConfig();
     this.debugThreshConfig = new DebugThreshConfig();
     this.debugNormalizeConfig = new DebugNormalizeConfig();
+    this.debugColorPickConfig = new DebugColorPickConfig();
   }
 
   @FXML
@@ -239,15 +241,20 @@ public class MainPanel {
         event -> callbackWithExceptionAlert(this::onDebugWindowClose));
     FXForm<?> debugNode = generateConfigNode(debugConfig);
     FXForm<?> filterDebugNode = generateConfigNode(debugFilterConfig);
+    FXForm<?> colorPickDebugNode = generateConfigNode(debugColorPickConfig);
     FXForm<?> normalizeDebugNode = generateConfigNode(debugNormalizeConfig);
     FXForm<?> binaryDebugNode = generateConfigNode(debugThreshConfig);
     setDebugWindowSize(debugNode);
     setDebugConfigSize(filterDebugNode);
+    setDebugConfigSize(colorPickDebugNode);
     setDebugConfigSize(normalizeDebugNode);
     setDebugConfigSize(binaryDebugNode);
-    HBox hBox = new HBox(debugNode, filterDebugNode, normalizeDebugNode, binaryDebugNode);
+    HBox hBox = new HBox(debugNode, filterDebugNode, colorPickDebugNode, normalizeDebugNode,
+        binaryDebugNode);
     pane.getChildren().add(hBox);
   }
+
+  private final DebugColorPickConfig debugColorPickConfig;
 
   private void setDebugWindowSize(FXForm<?> debugNode) {
     double width = 280;
@@ -296,10 +303,10 @@ public class MainPanel {
     screenProperty.set(screenImage);
     canvasProperty.set(canvasImage);
     displayHandler.registerScreen(
-        input -> Platform.runLater(() -> {
-          SwingFXUtils.toFXImage(input, screenImage);
+        input -> {
+          Platform.runLater(() -> SwingFXUtils.toFXImage(input, screenImage));
           refreshDebug();
-        }));
+        });
     displayHandler.registerCanvas(
         input -> Platform.runLater(() -> SwingFXUtils.toFXImage(input, canvasImage)));
     canvas.addEventHandler(MouseEvent.MOUSE_PRESSED,
@@ -314,6 +321,7 @@ public class MainPanel {
     if (debugWindow.isShowing()) {
       List<PreProcessor> preProcessors = preprocessorFactory.getPreProcessors(
           Arrays.asList(debugFilterConfig.convertToPreProcessorConfig(),
+              debugColorPickConfig.convertToColorPickerFilterPreProcessorConfig(),
               debugNormalizeConfig.convertToNormalizeConfig(),
               debugThreshConfig.convertToThreshPreProcessorConfig()));
       Mat originalMat = frameManager.getFrame().getMat();
@@ -329,8 +337,10 @@ public class MainPanel {
       }
       BufferedImage liveDebugImagePP = ImageConvertUtil.matToBufferedImage(liveMat);
       BufferedImage convertedDebugImagePP = ImageConvertUtil.matToBufferedImage(convertedMat);
-      SwingFXUtils.toFXImage(liveDebugImagePP, liveImage);
-      SwingFXUtils.toFXImage(convertedDebugImagePP, convertedImage);
+      Platform.runLater(() -> {
+        SwingFXUtils.toFXImage(liveDebugImagePP, liveImage);
+        SwingFXUtils.toFXImage(convertedDebugImagePP, convertedImage);
+      });
     }
   }
 
