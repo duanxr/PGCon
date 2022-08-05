@@ -1,11 +1,10 @@
 package com.duanxr.pgcon.core;
 
-import com.duanxr.pgcon.core.DaemonTask;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.core.FrameManager;
 import com.duanxr.pgcon.core.FrameManager.CachedFrame;
 import com.duanxr.pgcon.gui.display.DrawEvent;
+import com.duanxr.pgcon.gui.display.api.Drawable;
 import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.input.impl.StaticImageInput;
 import com.duanxr.pgcon.util.ImageResizeUtil;
@@ -31,7 +30,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.duanxr.pgcon.gui.display.api.Drawable;
 
 /**
  * @author Duanran 2019/12/21
@@ -52,6 +50,7 @@ public class DisplayHandler {
   @Getter
   private volatile CameraImageInput imageInput;
   private volatile Consumer<BufferedImage> screen;
+
   @Autowired
   public DisplayHandler(InputConfig inputConfig, GuiConfig guiConfig,
       ExecutorService executorService, AtomicBoolean frozenScreen, FrameManager frameManager) {
@@ -167,7 +166,8 @@ public class DisplayHandler {
 
   private void notifyCanvasLater(long duration) {
     try {
-      scheduledExecutorService.schedule(this::notifyCanvas, duration + NOTIFY_CANVAS_DELAY, TimeUnit.MILLISECONDS);
+      scheduledExecutorService.schedule(this::notifyCanvas, duration + NOTIFY_CANVAS_DELAY,
+          TimeUnit.MILLISECONDS);
     } catch (Exception ignored) {
     }
   }

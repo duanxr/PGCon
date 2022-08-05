@@ -6,8 +6,7 @@ import com.duanxr.pgcon.algo.model.Area;
 import com.duanxr.pgcon.gui.exception.AbortScriptException;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 import lombok.SneakyThrows;
@@ -70,13 +69,11 @@ public class ImageConvertUtil {
   }
 
   /**
-   * 275 ms for 1920*1080 image by 100 times
+   * 304 ms for 1920*1080 image by 100 times
    */
   public static BufferedImage matToBufferedImage(Mat mat) {
-    int type = BufferedImage.TYPE_BYTE_GRAY;
-    if (mat.channels() > 1) {
-      type = BufferedImage.TYPE_3BYTE_BGR;
-    }
+    int type = mat.channels() == 1 ? BufferedImage.TYPE_BYTE_GRAY
+        : mat.channels() == 3 ? BufferedImage.TYPE_3BYTE_BGR : BufferedImage.TYPE_4BYTE_ABGR;
     byte[] bytes = matToByteArray(mat);
     BufferedImage image = new BufferedImage(mat.cols(), mat.rows(), type);
     final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
@@ -86,21 +83,11 @@ public class ImageConvertUtil {
 
 
   /**
-   * 3251 ms for 1920*1080 image by 100 times
-   */
-  @SneakyThrows
-  public static BufferedImage matToBufferedImage1(Mat mat) {
-    MatOfByte mob = new MatOfByte();
-    Imgcodecs.imencode(".BMP", mat, mob);
-    return ImageIO.read(new ByteArrayInputStream(mob.toArray()));
-  }
-
-  /**
-   * 121 ms for 1920*1080 image by 100 times
+   * 149 ms for 1920*1080 image by 100 times
    */
   public static Mat bufferedImageToMat(BufferedImage bufferedImage) {
-    int type =
-        bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY ? CvType.CV_8UC1 : CvType.CV_8UC3;
+    int type = bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY ? CvType.CV_8UC1 :
+        bufferedImage.getType() == BufferedImage.TYPE_3BYTE_BGR ? CvType.CV_8UC3 : CvType.CV_8UC4;
     Mat mat = new Mat(bufferedImage.getHeight(), bufferedImage.getWidth(), type);
     byte[] data = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
     int dataSize = mat.channels() * mat.cols() * mat.rows();
@@ -123,19 +110,6 @@ public class ImageConvertUtil {
     return mat;
   }
 
-  /**
-   * 5209 ms for 1920*1080 image by 100 times
-   */
-  @SneakyThrows
-
-  public static Mat bufferedImageToMat1(BufferedImage bufferedImage) {
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    ImageIO.write(bufferedImage, "BMP", byteArrayOutputStream);
-    byteArrayOutputStream.flush();
-    return Imgcodecs.imdecode(new MatOfByte(byteArrayOutputStream.toByteArray()),
-        Imgcodecs.IMREAD_UNCHANGED);
-
-  }
 
   public static byte[] matToByteArray(Mat mat) {
     int bufferSize = mat.channels() * mat.cols() * mat.rows();
@@ -212,33 +186,5 @@ public class ImageConvertUtil {
     }
     return mat;
   }
-
-  public static void main(String[] args) {
-    OpenCV.loadLocally();
-    Mat mat = Imgcodecs.imread("D:\\DuanXR\\Project\\DuanXR\\PGCon\\images\\1659286541540.png");
-    long s = System.currentTimeMillis();
-    BufferedImage bufferedImage = null;
-    for (int i = 0; i < 100; i++) {
-      bufferedImage = matToBufferedImage(mat);
-    }
-    System.out.printf("%dms", System.currentTimeMillis() - s);
-    s = System.currentTimeMillis();
-    for (int i = 0; i < 100; i++) {
-      bufferedImage = matToBufferedImage1(mat);
-    }
-    System.out.printf("%dms", System.currentTimeMillis() - s);
-    s = System.currentTimeMillis();
-    for (int i = 0; i < 100; i++) {
-      mat = bufferedImageToMat(bufferedImage);
-    }
-    System.out.printf("%dms", System.currentTimeMillis() - s);
-    s = System.currentTimeMillis();
-    for (int i = 0; i < 100; i++) {
-      mat = bufferedImageToMat1(bufferedImage);
-
-    }
-    System.out.printf("%dms", System.currentTimeMillis() - s);
-  }
-
 
 }

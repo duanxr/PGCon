@@ -6,6 +6,7 @@ import com.dooapp.fxform.view.factory.FactoryProvider;
 import com.duanxr.pgcon.PGConApplication;
 import com.duanxr.pgcon.algo.preprocessing.PreProcessor;
 import com.duanxr.pgcon.algo.preprocessing.PreprocessorFactory;
+import com.duanxr.pgcon.config.ConstantConfig;
 import com.duanxr.pgcon.core.DaemonTask;
 import com.duanxr.pgcon.gui.debug.DebugFilterConfig;
 import com.duanxr.pgcon.gui.debug.DebugMainConfig;
@@ -13,6 +14,7 @@ import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
 import com.duanxr.pgcon.util.ImageConvertUtil;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -21,9 +23,11 @@ import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -75,7 +79,7 @@ public class PGConGUI extends Application {
   @SneakyThrows
   public void start(Stage primaryStage) {
     try {
-      /*primaryStage.setTitle(ConstantConfig.MAIN_PANEL_TITLE);
+      primaryStage.setTitle(ConstantConfig.MAIN_PANEL_TITLE);
       FXMLLoader loader = new FXMLLoader();
       loader.setControllerFactory(context::getBean);
       URL resource = PGConGUI.class.getResource("/javafx/MainPanel.fxml");
@@ -84,8 +88,7 @@ public class PGConGUI extends Application {
       Scene scene = new Scene(load);
       primaryStage.setScene(scene);
       primaryStage.setResizable(false);
-      primaryStage.show();*/
-      test();
+      primaryStage.show();
     } catch (Exception e) {
       log.error("PGCon GUI start error", e);
     }

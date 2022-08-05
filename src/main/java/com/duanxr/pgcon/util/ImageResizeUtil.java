@@ -2,10 +2,8 @@ package com.duanxr.pgcon.util;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import net.coobird.thumbnailator.Thumbnails;
 
 /**
  * @author 段然 2022/7/27
@@ -14,24 +12,17 @@ import net.coobird.thumbnailator.Thumbnails;
 public class ImageResizeUtil {
 
   /**
-   * resize cost 95 ms
-   */
-  @SneakyThrows
-  public static BufferedImage resizeV1(BufferedImage original, int newWidth, int newHeight) {
-    return Thumbnails.of(original).size(newWidth, newHeight).asBufferedImage();
-  }
-
-  /**
-   * resize cost 6 ms, the fastest so far,
-   * <a href="https://web.archive.org/web/20170809062128/http://willperone.net/Code/codescaling.php">...</a>
-   * <a href="https://stackoverflow.com/questions/42615441/convert-2d-pixel-array-into-bufferedimage">...</a>
+   * resize cost 6 ms, the fastest so far, <a
+   * href="https://web.archive.org/web/20170809062128/http://willperone.net/Code/codescaling.php">...</a>
+   * <a
+   * href="https://stackoverflow.com/questions/42615441/convert-2d-pixel-array-into-bufferedimage">...</a>
    * <a href="https://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image">...</a>
    */
   @SneakyThrows
   public static BufferedImage resizeV2(BufferedImage original, int newWidth, int newHeight) {
-    int[] rawInput = convertBufferedImageTo1D(original);
+    boolean hasAlphaChannel = original.getAlphaRaster() != null;
+    int[] rawInput = convertBufferedImageTo1D(original, hasAlphaChannel);
     int[] rawOutput = new int[newWidth * newHeight];
-    // YD compensates for the x loop by subtracting the width back out
     int YD = (original.getHeight() / newHeight) * original.getWidth() - original.getWidth();
     int YR = original.getHeight() % newHeight;
     int XD = original.getWidth() / newWidth;
@@ -55,12 +46,11 @@ public class ImageResizeUtil {
         inOffset += original.getWidth();
       }
     }
-    return convert1DToBufferedImage(rawOutput, newWidth, newHeight);
+    return convert1DToBufferedImage(rawOutput, newWidth, newHeight, hasAlphaChannel);
   }
 
-  private static int[] convertBufferedImageTo1D(BufferedImage image) {
+  private static int[] convertBufferedImageTo1D(BufferedImage image, boolean hasAlphaChannel) {
     byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-    boolean hasAlphaChannel = image.getAlphaRaster() != null;
     int[] result = new int[pixels.length];
     int index = 0;
     if (hasAlphaChannel) {
@@ -87,11 +77,30 @@ public class ImageResizeUtil {
     return result;
   }
 
-  private static BufferedImage convert1DToBufferedImage(int[] pixelData, int width, int height) {
-    BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_BGR);
-    int[] outputImagePixelData = ((DataBufferInt) outputImage.getRaster()
-        .getDataBuffer()).getData();
-    System.arraycopy(pixelData, 0, outputImagePixelData, 0, outputImagePixelData.length);
+  private static BufferedImage convert1DToBufferedImage(int[] pixelData, int width, int height,
+      boolean hasAlphaChannel) {
+    BufferedImage outputImage = new BufferedImage(width, height,
+        hasAlphaChannel ? BufferedImage.TYPE_4BYTE_ABGR : BufferedImage.TYPE_3BYTE_BGR);
+    byte[] pixels = ((DataBufferByte) outputImage.getRaster().getDataBuffer()).getData();
+    int index = 0;
+    if (hasAlphaChannel) {
+      int pixelLength = 4;
+      for (int pixel = 0; pixel + 3 < pixels.length; pixel += pixelLength) {
+        int pixelDatum = pixelData[index++];
+        pixels[pixel + 1] = (byte) (pixelDatum & 0xff); // blue
+        pixels[pixel + 2] = (byte) (pixelDatum >> 8 & 0xff); // green
+        pixels[pixel + 3] = (byte) (pixelDatum >> 16 & 0xff); // red
+        pixels[pixel] = (byte) (pixelDatum >> 24); // alpha
+      }
+    } else {
+      int pixelLength = 3;
+      for (int pixel = 0; pixel + 2 < pixels.length; pixel += pixelLength) {
+        int pixelDatum = pixelData[index++];
+        pixels[pixel + 2] = (byte) (pixelDatum & 0xff); // blue
+        pixels[pixel + 1] = (byte) (pixelDatum >> 8 & 0xff); // green
+        pixels[pixel] = (byte) (pixelDatum >> 16 & 0xff); // red
+      }
+    }
     return outputImage;
   }
 }
