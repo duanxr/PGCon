@@ -5,12 +5,10 @@ import com.duanxr.pgcon.algo.detect.api.OCR;
 import com.duanxr.pgcon.algo.detect.api.OCR.ApiConfig;
 import com.duanxr.pgcon.algo.detect.api.OCR.Method;
 import com.duanxr.pgcon.algo.detect.api.OCR.Param;
-import com.duanxr.pgcon.algo.detect.model.Area;
-import com.duanxr.pgcon.output.action.ButtonAction;
+import com.duanxr.pgcon.algo.model.Area;
 import com.duanxr.pgcon.script.api.Script;
 import com.duanxr.pgcon.script.component.ScriptEngine;
 import java.time.LocalDate;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**

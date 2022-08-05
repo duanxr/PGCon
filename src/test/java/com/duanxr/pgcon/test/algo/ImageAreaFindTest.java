@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.test.algo;
 
-import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.algo.model.Area;
 import com.duanxr.pgcon.test.util.TestUtil;
 import java.util.ArrayList;
 import java.util.List;

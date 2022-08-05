@@ -1,17 +1,41 @@
 package com.duanxr.pgcon.gui;
 
 
+import com.dooapp.fxform.FXForm;
+import com.dooapp.fxform.view.factory.FactoryProvider;
 import com.duanxr.pgcon.PGConApplication;
-import com.duanxr.pgcon.config.ConstantConfig;
-import java.net.URL;
+import com.duanxr.pgcon.algo.preprocessing.PreProcessor;
+import com.duanxr.pgcon.algo.preprocessing.PreprocessorFactory;
+import com.duanxr.pgcon.core.DaemonTask;
+import com.duanxr.pgcon.gui.debug.DebugFilterConfig;
+import com.duanxr.pgcon.gui.debug.DebugMainConfig;
+import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
+import com.duanxr.pgcon.util.ImageConvertUtil;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import javafx.application.Application;
 import javafx.application.HostServices;
-import javafx.fxml.FXMLLoader;
+import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javax.imageio.ImageIO;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.bytedeco.opencv.global.opencv_imgproc;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfInt;
+import org.opencv.imgproc.Imgproc;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -51,7 +75,7 @@ public class PGConGUI extends Application {
   @SneakyThrows
   public void start(Stage primaryStage) {
     try {
-      primaryStage.setTitle(ConstantConfig.MAIN_PANEL_TITLE);
+      /*primaryStage.setTitle(ConstantConfig.MAIN_PANEL_TITLE);
       FXMLLoader loader = new FXMLLoader();
       loader.setControllerFactory(context::getBean);
       URL resource = PGConGUI.class.getResource("/javafx/MainPanel.fxml");
@@ -60,10 +84,90 @@ public class PGConGUI extends Application {
       Scene scene = new Scene(load);
       primaryStage.setScene(scene);
       primaryStage.setResizable(false);
-      primaryStage.show();
+      primaryStage.show();*/
+      test();
     } catch (Exception e) {
       log.error("PGCon GUI start error", e);
     }
   }
+
+
+  private FactoryProvider editorFactoryProvider;
+  private FactoryProvider labelFactoryProvider;
+
+  private FactoryProvider tooltipFactoryProvider;
+
+  @SneakyThrows
+  private void test() {
+    editorFactoryProvider = context.getBean("editorFactoryProvider", FactoryProvider.class);
+    labelFactoryProvider = context.getBean("labelFactoryProvider", FactoryProvider.class);
+    tooltipFactoryProvider = context.getBean("tooltipFactoryProvider", FactoryProvider.class);
+    Stage debugWindow = new Stage();
+    debugWindow.setTitle("OCR Debug Window");
+    debugWindow.setResizable(true);
+    Pane pane = new Pane();
+    Scene debugScene = new Scene(pane);
+    debugWindow.setScene(debugScene);
+    Node debugNode = generateDebugConfigNode(debugConfig);
+    Node imageFilterDebugNode = generateDebugConfigNode(debugFilterConfig);
+    Node imageBinaryDebugNode = generateDebugConfigNode(debugThreshConfig);
+    HBox vBox = new HBox(debugNode, imageFilterDebugNode, imageBinaryDebugNode);
+    pane.getChildren().add(vBox);
+
+    BufferedImage bufferedImage = ImageIO.read(
+        new File("C:\\Users\\段然\\Desktop\\QQ截图20220801090051.jpg"));
+    PreprocessorFactory preprocessorFactory = context.getBean("preprocessorFactory",
+        PreprocessorFactory.class);
+    bufferedImage = bufferedImage.getSubimage(0, 0, bufferedImage.getWidth() - 1,
+        bufferedImage.getHeight());
+    WritableImage selectedImage = new WritableImage(bufferedImage.getWidth(),
+        bufferedImage.getHeight());
+    WritableImage liveImage = new WritableImage(bufferedImage.getWidth(),
+        bufferedImage.getHeight());
+    debugConfig.getSelectedImage().set(selectedImage);
+    BufferedImage finalBufferedImage = bufferedImage;
+    Platform.runLater(() -> SwingFXUtils.toFXImage(finalBufferedImage, selectedImage));
+    debugConfig.getLiveImage().set(liveImage);
+    ExecutorService executorService = context.getBean("executorService", ExecutorService.class);
+    executorService.execute(DaemonTask.of("test", () -> {
+      try {
+        TimeUnit.MILLISECONDS.sleep(300);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      List<PreProcessor> preProcessors = preprocessorFactory.getPreProcessors(
+          Arrays.asList(debugFilterConfig.convertToPreProcessorConfig(),
+              debugThreshConfig.convertToThreshPreProcessorConfig()));
+      BufferedImage subImage = finalBufferedImage;
+      Mat mat = ImageConvertUtil.bufferedImageToMat(subImage);
+      for (PreProcessor preProcessor : preProcessors) {
+        preProcessor.preProcess(mat);
+      }
+      subImage = ImageConvertUtil.matToBufferedImage(mat);
+      BufferedImage finalSubImage = subImage;
+      Platform.runLater(() -> SwingFXUtils.toFXImage(finalSubImage, liveImage));
+    }));
+    debugWindow.show();
+  }
+  private double[] rgbFilter(double blueWeight, double greenWeight, double redWeight) {
+    double[] defaultWeight = {0.114, 0.587, 0.299};
+    double sum = blueWeight + greenWeight + redWeight;
+    if (sum != 3) {
+      defaultWeight[0] = defaultWeight[0] * blueWeight / sum;
+      defaultWeight[1] = defaultWeight[1] * greenWeight / sum;
+      defaultWeight[2] = defaultWeight[2] * redWeight / sum;
+    }
+    return defaultWeight;
+  }
+
+  private final DebugMainConfig debugConfig = new DebugMainConfig();
+  private final DebugFilterConfig debugFilterConfig = new DebugFilterConfig();
+  private final DebugThreshConfig debugThreshConfig = new DebugThreshConfig();
+
+  private Node generateDebugConfigNode(Object configBean) {
+    return new FXForm<>(configBean, labelFactoryProvider,
+        tooltipFactoryProvider, editorFactoryProvider);
+  }
+
 
 }

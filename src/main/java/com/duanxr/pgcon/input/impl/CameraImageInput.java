@@ -1,23 +1,14 @@
 package com.duanxr.pgcon.input.impl;
 
 
-import boofcv.io.image.SimpleImageSequence;
-import boofcv.io.webcamcapture.UtilWebcamCapture;
-import boofcv.io.webcamcapture.WebcamCaptureWebcamInterface.SimpleSequence;
-import boofcv.io.wrapper.DefaultMediaManager;
-import boofcv.struct.image.GrayF32;
-import boofcv.struct.image.ImageType;
-import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.gui.component.GuiAlertException;
+import com.duanxr.pgcon.gui.exception.GuiAlertException;
 import com.duanxr.pgcon.input.api.ImageInput;
 import com.github.sarxos.webcam.Webcam;
 import com.google.common.base.Strings;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Duanran 2019/12/16

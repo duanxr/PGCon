@@ -1,17 +1,26 @@
 package com.duanxr.pgcon.algo.detect.api;
 
-import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.algo.detect.api.ImageCompare.Param;
+import com.duanxr.pgcon.algo.detect.api.ImageCompare.Result;
+import com.duanxr.pgcon.algo.model.Area;
+import com.duanxr.pgcon.algo.preprocessing.PreProcessorConfig;
+import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * @author 段然 2021/12/28
  */
-public interface ImageCompare extends Detector<ImageCompare.Result, ImageCompare.Param> {
+public interface ImageCompare extends Detector<Result, Param> {
 
   @Data
   @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   class Param {
 
     @NonNull
@@ -22,6 +31,9 @@ public interface ImageCompare extends Detector<ImageCompare.Result, ImageCompare
 
     private String mask;
 
+    @Singular
+    private List<PreProcessorConfig> preProcessors;
+
     @NonNull
     private Method method;
 
@@ -29,6 +41,8 @@ public interface ImageCompare extends Detector<ImageCompare.Result, ImageCompare
 
   @Data
   @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   class Result {
 
     @NonNull
@@ -36,6 +50,7 @@ public interface ImageCompare extends Detector<ImageCompare.Result, ImageCompare
 
     @NonNull
     private Long timestamp;
+
   }
 
 

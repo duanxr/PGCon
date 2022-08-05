@@ -3,7 +3,7 @@ package com.duanxr.pgcon.script.impl.monsterhunter;
 import com.duanxr.pgcon.algo.detect.api.OCR;
 import com.duanxr.pgcon.algo.detect.api.OCR.ApiConfig;
 import com.duanxr.pgcon.algo.detect.api.OCR.Param;
-import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.algo.model.Area;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.component.ScriptEngine;
@@ -87,7 +87,7 @@ public class AutoAmiibo extends ScriptEngine implements MainScript {
   }
 
   private boolean containAmiibo(OCR.Result result) {
-    return result.getTextAsLowerCase().contains("amiibo");
+    return result.getTextWithoutSpace().toLowerCase().contains("amiibo");
   }
 
   @Override

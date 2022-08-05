@@ -1,24 +1,34 @@
 package com.duanxr.pgcon.algo.detect.api;
 
-import com.duanxr.pgcon.algo.detect.model.Area;
-import com.duanxr.pgcon.component.FrameManager;
+import com.duanxr.pgcon.core.FrameManager;
+import com.duanxr.pgcon.algo.detect.api.OCR.Param;
+import com.duanxr.pgcon.algo.detect.api.OCR.Result;
+import com.duanxr.pgcon.algo.model.Area;
+import com.duanxr.pgcon.algo.preprocessing.PreProcessorConfig;
+import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Singular;
 
 /**
  * @author 段然 2021/12/28
  */
-public interface OCR extends Detector<OCR.Result, OCR.Param> {
+public interface OCR extends Detector<Result, Param> {
 
   @Data
   @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   class Param {
 
     @NonNull
     private Area area;
+
+    @Singular
+    private List<PreProcessorConfig> preProcessors;
 
     @NonNull
     private ApiConfig apiConfig;
@@ -27,8 +37,8 @@ public interface OCR extends Detector<OCR.Result, OCR.Param> {
 
   @Data
   @Builder
-  @ToString
-  @EqualsAndHashCode
+  @NoArgsConstructor
+  @AllArgsConstructor
   class ApiConfig {
 
     private String path;
@@ -42,6 +52,8 @@ public interface OCR extends Detector<OCR.Result, OCR.Param> {
 
   @Data
   @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   class Result {
 
     @NonNull
@@ -56,6 +68,7 @@ public interface OCR extends Detector<OCR.Result, OCR.Param> {
     public String getTextWithoutSpace() {
       return text.trim().replaceAll(" ", "").replaceAll("\n", "");
     }
+
     public Long getTextAsNumber() {
       try {
         return Long.parseLong(getTextWithoutSpace());
@@ -63,6 +76,7 @@ public interface OCR extends Detector<OCR.Result, OCR.Param> {
         return null;
       }
     }
+
     public String getTextWithoutSpaceAndNumber() {
       return getTextWithoutSpace().replaceAll("\\d", "");
     }
@@ -74,14 +88,6 @@ public interface OCR extends Detector<OCR.Result, OCR.Param> {
     public String getTextWithoutSpaceAndNumberAndCommaAndDot() {
       return getTextWithoutSpaceAndNumberAndComma().replaceAll("\\.", "");
     }
-    public String getTextAsUpperCase() {
-      return getTextWithoutSpaceAndNumberAndCommaAndDot().toUpperCase();
-    }
-
-    public String getTextAsLowerCase() {
-      return getTextWithoutSpaceAndNumberAndCommaAndDot().toLowerCase();
-    }
-
   }
 
   enum Method {

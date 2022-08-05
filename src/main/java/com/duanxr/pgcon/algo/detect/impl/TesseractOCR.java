@@ -1,20 +1,23 @@
 package com.duanxr.pgcon.algo.detect.impl;
 
 
-import com.duanxr.pgcon.component.ResourceManager;
-import com.duanxr.pgcon.component.FrameManager;
-import com.duanxr.pgcon.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.core.FrameManager;
+import com.duanxr.pgcon.core.FrameManager.CachedFrame;
 import com.duanxr.pgcon.algo.detect.api.OCR;
-import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.algo.model.Area;
+import com.duanxr.pgcon.algo.preprocessing.PreProcessorConfig;
+import com.duanxr.pgcon.algo.preprocessing.PreprocessorFactory;
 import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.duanxr.pgcon.util.TesseractDataLoadUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Strings;
-import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.PreDestroy;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.math3.util.Pair;
@@ -29,24 +32,21 @@ import org.springframework.stereotype.Component;
 /**
  * @author 段然 2021/12/29
  */
-@Component
+
 @Slf4j
-public class TesseractOCR implements OCR {
+@Component
+public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implements OCR {
 
   private static final Integer DEFAULT_OCR_ENGINE_MODE = tesseract.OEM_LSTM_ONLY;
   private static final Integer DEFAULT_PAGE_SEG_MODE = tesseract.PSM_SINGLE_LINE;
-  private static final String DEFAULT_TESSDATA_PATH = "D:/DuanXR/Project/DuanXR/PGCon/src/main/resources/tessdata/";
   private static final String TESSEDIT_CHAR_BLACKLIST = "tessedit_char_blacklist";
   private static final String TESSEDIT_CHAR_WHITELIST = "tessedit_char_whitelist";
   private final Map<Method, TessBaseAPI> defaultApiMap;
-  private final FrameManager frameManager;
-  private final ResourceManager resourceManager;
   private final LoadingCache<ApiConfig, TessBaseAPI> specialApiMap;
 
   @Autowired
-  public TesseractOCR(FrameManager frameManager, ResourceManager resourceManager) {
-    this.frameManager = frameManager;
-    this.resourceManager = resourceManager;
+  public TesseractOCR(PreprocessorFactory preprocessorFactory, FrameManager frameManager) {
+    super(frameManager, preprocessorFactory);
     this.defaultApiMap = new HashMap<>();
     this.specialApiMap = Caffeine.newBuilder().build(this::createTessBaseAPI);
     for (Method method : Method.values()) {
@@ -55,17 +55,17 @@ public class TesseractOCR implements OCR {
     }
   }
 
+  @SneakyThrows
   private TessBaseAPI createTessBaseAPI(ApiConfig apiConfig) {
     TessBaseAPI tessBaseAPI = new TessBaseAPI();
-    String path = ObjectUtils.firstNonNull(apiConfig.getPath(), DEFAULT_TESSDATA_PATH);
+    String path = TesseractDataLoadUtil.getDataPath(apiConfig.getMethod().name().toLowerCase());
     String method = apiConfig.getMethod().name().toLowerCase();
     Integer pageSegMode = ObjectUtils.firstNonNull(apiConfig.getPageSegMode(),
         DEFAULT_PAGE_SEG_MODE);
     Integer ocrEngineMode = ObjectUtils.firstNonNull(apiConfig.getOcrEngineMode(),
         DEFAULT_OCR_ENGINE_MODE);
     tessBaseAPI.SetPageSegMode(pageSegMode);
-    int initResult = tessBaseAPI.Init(resourceManager.getFile(path).getAbsolutePath(), method,
-        ocrEngineMode);
+    int initResult = tessBaseAPI.Init(path, method, ocrEngineMode);
     if (initResult != 0) {
       log.error("Could not initialize tesseract! config: {}", apiConfig);
       return null;
@@ -82,9 +82,13 @@ public class TesseractOCR implements OCR {
 
   @Override
   public Result detect(Param param) {
-    CachedFrame cachedFrame = getFrame();
-    PIX image = getImage(cachedFrame, param.getArea());
     TessBaseAPI tessBaseAPI = getApi(param.getApiConfig());
+    Area area = param.getArea();
+    List<PreProcessorConfig> preProcessors = param.getPreProcessors();
+    CachedFrame cachedFrame = getImage();
+    Mat targetMat = getTarget(cachedFrame, area, !preProcessors.isEmpty());
+    targetMat = tryPreProcess(targetMat, preProcessors);
+    PIX image = ImageConvertUtil.matToPix(targetMat);
     Pair<String, Integer> result = getText(tessBaseAPI, image);
     return warpResult(result, cachedFrame);
   }
@@ -93,9 +97,11 @@ public class TesseractOCR implements OCR {
     return frameManager.getFrame();
   }
 
-  private PIX getImage(CachedFrame cachedFrame, Area area) {
-    Mat imageMat = splitMat(cachedFrame, area);
-    return ImageConvertUtil.matToPix(imageMat);
+  private Mat getTarget(CachedFrame cachedFrame, Area area, boolean deepCopy) {
+    return area == null ? deepCopy ? ImageConvertUtil.deepCopyMat(cachedFrame.getMat())
+        : cachedFrame.getMat()
+        : deepCopy ? ImageConvertUtil.deepSplitMat(cachedFrame.getMat(), area)
+            : ImageConvertUtil.splitMat(cachedFrame.getMat(), area);
   }
 
   private TessBaseAPI getApi(ApiConfig apiConfig) {
@@ -132,19 +138,6 @@ public class TesseractOCR implements OCR {
         apiConfig.getWhitelist()) && Strings.isNullOrEmpty(apiConfig.getBlacklist())
         && Objects.isNull(apiConfig.getOcrEngineMode()) && Objects.isNull(
         apiConfig.getPageSegMode());
-  }
-
-  private void initApi(Map<Method, TessBaseAPI> apiMap, Method method, String path) {
-    TessBaseAPI tessBaseAPI = new TessBaseAPI();
-    File file = resourceManager.getFile(path);
-    long length = file.length();
-    int init = tessBaseAPI.Init(file.getAbsolutePath(), method.name().toLowerCase(),
-        DEFAULT_OCR_ENGINE_MODE);
-    if (init != 0) {
-      log.error("Could not initialize tesseract.");
-    }
-    tessBaseAPI.SetPageSegMode(DEFAULT_PAGE_SEG_MODE);
-    apiMap.put(method, tessBaseAPI);
   }
 
   @PreDestroy

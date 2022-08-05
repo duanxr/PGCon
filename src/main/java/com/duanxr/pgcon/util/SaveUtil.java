@@ -32,8 +32,8 @@ public class SaveUtil {
     return file;
   }
 
-  public static void saveTempImage(Mat m) {
-    saveTempImage(ImageConvertUtil.matToBufferedImage(m));
+  public static File saveTempImage(Mat m) {
+    return saveImage(ImageConvertUtil.matToBufferedImage(m));
   }
 
 

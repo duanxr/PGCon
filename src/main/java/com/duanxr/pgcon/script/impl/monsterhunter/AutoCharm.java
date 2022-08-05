@@ -8,11 +8,12 @@ import com.duanxr.pgcon.algo.detect.api.OCR.ApiConfig;
 import com.duanxr.pgcon.algo.detect.api.OCR.Method;
 import com.duanxr.pgcon.algo.detect.api.OCR.Param;
 import com.duanxr.pgcon.algo.detect.api.OCR.Result;
-import com.duanxr.pgcon.algo.detect.model.Area;
-import com.duanxr.pgcon.gui.component.AbortScriptException;
-import com.duanxr.pgcon.gui.component.GuiAlertException;
+import com.duanxr.pgcon.algo.model.Area;
+import com.duanxr.pgcon.gui.exception.AbortScriptException;
+import com.duanxr.pgcon.gui.exception.GuiAlertException;
+import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
 import com.duanxr.pgcon.output.action.StickAction;
-import com.duanxr.pgcon.script.api.ConfigurableMainScript;
+import com.duanxr.pgcon.script.api.ConfigurableScript;
 import com.duanxr.pgcon.script.component.ScriptEngine;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -37,7 +38,7 @@ import org.springframework.stereotype.Component;
  * @author 段然 2022/7/25
  */
 @Component
-public class AutoCharm extends ScriptEngine implements ConfigurableMainScript {
+public class AutoCharm extends ScriptEngine implements ConfigurableScript {
 
   int number = 0;
   private static final String CHARM_LEVEL_WHITELIST = "123456";
@@ -655,7 +656,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableMainScript {
       warn("find a target charm:{}", result);
       press(PLUS);
       sleep(200);
-      if (config.getCapture_Screen_When_Find().get()) {
+      if (config.getCaptureScreenWhenFind().get()) {
         press(CAPTURE);
         sleep(200);
       }
@@ -806,8 +807,8 @@ public class AutoCharm extends ScriptEngine implements ConfigurableMainScript {
 
   @Data
   public static class Config {
-
-    private SimpleBooleanProperty Capture_Screen_When_Find = new SimpleBooleanProperty(true);
+    @ConfigLabel("Capture Screen When Find")
+    private SimpleBooleanProperty captureScreenWhenFind = new SimpleBooleanProperty(true);
     private SimpleIntegerProperty How_Many_Round_To_Change = new SimpleIntegerProperty(10);
     @FormFactory(TextAreaFactory.class)
     private SimpleStringProperty Target_Skills = new SimpleStringProperty();

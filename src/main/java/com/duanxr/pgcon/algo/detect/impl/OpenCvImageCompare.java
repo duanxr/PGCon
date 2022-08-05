@@ -1,12 +1,15 @@
 package com.duanxr.pgcon.algo.detect.impl;
 
-import com.duanxr.pgcon.component.ResourceManager;
-import com.duanxr.pgcon.component.FrameManager;
-import com.duanxr.pgcon.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.core.FrameManager;
+import com.duanxr.pgcon.core.FrameManager.CachedFrame;
 import com.duanxr.pgcon.algo.detect.api.ImageCompare;
-import com.duanxr.pgcon.algo.detect.model.Area;
+import com.duanxr.pgcon.algo.model.Area;
+import com.duanxr.pgcon.algo.preprocessing.PreProcessorConfig;
+import com.duanxr.pgcon.algo.preprocessing.PreprocessorFactory;
 import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.google.common.base.Strings;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import org.opencv.core.Core;
@@ -25,16 +28,14 @@ import org.springframework.stereotype.Component;
  * @author 段然 2021/12/6
  */
 @Component
-public class OpenCvImageCompare implements ImageCompare {
+public class OpenCvImageCompare extends
+    ImageDetector<ImageCompare.Result, ImageCompare.Param> implements ImageCompare {
 
   private final Map<Method, BiFunction<Mat, Mat, Double>> methods;
-  private final ResourceManager resourceManager;
-  private final FrameManager frameManager;
 
   @Autowired
-  public OpenCvImageCompare(FrameManager frameManager, ResourceManager resourceManager) {
-    this.resourceManager = resourceManager;
-    this.frameManager = frameManager;
+  public OpenCvImageCompare(PreprocessorFactory preprocessorFactory, FrameManager frameManager) {
+    super(frameManager, preprocessorFactory);
     this.methods = new HashMap<>();
     methods.put(Method.ORB, this::orb);
     methods.put(Method.TM_SQDIFF, this::templateMatchingSQDIFF);
@@ -44,20 +45,20 @@ public class OpenCvImageCompare implements ImageCompare {
 
   @Override
   public Result detect(Param param) {
-    Mat temple = resourceManager.getImage(param.getTemplate());
-    Mat mask = param.getMask() == null ? null : resourceManager.getImage(param.getMask());
+    Mat temple = ImageConvertUtil.matFromJson(param.getTemplate());
+    Mat mask = Strings.isNullOrEmpty(param.getMask()) ? null
+        : ImageConvertUtil.matFromJson(param.getMask());
     Area area = param.getArea();
     Method method = param.getMethod();
-    if (temple.empty()) {
-      throw new IllegalArgumentException(
-          "OpenCv comparing temple is empty, please check the image path and make sure it doesn't contain any chinese or other special characters.");
-    }
-    return detectNow(temple, mask, area, method);
+    List<PreProcessorConfig> preProcessors = param.getPreProcessors();
+    return detectNow(temple, mask, area, preProcessors, method);
   }
 
-  private Result detectNow(Mat temple, Mat mask, Area area, Method method) {
-    CachedFrame cachedFrame = frameManager.getFrame();
-    Mat targetMat = getTarget(cachedFrame, area);
+  private Result detectNow(Mat temple, Mat mask, Area area, List<PreProcessorConfig> preProcessors,
+      Method method) {
+    CachedFrame cachedFrame = getImage();
+    Mat targetMat = getTarget(cachedFrame, area, !preProcessors.isEmpty());
+    targetMat = tryPreProcess(targetMat, preProcessors);
     Double score = doDetect(temple, targetMat, method);
     return Result.builder().similarity(score).timestamp(cachedFrame.getTimestamp()).build();
   }
@@ -105,7 +106,7 @@ public class OpenCvImageCompare implements ImageCompare {
   private Double templateMatchingSQDIFF(Mat temple, Mat target) {
     Mat result = templateMatching(temple, target, Imgproc.TM_SQDIFF_NORMED);
     MinMaxLocResult minMaxLocResult = Core.minMaxLoc(result);
-    return minMaxLocResult.minVal;
+    return -minMaxLocResult.minVal;
   }
 
   private Double templateMatchingCCOERR(Mat temple, Mat target) {
@@ -126,10 +127,11 @@ public class OpenCvImageCompare implements ImageCompare {
     return result;
   }
 
-  private Mat getTarget(CachedFrame cachedFrame, Area area) {
-    Mat originMat = cachedFrame.getMat();
-    return area == null ? originMat : ImageConvertUtil.splitMat(originMat, area);
+  private Mat getTarget(CachedFrame cachedFrame, Area area, boolean deepCopy) {
+    return area == null ? deepCopy ? ImageConvertUtil.deepCopyMat(cachedFrame.getMat())
+        : cachedFrame.getMat()
+        : deepCopy ? ImageConvertUtil.deepSplitMat(cachedFrame.getMat(), area)
+            : ImageConvertUtil.splitMat(cachedFrame.getMat(), area);
   }
-
 
 }

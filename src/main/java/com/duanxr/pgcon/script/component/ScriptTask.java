@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.script.component;
 
-import com.duanxr.pgcon.gui.component.AbortScriptException;
+import com.duanxr.pgcon.gui.exception.AbortScriptException;
 import com.duanxr.pgcon.script.api.MainScript;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,6 @@ public class ScriptTask implements Runnable {
 
   private final AtomicBoolean running;
   private final MainScript mainScript;
-
   private final Runnable callback;
   ScriptTask(MainScript mainScript,Runnable callback) {
     this.mainScript = mainScript;
