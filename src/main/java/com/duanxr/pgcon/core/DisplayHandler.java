@@ -67,7 +67,7 @@ public class DisplayHandler {
   /**
    * v1 readFrame cost 8-30 ms, v2 readFrame cost 8-15 ms
    */
-  private void readFrame() {
+  private synchronized void readFrame() {
     if (screen != null && imageInput != null) {
       BufferedImage read = imageInput.read();
       if (read != null) {
@@ -178,7 +178,7 @@ public class DisplayHandler {
   }
 
   @PreDestroy
-  public void close() {
+  public synchronized void close() {
     if (imageInput != null) {
       imageInput.close();
       imageInput = null;

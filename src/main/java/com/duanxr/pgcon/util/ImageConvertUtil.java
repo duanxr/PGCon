@@ -6,12 +6,8 @@ import com.duanxr.pgcon.algo.model.Area;
 import com.duanxr.pgcon.gui.exception.AbortScriptException;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.File;
 import java.nio.ByteBuffer;
-import javax.imageio.ImageIO;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import nu.pattern.OpenCV;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.SerializationUtils;
 import org.bytedeco.leptonica.PIX;
@@ -86,8 +82,8 @@ public class ImageConvertUtil {
    * 149 ms for 1920*1080 image by 100 times
    */
   public static Mat bufferedImageToMat(BufferedImage bufferedImage) {
-    int type = bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY ? CvType.CV_8UC1 :
-        bufferedImage.getType() == BufferedImage.TYPE_3BYTE_BGR ? CvType.CV_8UC3 : CvType.CV_8UC4;
+    int type = bufferedImage.getRaster().getNumBands() == 1 ? CvType.CV_8UC1 :
+        bufferedImage.getRaster().getNumBands() == 3 ? CvType.CV_8UC3 : CvType.CV_8UC4;
     Mat mat = new Mat(bufferedImage.getHeight(), bufferedImage.getWidth(), type);
     byte[] data = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
     int dataSize = mat.channels() * mat.cols() * mat.rows();
@@ -100,13 +96,14 @@ public class ImageConvertUtil {
       int subHeight = bufferedImage.getHeight();
       int subOffY = -bufferedImage.getRaster().getSampleModelTranslateY();
       int subOffX = -bufferedImage.getRaster().getSampleModelTranslateX();
-      int channels = bufferedImage.getSampleModel().getNumBands();
+      int channels = mat.channels();
       int length = (subWidth * channels);
       for (int i = 0; i < subHeight; i++) {
         int offset = ((i + subOffY) * originWidth + subOffX) * channels;
         mat.put(i, 0, data, offset, length);
       }
     }
+    BGR2RGB(mat);
     return mat;
   }
 
@@ -185,6 +182,21 @@ public class ImageConvertUtil {
       throw new AbortScriptException("unknown mat type");
     }
     return mat;
+  }
+
+  public void BGR2RGB(Mat mat) {
+    if (mat.channels() == 3) {
+      Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR);
+    } else if (mat.channels() == 4) {
+      Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2BGRA);
+    }
+  }
+  public void BGR2GRAY(Mat mat) {
+    if (mat.channels() == 3) {
+      Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+    } else if (mat.channels() == 4) {
+      Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2GRAY);
+    }
   }
 
 }

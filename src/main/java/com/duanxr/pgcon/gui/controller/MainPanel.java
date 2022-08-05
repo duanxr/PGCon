@@ -5,20 +5,20 @@ import com.dooapp.fxform.view.factory.FactoryProvider;
 import com.duanxr.pgcon.algo.model.Area;
 import com.duanxr.pgcon.algo.preprocessing.PreProcessor;
 import com.duanxr.pgcon.algo.preprocessing.PreprocessorFactory;
+import com.duanxr.pgcon.config.GuiConfig;
+import com.duanxr.pgcon.config.InputConfig;
+import com.duanxr.pgcon.config.OutputConfig;
+import com.duanxr.pgcon.core.DisplayHandler;
 import com.duanxr.pgcon.core.FrameManager;
 import com.duanxr.pgcon.core.FrameManager.CachedFrame;
 import com.duanxr.pgcon.core.ProtocolManager;
 import com.duanxr.pgcon.core.ScriptManager;
-import com.duanxr.pgcon.config.GuiConfig;
-import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.gui.debug.DebugFilterConfig;
 import com.duanxr.pgcon.gui.debug.DebugMainConfig;
 import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
-import com.duanxr.pgcon.gui.exception.GuiAlertException;
-import com.duanxr.pgcon.core.DisplayHandler;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
+import com.duanxr.pgcon.gui.exception.GuiAlertException;
 import com.duanxr.pgcon.gui.log.GuiLog;
 import com.duanxr.pgcon.gui.log.GuiLogLevel;
 import com.duanxr.pgcon.gui.log.GuiLogView;
@@ -70,9 +70,9 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -87,10 +87,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class MainPanel {
 
-  private final FactoryProvider editorFactoryProvider;
-  private final FactoryProvider labelFactoryProvider;
-
-  private final FactoryProvider tooltipFactoryProvider;
   private static final String CACHE_KEY_ENABLE_DEBUG = "ENABLE_DEBUG";
   private static final String CACHE_KEY_LOG_FOLLOW = "CACHE_KEY_LOG_FOLLOW";
   private static final String CACHE_KEY_LOG_LEVEL = "CACHE_KEY_LOG_LEVEL";
@@ -106,18 +102,25 @@ public class MainPanel {
   private static final String SCRIPT_CONFIGURATION_WINDOW_TITLE = "Script Configuration";
   private final ObjectProperty<Image> canvasProperty;
   private final Controller controller;
+  private final DebugMainConfig debugConfig;
+  private final DebugFilterConfig debugFilterConfig;
+  private final DebugThreshConfig debugThreshConfig;
   private final DisplayHandler displayHandler;
   private final Map<String, Node> dynamicConfigurationMap;
+  private final FactoryProvider editorFactoryProvider;
   private final AtomicBoolean enableDebug;
   private final FrameManager frameManager;
   private final GuiConfig guiConfig;
   private final InputConfig inputConfig;
+  private final FactoryProvider labelFactoryProvider;
   private final OutputConfig outputConfig;
+  private final PreprocessorFactory preprocessorFactory;
   private final ProtocolManager protocolManager;
   private final List<String> protocols;
   private final ObjectProperty<Image> screenProperty;
   private final ScriptManager scriptManager;
   private final ScriptRunner scriptRunner;
+  private final FactoryProvider tooltipFactoryProvider;
   private final double xScale;
   private final double yScale;
   @FXML
@@ -133,6 +136,7 @@ public class MainPanel {
   private Scene debugScene;
   private Stage debugWindow;
   private GuiLogger guiLogger;
+  private WritableImage liveImage;
   @FXML
   private ToggleButton logFollow;
   @FXML
@@ -157,6 +161,11 @@ public class MainPanel {
   private Stage scriptConfigurationWindow;
   @FXML
   private ComboBox<String> scriptSelection;
+  private Area selectedArea;
+  private BufferedImage selectedDebugImage;
+  private WritableImage selectedImage;
+
+  private WritableImage convertedImage;
   @FXML
   private SplitPane splitPaneX;
   @FXML
@@ -196,15 +205,11 @@ public class MainPanel {
     this.xScale = 1D * inputConfig.getWidth() / guiConfig.getWidth();
     this.yScale = 1D * inputConfig.getHeight() / guiConfig.getHeight();
     this.dynamicConfigurationMap = new HashMap<>();
-    this.debugConfig= new DebugMainConfig();
+    this.debugConfig = new DebugMainConfig();
     this.debugFilterConfig = new DebugFilterConfig();
     this.debugThreshConfig = new DebugThreshConfig();
   }
 
-
-  private final DebugMainConfig debugConfig ;
-  private final DebugFilterConfig debugFilterConfig;
-  private final DebugThreshConfig debugThreshConfig ;
   @FXML
   public void initialize() {
     initializeScriptConfigurations();
@@ -227,20 +232,20 @@ public class MainPanel {
     debugWindow.setScene(debugScene);
     debugWindow.setOnCloseRequest(
         event -> callbackWithExceptionAlert(this::onDebugWindowClose));
-    Node debugNode = generateConfigNode(debugConfig);
-    Node imageFilterDebugNode = generateConfigNode(debugFilterConfig);
-    Node imageBinaryDebugNode = generateConfigNode(debugThreshConfig);
-    VBox vBox = new VBox(debugNode, imageFilterDebugNode, imageBinaryDebugNode);
-    pane.getChildren().add(vBox);
+    FXForm<?> debugNode = generateConfigNode(debugConfig);
+    FXForm<?> filterDebugNode = generateConfigNode(debugFilterConfig);
+    FXForm<?> binaryDebugNode = generateConfigNode(debugThreshConfig);
+    debugNode.setMaxWidth(320);
+    filterDebugNode.setMaxWidth(320);
+    binaryDebugNode.setMaxWidth(320);
+    HBox hBox = new HBox(debugNode, filterDebugNode, binaryDebugNode);
+    pane.getChildren().add(hBox);
   }
-
-
 
   private void onDebugWindowClose() {
 
   }
 
-  private final PreprocessorFactory preprocessorFactory;
   private void initializeScreenAndCanvas() {
     WritableImage screenImage = new WritableImage(guiConfig.getWidth(), guiConfig.getHeight());
     WritableImage canvasImage = new WritableImage(guiConfig.getWidth(), guiConfig.getHeight());
@@ -251,19 +256,7 @@ public class MainPanel {
     displayHandler.registerScreen(
         input -> Platform.runLater(() -> {
           SwingFXUtils.toFXImage(input, screenImage);
-          if (debugWindow.isShowing()) {
-            List<PreProcessor> preProcessors = preprocessorFactory.getPreProcessors(
-                Arrays.asList(debugFilterConfig.convertToPreProcessorConfig(),
-                    debugThreshConfig.convertToThreshPreProcessorConfig()));
-            BufferedImage subImage = input;
-            Mat mat = ImageConvertUtil.bufferedImageToMat(subImage);
-            for (PreProcessor preProcessor : preProcessors) {
-              preProcessor.preProcess(mat);
-            }
-            subImage = ImageConvertUtil.matToBufferedImage(mat);
-            BufferedImage finalSubImage = subImage;
-            Platform.runLater(() -> SwingFXUtils.toFXImage(finalSubImage, liveImage));
-          }
+          refreshDebug();
         }));
     displayHandler.registerCanvas(
         input -> Platform.runLater(() -> SwingFXUtils.toFXImage(input, canvasImage)));
@@ -273,6 +266,29 @@ public class MainPanel {
         event -> callbackWithExceptionCatch(() -> onCanvasMouseDragged(event)));
     canvas.addEventHandler(MouseEvent.MOUSE_RELEASED,
         event -> callbackWithExceptionCatch(() -> onCanvasMouseReleased(event)));
+  }
+
+  private void refreshDebug() {
+    if (debugWindow.isShowing()) {
+      List<PreProcessor> preProcessors = preprocessorFactory.getPreProcessors(
+          Arrays.asList(debugFilterConfig.convertToPreProcessorConfig(),
+              debugThreshConfig.convertToThreshPreProcessorConfig()));
+      Mat originalMat = frameManager.getFrame().getMat();
+      Mat liveMat  = ImageConvertUtil.deepSplitMat(originalMat,selectedArea);
+      Mat convertedMat = ImageConvertUtil.deepSplitMat(originalMat,selectedArea);
+      for (PreProcessor preProcessor : preProcessors) {
+        try {
+          preProcessor.preProcess(liveMat);
+          preProcessor.preProcess(convertedMat);
+        } catch (Exception e) {
+          log.info("Error in preprocessor", e);
+        }
+      }
+      BufferedImage liveDebugImagePP = ImageConvertUtil.matToBufferedImage(liveMat);
+      BufferedImage convertedDebugImagePP = ImageConvertUtil.matToBufferedImage(convertedMat);
+      SwingFXUtils.toFXImage(liveDebugImagePP, liveImage);
+      SwingFXUtils.toFXImage(convertedDebugImagePP, convertedImage);
+    }
   }
 
   private void onCanvasMouseReleased(MouseEvent event) {
@@ -287,31 +303,30 @@ public class MainPanel {
     }
   }
 
-  private Area selectedArea;
-
   private void captureCanvasSelection(Area area) {
     try {
       this.selectedArea = area;
-      BufferedImage subImage = frameManager.getFrame().getImage()
+      selectedDebugImage = frameManager.getFrame().getImage()
           .getSubimage(area.getX(), area.getY(), area.getWidth(), area.getHeight());
-      File file = SaveUtil.saveTempImage(subImage);
+      File file = SaveUtil.saveTempImage(selectedDebugImage);
       guiLogger.info("area of points: {},{},{},{}, saved to: {}",
           (int) (pointStart.x * xScale), (int) (pointStart.y * yScale),
           (int) (pointEnd.x * xScale), (int) (pointEnd.y * yScale),
           file.getAbsolutePath());
       if (!debugWindow.isShowing()) {
         debugWindow.show();
-        WritableImage selectedImage = new WritableImage(area.getWidth(), area.getHeight());
+        selectedImage = new WritableImage(area.getWidth(), area.getHeight());
+        convertedImage = new WritableImage(area.getWidth(), area.getHeight());
         liveImage = new WritableImage(area.getWidth(), area.getHeight());
         debugConfig.getSelectedImage().set(selectedImage);
+        debugConfig.getConvertedImage().set(convertedImage);
         debugConfig.getLiveImage().set(liveImage);
-        Platform.runLater(() -> SwingFXUtils.toFXImage(subImage, selectedImage));
+        Platform.runLater(() -> SwingFXUtils.toFXImage(selectedDebugImage, selectedImage));
+        Platform.runLater(() -> SwingFXUtils.toFXImage(selectedDebugImage, convertedImage));
       }
     } catch (RasterFormatException ignored) {
     }
   }
-
-  private WritableImage liveImage;
 
   private void onCanvasMouseDragged(MouseEvent event) {
     if (enableDebug.get()) {
@@ -400,7 +415,7 @@ public class MainPanel {
     dynamicConfigurationMap.put(scriptName, node);
   }
 
-  private Node generateConfigNode(Object configBean) {
+  private FXForm<?> generateConfigNode(Object configBean) {
     FXForm<?> configForm = new FXForm<>(configBean, labelFactoryProvider,
         tooltipFactoryProvider, editorFactoryProvider);
     setScriptConfigurationFormStyle(configForm);
@@ -647,7 +662,6 @@ public class MainPanel {
     videoSelection.setDisable(false);
     loadScript(getCurrentSelectedScriptName());
   }
-
 
 
 }
