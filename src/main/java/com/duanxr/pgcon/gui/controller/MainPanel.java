@@ -2,19 +2,20 @@ package com.duanxr.pgcon.gui.controller;
 
 import com.dooapp.fxform.FXForm;
 import com.dooapp.fxform.view.factory.FactoryProvider;
-import com.duanxr.pgcon.algo.model.Area;
-import com.duanxr.pgcon.algo.preprocessing.PreProcessor;
-import com.duanxr.pgcon.algo.preprocessing.PreprocessorFactory;
+import com.duanxr.pgcon.component.DisplayHandler;
+import com.duanxr.pgcon.component.FrameManager;
+import com.duanxr.pgcon.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.component.ProtocolManager;
+import com.duanxr.pgcon.component.ScriptManager;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.config.OutputConfig;
-import com.duanxr.pgcon.core.DisplayHandler;
-import com.duanxr.pgcon.core.FrameManager;
-import com.duanxr.pgcon.core.FrameManager.CachedFrame;
-import com.duanxr.pgcon.core.ProtocolManager;
-import com.duanxr.pgcon.core.ScriptManager;
+import com.duanxr.pgcon.core.model.Area;
+import com.duanxr.pgcon.core.preprocessing.PreProcessor;
+import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
 import com.duanxr.pgcon.gui.debug.DebugFilterConfig;
 import com.duanxr.pgcon.gui.debug.DebugMainConfig;
+import com.duanxr.pgcon.gui.debug.DebugNormalizeConfig;
 import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
@@ -41,6 +42,7 @@ import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,7 @@ import javafx.collections.FXCollections;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -102,6 +105,7 @@ public class MainPanel {
   private static final String SCRIPT_CONFIGURATION_WINDOW_TITLE = "Script Configuration";
   private final ObjectProperty<Image> canvasProperty;
   private final Controller controller;
+  private final DebugNormalizeConfig debugNormalizeConfig;
   private final DebugMainConfig debugConfig;
   private final DebugFilterConfig debugFilterConfig;
   private final DebugThreshConfig debugThreshConfig;
@@ -208,6 +212,7 @@ public class MainPanel {
     this.debugConfig = new DebugMainConfig();
     this.debugFilterConfig = new DebugFilterConfig();
     this.debugThreshConfig = new DebugThreshConfig();
+    this.debugNormalizeConfig = new DebugNormalizeConfig();
   }
 
   @FXML
@@ -234,12 +239,49 @@ public class MainPanel {
         event -> callbackWithExceptionAlert(this::onDebugWindowClose));
     FXForm<?> debugNode = generateConfigNode(debugConfig);
     FXForm<?> filterDebugNode = generateConfigNode(debugFilterConfig);
+    FXForm<?> normalizeDebugNode = generateConfigNode(debugNormalizeConfig);
     FXForm<?> binaryDebugNode = generateConfigNode(debugThreshConfig);
-    debugNode.setMaxWidth(320);
-    filterDebugNode.setMaxWidth(320);
-    binaryDebugNode.setMaxWidth(320);
-    HBox hBox = new HBox(debugNode, filterDebugNode, binaryDebugNode);
+    setDebugWindowSize(debugNode);
+    setDebugConfigSize(filterDebugNode);
+    setDebugConfigSize(normalizeDebugNode);
+    setDebugConfigSize(binaryDebugNode);
+    HBox hBox = new HBox(debugNode, filterDebugNode, normalizeDebugNode, binaryDebugNode);
     pane.getChildren().add(hBox);
+  }
+
+  private void setDebugWindowSize(FXForm<?> debugNode) {
+    double width = 280;
+    ArrayList<Node> nodes = getAllNodes(debugNode, null);
+    for (Node node : nodes) {
+      if (node instanceof ImageView imageView) {
+        imageView.setFitWidth(240);
+        imageView.setFitHeight(180);
+        imageView.setPreserveRatio(true);
+      }
+    }
+    debugNode.setMinWidth(width);
+    debugNode.setPrefWidth(width);
+    debugNode.setMaxWidth(width);
+  }
+
+  private void setDebugConfigSize(FXForm<?> debugNode) {
+    double width = 180;
+    debugNode.setMinWidth(width);
+    debugNode.setPrefWidth(width);
+    debugNode.setMaxWidth(width);
+  }
+
+  private ArrayList<Node> getAllNodes(Parent parent, ArrayList<Node> nodes) {
+    if (nodes == null) {
+      nodes = new ArrayList<>();
+    }
+    for (Node node : parent.getChildrenUnmodifiable()) {
+      nodes.add(node);
+      if (node instanceof Parent) {
+        getAllNodes((Parent) node, nodes);
+      }
+    }
+    return nodes;
   }
 
   private void onDebugWindowClose() {
@@ -272,10 +314,11 @@ public class MainPanel {
     if (debugWindow.isShowing()) {
       List<PreProcessor> preProcessors = preprocessorFactory.getPreProcessors(
           Arrays.asList(debugFilterConfig.convertToPreProcessorConfig(),
+              debugNormalizeConfig.convertToNormalizeConfig(),
               debugThreshConfig.convertToThreshPreProcessorConfig()));
       Mat originalMat = frameManager.getFrame().getMat();
-      Mat liveMat  = ImageConvertUtil.deepSplitMat(originalMat,selectedArea);
-      Mat convertedMat = ImageConvertUtil.deepSplitMat(originalMat,selectedArea);
+      Mat liveMat = ImageConvertUtil.deepSplitMat(originalMat, selectedArea);
+      Mat convertedMat = ImageConvertUtil.bufferedImageToMat(selectedDebugImage);
       for (PreProcessor preProcessor : preProcessors) {
         try {
           preProcessor.preProcess(liveMat);
@@ -418,13 +461,9 @@ public class MainPanel {
   private FXForm<?> generateConfigNode(Object configBean) {
     FXForm<?> configForm = new FXForm<>(configBean, labelFactoryProvider,
         tooltipFactoryProvider, editorFactoryProvider);
-    setScriptConfigurationFormStyle(configForm);
     return configForm;
   }
 
-  private void setScriptConfigurationFormStyle(FXForm<?> configForm) {
-    configForm.setPrefWidth(320);
-  }
 
   private void initializeGuiLogViewer() {
     GuiLog guiLog = new GuiLog();

@@ -1,8 +1,8 @@
 package com.duanxr.pgcon.output;
 
-import com.duanxr.pgcon.core.DaemonTask;
+import com.duanxr.pgcon.component.DaemonTask;
 import com.duanxr.pgcon.config.OutputConfig;
-import com.duanxr.pgcon.core.DisplayHandler;
+import com.duanxr.pgcon.component.DisplayHandler;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.output.api.Protocol;

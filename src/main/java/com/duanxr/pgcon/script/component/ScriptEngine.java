@@ -1,11 +1,11 @@
 package com.duanxr.pgcon.script.component;
 
-import com.duanxr.pgcon.algo.detect.api.ImageCompare;
-import com.duanxr.pgcon.algo.detect.api.OCR;
-import com.duanxr.pgcon.algo.model.Area;
-import com.duanxr.pgcon.core.ScriptManager;
+import com.duanxr.pgcon.core.detect.api.ImageCompare;
+import com.duanxr.pgcon.core.detect.api.OCR;
+import com.duanxr.pgcon.core.model.Area;
+import com.duanxr.pgcon.component.ScriptManager;
 import com.duanxr.pgcon.gui.exception.GuiAlertException;
-import com.duanxr.pgcon.core.DisplayHandler;
+import com.duanxr.pgcon.component.DisplayHandler;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
 import com.duanxr.pgcon.gui.display.impl.Text;

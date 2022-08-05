@@ -2,8 +2,8 @@ package com.duanxr.pgcon.gui.debug;
 
 import com.dooapp.fxform.annotation.FormFactory;
 import com.dooapp.fxform.view.factory.impl.EnumChoiceBoxFactory;
-import com.duanxr.pgcon.algo.preprocessing.config.ThreshPreProcessorConfig;
-import com.duanxr.pgcon.algo.preprocessing.config.ThreshPreProcessorConfig.ThreshType;
+import com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig;
+import com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigPercentage;
 import javafx.beans.property.BooleanProperty;

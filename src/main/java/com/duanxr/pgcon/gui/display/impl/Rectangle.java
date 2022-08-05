@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.gui.display.impl;
 
-import com.duanxr.pgcon.algo.model.Area;
+import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.gui.display.api.BaseDrawable;
 import com.duanxr.pgcon.gui.display.api.Drawable;
 import java.awt.Color;

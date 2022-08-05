@@ -2,7 +2,7 @@ package com.duanxr.pgcon.util;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.duanxr.pgcon.algo.model.Area;
+import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.gui.exception.AbortScriptException;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;

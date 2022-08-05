@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.gui.debug;
 
-import com.duanxr.pgcon.algo.preprocessing.config.ChannelsFilterPreProcessorConfig;
+import com.duanxr.pgcon.core.preprocessing.config.ChannelsFilterPreProcessorConfig;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigPercentage;
 import javafx.beans.property.BooleanProperty;
@@ -16,12 +16,10 @@ import lombok.Data;
 public class DebugFilterConfig {
 
   @ConfigLabel("Enable RGB Filter")
-  private BooleanProperty enableRGBFilter = new SimpleBooleanProperty(true);
-
+  private BooleanProperty enableRGBFilter = new SimpleBooleanProperty(false);
   @ConfigLabel("Red Weight")
   @ConfigPercentage
   private DoubleProperty redWeight = new SimpleDoubleProperty(1.0);
-
   @ConfigLabel("Green Weight")
   @ConfigPercentage
   private DoubleProperty greenWeight = new SimpleDoubleProperty(1.0);

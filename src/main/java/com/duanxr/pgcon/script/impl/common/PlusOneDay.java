@@ -1,11 +1,11 @@
 package com.duanxr.pgcon.script.impl.common;
 
-import com.duanxr.pgcon.algo.detect.api.ImageCompare;
-import com.duanxr.pgcon.algo.detect.api.OCR;
-import com.duanxr.pgcon.algo.detect.api.OCR.ApiConfig;
-import com.duanxr.pgcon.algo.detect.api.OCR.Method;
-import com.duanxr.pgcon.algo.detect.api.OCR.Param;
-import com.duanxr.pgcon.algo.model.Area;
+import com.duanxr.pgcon.core.detect.api.ImageCompare;
+import com.duanxr.pgcon.core.detect.api.OCR;
+import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
+import com.duanxr.pgcon.core.detect.api.OCR.Method;
+import com.duanxr.pgcon.core.detect.api.OCR.Param;
+import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.script.api.Script;
 import com.duanxr.pgcon.script.component.ScriptEngine;
 import java.time.LocalDate;
