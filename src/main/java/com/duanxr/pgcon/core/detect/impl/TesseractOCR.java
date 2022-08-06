@@ -37,8 +37,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implements OCR {
 
-  private static final Integer DEFAULT_OCR_ENGINE_MODE = tesseract.OEM_LSTM_ONLY;
-  private static final Integer DEFAULT_PAGE_SEG_MODE = tesseract.PSM_SINGLE_LINE;
+  public static final Integer DEFAULT_OCR_ENGINE_MODE = tesseract.OEM_LSTM_ONLY;
+  public static final Integer DEFAULT_PAGE_SEG_MODE = tesseract.PSM_SINGLE_LINE;
   private static final String TESSEDIT_CHAR_BLACKLIST = "tessedit_char_blacklist";
   private static final String TESSEDIT_CHAR_WHITELIST = "tessedit_char_whitelist";
   private final Map<Method, TessBaseAPI> defaultApiMap;
@@ -134,10 +134,8 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
   }
 
   private boolean isDefaultApi(ApiConfig apiConfig) {
-    return Strings.isNullOrEmpty(apiConfig.getPath()) && Strings.isNullOrEmpty(
-        apiConfig.getWhitelist()) && Strings.isNullOrEmpty(apiConfig.getBlacklist())
-        && Objects.isNull(apiConfig.getOcrEngineMode()) && Objects.isNull(
-        apiConfig.getPageSegMode());
+    return Strings.isNullOrEmpty(apiConfig.getWhitelist()) && Strings.isNullOrEmpty(apiConfig.getBlacklist())
+        && Objects.isNull(apiConfig.getOcrEngineMode()) && Objects.isNull(apiConfig.getPageSegMode());
   }
 
   @PreDestroy

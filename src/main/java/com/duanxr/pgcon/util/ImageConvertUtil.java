@@ -8,6 +8,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
 import lombok.experimental.UtilityClass;
+import net.jpountz.lz4.LZ4Compressor;
+import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4FastDecompressor;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.SerializationUtils;
 import org.bytedeco.leptonica.PIX;
@@ -117,72 +120,99 @@ public class ImageConvertUtil {
 
   public static String matToJson(Mat mat) {
     JSONObject obj = new JSONObject();
-
     if (mat.isContinuous()) {
       int cols = mat.cols();
       int rows = mat.rows();
       int elemSize = (int) mat.elemSize();
       int type = mat.type();
-
       obj.put("rows", rows);
       obj.put("cols", cols);
       obj.put("type", type);
-
       String dataString;
-
+      int dataLength;
       if (type == CvType.CV_32S || type == CvType.CV_32SC2 || type == CvType.CV_32SC3
           || type == CvType.CV_16S) {
         int[] data = new int[cols * rows * elemSize];
         mat.get(0, 0, data);
-        dataString = new String(Base64.encodeBase64(SerializationUtils.serialize(data)));
+        byte[] serialize = SerializationUtils.serialize(data);
+        byte[] compress = lz4Compress(serialize);
+        dataLength = serialize.length;
+        dataString = Base64.encodeBase64String(compress);
       } else if (type == CvType.CV_32F || type == CvType.CV_32FC2) {
         float[] data = new float[cols * rows * elemSize];
         mat.get(0, 0, data);
-        dataString = new String(Base64.encodeBase64(SerializationUtils.serialize(data)));
+        byte[] serialize = SerializationUtils.serialize(data);
+        byte[] compress = lz4Compress(serialize);
+        dataLength = serialize.length;
+        dataString = Base64.encodeBase64String(compress);
       } else if (type == CvType.CV_64F || type == CvType.CV_64FC2) {
         double[] data = new double[cols * rows * elemSize];
         mat.get(0, 0, data);
-        dataString = new String(Base64.encodeBase64(SerializationUtils.serialize(data)));
-      } else if (type == CvType.CV_8U) {
+        byte[] serialize = SerializationUtils.serialize(data);
+        byte[] compress = lz4Compress(serialize);
+        dataLength = serialize.length;
+        dataString = Base64.encodeBase64String(compress);
+      } else if (type == CvType.CV_8U || type == CvType.CV_8UC2 || type == CvType.CV_8UC3
+          || type == CvType.CV_8UC4) {
         byte[] data = new byte[cols * rows * elemSize];
         mat.get(0, 0, data);
-        dataString = new String(Base64.encodeBase64(data));
+        byte[] compress = lz4Compress(data);
+        dataLength = data.length;
+        dataString = Base64.encodeBase64String(compress);
       } else {
         throw new AbortScriptException("unknown type");
       }
+      obj.put("length", dataLength);
       obj.put("data", dataString);
-
       return obj.toJSONString();
     } else {
       throw new AbortScriptException("Mat not continuous.");
     }
   }
 
-  public static Mat matFromJson(String json) {
+  public static Mat jsonToMat(String json) {
     JSONObject parse = JSONObject.parseObject(json);
     int rows = parse.getIntValue("rows");
     int cols = parse.getIntValue("cols");
     int type = parse.getIntValue("type");
     Mat mat = new Mat(rows, cols, type);
     String dataString = parse.getString("data");
+    int dataLength = parse.getIntValue("length");
     if (type == CvType.CV_32S || type == CvType.CV_32SC2 || type == CvType.CV_32SC3
         || type == CvType.CV_16S) {
-      int[] data = SerializationUtils.deserialize(Base64.decodeBase64(dataString.getBytes()));
+      int[] data = SerializationUtils.deserialize(lz4Decompress(Base64.decodeBase64(dataString.getBytes()),dataLength));
       mat.put(0, 0, data);
     } else if (type == CvType.CV_32F || type == CvType.CV_32FC2) {
-      float[] data = SerializationUtils.deserialize(Base64.decodeBase64(dataString.getBytes()));
+      float[] data = SerializationUtils.deserialize(lz4Decompress(Base64.decodeBase64(dataString.getBytes()),dataLength));
       mat.put(0, 0, data);
     } else if (type == CvType.CV_64F || type == CvType.CV_64FC2) {
-      double[] data = SerializationUtils.deserialize(Base64.decodeBase64(dataString.getBytes()));
+      double[] data = SerializationUtils.deserialize(lz4Decompress(Base64.decodeBase64(dataString.getBytes()),dataLength));
       mat.put(0, 0, data);
-    } else if (type == CvType.CV_8U) {
-      byte[] data = Base64.decodeBase64(dataString.getBytes());
+    } else if (type == CvType.CV_8U || type == CvType.CV_8UC2 || type == CvType.CV_8UC3
+        || type == CvType.CV_8UC4) {
+      byte[] data = lz4Decompress(Base64.decodeBase64(dataString.getBytes()),dataLength);
       mat.put(0, 0, data);
     } else {
       throw new AbortScriptException("unknown mat type");
     }
     return mat;
   }
+
+  private byte[] lz4Compress(byte[] bytes) {
+    synchronized (LZ_4_COMPRESSOR) {
+      return LZ_4_COMPRESSOR.compress(bytes);
+    }
+  }
+
+  private synchronized byte[] lz4Decompress(byte[] bytes, int length) {
+    synchronized (LZ_4_DECOMPRESSOR) {
+      return LZ_4_DECOMPRESSOR.decompress(bytes, length);
+    }
+  }
+
+  private static final LZ4Factory LZ_4_FACTORY = LZ4Factory.fastestJavaInstance();
+  private static final LZ4Compressor LZ_4_COMPRESSOR = LZ_4_FACTORY.highCompressor();
+  private static final LZ4FastDecompressor LZ_4_DECOMPRESSOR = LZ_4_FACTORY.fastDecompressor();
 
   public void BGR2RGB(Mat mat) {
     if (mat.channels() == 3) {
@@ -191,6 +221,7 @@ public class ImageConvertUtil {
       Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGBA2BGRA);
     }
   }
+
   public void BGR2GRAY(Mat mat) {
     if (mat.channels() == 3) {
       Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);

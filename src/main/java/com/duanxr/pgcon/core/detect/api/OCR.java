@@ -41,7 +41,6 @@ public interface OCR extends Detector<Result, Param> {
   @AllArgsConstructor
   class ApiConfig {
 
-    private String path;
     @NonNull
     private Method method;
     private String whitelist;

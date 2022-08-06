@@ -45,7 +45,7 @@ public class DebugColorPickConfig {
   public ColorPickFilterPreProcessorConfig convertToColorPickerFilterPreProcessorConfig() {
     return ColorPickFilterPreProcessorConfig.builder()
         .enable(enableColorPickFilter.get())
-        .targetColor(targetColor.get())
+        .targetColor(Color.color(targetColor.get().getRed(), targetColor.get().getGreen(), targetColor.get().getBlue()))
         .hueRange(hueRange.get())
         .saturationRange(saturationRange.get())
         .valueRange(valueRange.get())

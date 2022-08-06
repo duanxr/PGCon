@@ -19,7 +19,7 @@ public class ImageResizeUtil {
    * <a href="https://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image">...</a>
    */
   @SneakyThrows
-  public static BufferedImage resizeV2(BufferedImage original, int newWidth, int newHeight) {
+  public static BufferedImage resize(BufferedImage original, int newWidth, int newHeight) {
     boolean hasAlphaChannel = original.getAlphaRaster() != null;
     int[] rawInput = convertBufferedImageTo1D(original, hasAlphaChannel);
     int[] rawOutput = new int[newWidth * newHeight];

@@ -5,7 +5,7 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane maxHeight="765.0" maxWidth="1230.0" minHeight="765.0" minWidth="1230.0" prefHeight="765.0" prefWidth="1230.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duanxr.pgcon.gui.controller.MainPanel">
+<AnchorPane maxHeight="765.0" maxWidth="1230.0" minHeight="765.0" minWidth="1230.0" prefHeight="765.0" prefWidth="1230.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.duanxr.pgcon.gui.panel.MainPanel">
   <stylesheets>
     <URL value="@javafx.css" />
   </stylesheets>

@@ -7,11 +7,14 @@ import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
 import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Strings;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import lombok.SneakyThrows;
 import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.DMatch;
@@ -33,9 +36,12 @@ public class OpenCvImageCompare extends
 
   private final Map<Method, BiFunction<Mat, Mat, Double>> methods;
 
+  private final LoadingCache<String, Mat> cache;
+
   @Autowired
   public OpenCvImageCompare(PreprocessorFactory preprocessorFactory, FrameManager frameManager) {
     super(frameManager, preprocessorFactory);
+    this.cache = Caffeine.newBuilder().build(this::loadTemplate);
     this.methods = new HashMap<>();
     methods.put(Method.ORB, this::orb);
     methods.put(Method.TM_SQDIFF, this::templateMatchingSQDIFF);
@@ -43,11 +49,17 @@ public class OpenCvImageCompare extends
     methods.put(Method.TM_CCOEFF, this::templateMatchingCCOEFF);
   }
 
+  @SneakyThrows
+  private Mat loadTemplate(String template) {
+    return ImageConvertUtil.jsonToMat(template);
+  }
+
   @Override
+  @SneakyThrows
   public Result detect(Param param) {
-    Mat temple = ImageConvertUtil.matFromJson(param.getTemplate());
+    Mat temple = cache.get(param.getTemplate());
     Mat mask = Strings.isNullOrEmpty(param.getMask()) ? null
-        : ImageConvertUtil.matFromJson(param.getMask());
+        : cache.get(param.getMask());
     Area area = param.getArea();
     Method method = param.getMethod();
     List<PreProcessorConfig> preProcessors = param.getPreProcessors();

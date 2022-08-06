@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.gui.controller;
+package com.duanxr.pgcon.gui.panel;
 
 import com.dooapp.fxform.FXForm;
 import com.dooapp.fxform.view.factory.FactoryProvider;
@@ -10,13 +10,23 @@ import com.duanxr.pgcon.component.ScriptManager;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.config.OutputConfig;
+import com.duanxr.pgcon.core.detect.api.ImageCompare;
+import com.duanxr.pgcon.core.detect.api.OCR;
+import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
+import com.duanxr.pgcon.core.detect.api.OCR.Param;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessor;
+import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
 import com.duanxr.pgcon.gui.debug.DebugColorPickConfig;
+import com.duanxr.pgcon.gui.debug.DebugDetectConfig;
+import com.duanxr.pgcon.gui.debug.DebugDetectConfig.DetectType;
 import com.duanxr.pgcon.gui.debug.DebugFilterConfig;
+import com.duanxr.pgcon.gui.debug.DebugImageCompareConfig;
 import com.duanxr.pgcon.gui.debug.DebugMainConfig;
 import com.duanxr.pgcon.gui.debug.DebugNormalizeConfig;
+import com.duanxr.pgcon.gui.debug.DebugOcrConfig;
+import com.duanxr.pgcon.gui.debug.DebugResultConfig;
 import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
@@ -33,6 +43,7 @@ import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.component.ScriptRunner;
 import com.duanxr.pgcon.util.CacheUtil;
 import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.duanxr.pgcon.util.LogUtil;
 import com.duanxr.pgcon.util.SaveUtil;
 import com.duanxr.pgcon.util.SystemUtil;
 import com.google.common.base.Strings;
@@ -55,6 +66,7 @@ import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
@@ -77,9 +89,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.opencv.core.Mat;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -106,9 +120,14 @@ public class MainPanel {
   private static final String SCRIPT_CONFIGURATION_WINDOW_TITLE = "Script Configuration";
   private final ObjectProperty<Image> canvasProperty;
   private final Controller controller;
-  private final DebugNormalizeConfig debugNormalizeConfig;
+  private final DebugColorPickConfig debugColorPickConfig;
   private final DebugMainConfig debugConfig;
+  private final DebugDetectConfig debugDetectConfig;
   private final DebugFilterConfig debugFilterConfig;
+  private final DebugImageCompareConfig debugImageCompareConfig;
+  private final DebugNormalizeConfig debugNormalizeConfig;
+  private final DebugOcrConfig debugOcrConfig;
+  private final DebugResultConfig debugResultConfig;
   private final DebugThreshConfig debugThreshConfig;
   private final DisplayHandler displayHandler;
   private final Map<String, Node> dynamicConfigurationMap;
@@ -116,8 +135,10 @@ public class MainPanel {
   private final AtomicBoolean enableDebug;
   private final FrameManager frameManager;
   private final GuiConfig guiConfig;
+  private final ImageCompare imageCompare;
   private final InputConfig inputConfig;
   private final FactoryProvider labelFactoryProvider;
+  private final OCR ocr;
   private final OutputConfig outputConfig;
   private final PreprocessorFactory preprocessorFactory;
   private final ProtocolManager protocolManager;
@@ -134,8 +155,10 @@ public class MainPanel {
   private Button capture;
   @FXML
   private Button clearLog;
+  private String code;
   @FXML
   private AnchorPane console;
+  private WritableImage convertedImage;
   @FXML
   private ToggleButton debug;
   private Scene debugScene;
@@ -169,8 +192,6 @@ public class MainPanel {
   private Area selectedArea;
   private BufferedImage selectedDebugImage;
   private WritableImage selectedImage;
-
-  private WritableImage convertedImage;
   @FXML
   private SplitPane splitPaneX;
   @FXML
@@ -187,7 +208,8 @@ public class MainPanel {
       ProtocolManager protocolManager, GuiConfig guiConfig,
       DisplayHandler displayHandler, FrameManager frameManager,
       ScriptManager scriptManager, Controller controller,
-      InputConfig inputConfig, PreprocessorFactory preprocessorFactory) {
+      InputConfig inputConfig, PreprocessorFactory preprocessorFactory,
+      ImageCompare imageCompare, OCR ocr) {
     this.editorFactoryProvider = editorFactoryProvider;
     this.labelFactoryProvider = labelFactoryProvider;
     this.tooltipFactoryProvider = tooltipFactoryProvider;
@@ -203,6 +225,8 @@ public class MainPanel {
     this.displayHandler = displayHandler;
     this.frameManager = frameManager;
     this.preprocessorFactory = preprocessorFactory;
+    this.imageCompare = imageCompare;
+    this.ocr = ocr;
     this.screenProperty = new SimpleObjectProperty<>();
     this.canvasProperty = new SimpleObjectProperty<>();
     this.pointStart = null;
@@ -215,6 +239,10 @@ public class MainPanel {
     this.debugThreshConfig = new DebugThreshConfig();
     this.debugNormalizeConfig = new DebugNormalizeConfig();
     this.debugColorPickConfig = new DebugColorPickConfig();
+    this.debugDetectConfig = new DebugDetectConfig();
+    this.debugOcrConfig = new DebugOcrConfig();
+    this.debugImageCompareConfig = new DebugImageCompareConfig();
+    this.debugResultConfig = new DebugResultConfig();
   }
 
   @FXML
@@ -244,17 +272,33 @@ public class MainPanel {
     FXForm<?> colorPickDebugNode = generateConfigNode(debugColorPickConfig);
     FXForm<?> normalizeDebugNode = generateConfigNode(debugNormalizeConfig);
     FXForm<?> binaryDebugNode = generateConfigNode(debugThreshConfig);
+    FXForm<?> detectDebugNode = generateConfigNode(debugDetectConfig);
+    FXForm<?> ocrDebugNode = generateConfigNode(debugOcrConfig);
+    FXForm<?> imageCompareDebugNode = generateConfigNode(debugImageCompareConfig);
+    FXForm<?> resultDebugNode = generateConfigNode(debugResultConfig);
     setDebugWindowSize(debugNode);
     setDebugConfigSize(filterDebugNode);
     setDebugConfigSize(colorPickDebugNode);
     setDebugConfigSize(normalizeDebugNode);
     setDebugConfigSize(binaryDebugNode);
-    HBox hBox = new HBox(debugNode, filterDebugNode, colorPickDebugNode, normalizeDebugNode,
-        binaryDebugNode);
-    pane.getChildren().add(hBox);
+    setDebugConfigSize(detectDebugNode);
+    setDebugConfigSize(ocrDebugNode);
+    setDebugConfigSize(imageCompareDebugNode);
+    setDebugConfigSize(resultDebugNode);
+    VBox detectBox = new VBox(imageCompareDebugNode);
+    pane.getChildren().add(new HBox(debugNode,
+        new VBox(filterDebugNode, colorPickDebugNode),
+        new VBox(normalizeDebugNode, binaryDebugNode),
+        new VBox(detectDebugNode, detectBox, resultDebugNode)));
+    debugDetectConfig.getDetectType().addListener((observable, oldValue, newValue) -> {
+      detectBox.getChildren().clear();
+      if (newValue == DetectType.IMAGE_COMPARE) {
+        detectBox.getChildren().add(imageCompareDebugNode);
+      } else if (newValue == DetectType.OCR) {
+        detectBox.getChildren().add(ocrDebugNode);
+      }
+    });
   }
-
-  private final DebugColorPickConfig debugColorPickConfig;
 
   private void setDebugWindowSize(FXForm<?> debugNode) {
     double width = 280;
@@ -319,14 +363,17 @@ public class MainPanel {
 
   private void refreshDebug() {
     if (debugWindow.isShowing()) {
+      List<PreProcessorConfig> preProcessorConfigs = Arrays.asList(
+          debugFilterConfig.convertToPreProcessorConfig(),
+          debugColorPickConfig.convertToColorPickerFilterPreProcessorConfig(),
+          debugNormalizeConfig.convertToNormalizeConfig(),
+          debugThreshConfig.convertToThreshPreProcessorConfig());
       List<PreProcessor> preProcessors = preprocessorFactory.getPreProcessors(
-          Arrays.asList(debugFilterConfig.convertToPreProcessorConfig(),
-              debugColorPickConfig.convertToColorPickerFilterPreProcessorConfig(),
-              debugNormalizeConfig.convertToNormalizeConfig(),
-              debugThreshConfig.convertToThreshPreProcessorConfig()));
+          preProcessorConfigs);
       Mat originalMat = frameManager.getFrame().getMat();
       Mat liveMat = ImageConvertUtil.deepSplitMat(originalMat, selectedArea);
       Mat convertedMat = ImageConvertUtil.bufferedImageToMat(selectedDebugImage);
+      long start = System.currentTimeMillis();
       for (PreProcessor preProcessor : preProcessors) {
         try {
           preProcessor.preProcess(liveMat);
@@ -335,12 +382,128 @@ public class MainPanel {
           log.info("Error in preprocessor", e);
         }
       }
+      long preProcessTime = System.currentTimeMillis() - start;
       BufferedImage liveDebugImagePP = ImageConvertUtil.matToBufferedImage(liveMat);
       BufferedImage convertedDebugImagePP = ImageConvertUtil.matToBufferedImage(convertedMat);
       Platform.runLater(() -> {
         SwingFXUtils.toFXImage(liveDebugImagePP, liveImage);
         SwingFXUtils.toFXImage(convertedDebugImagePP, convertedImage);
       });
+      start = System.currentTimeMillis();
+      StringBuilder resultSB = new StringBuilder();
+      StringBuilder codeSB = new StringBuilder();
+      DetectType detectType = debugDetectConfig.getDetectType().get();
+      if (detectType == DetectType.IMAGE_COMPARE) {
+        String template = ImageConvertUtil.matToJson(convertedMat);
+        ImageCompare.Param param = ImageCompare.Param.builder()
+            .area(selectedArea)
+            .method(debugImageCompareConfig.getImageCompareType().get())
+            .template(template)
+            .preProcessors(preProcessorConfigs)
+            .build();
+        codeSB.append("private static final ImageCompare.Param param = ImageCompare.Param.builder()\n")
+            .append(".area(Area.ofRect(").append(selectedArea.getX()).append(",")
+            .append(selectedArea.getY()).append(",").append(selectedArea.getWidth())
+            .append(",").append(selectedArea.getHeight()).append("))\n")
+            .append(".method(ImageCompare.Method.")
+            .append(debugImageCompareConfig.getImageCompareType().get().name()).append(")\n");
+        generatePreProcessorCode(codeSB);
+        codeSB.append(".template(\"").append(StringEscapeUtils.escapeJava(template)).append("\")\n")
+            .append(".build();");
+        ImageCompare.Result detect = imageCompare.detect(param);
+        String similarity = LogUtil.format("%.02f", detect.getSimilarity()).toString();
+        resultSB.append("Similarity:").append(similarity).append("\n");
+      } else if (detectType == DetectType.OCR) {
+        OCR.Param param = Param.builder()
+            .area(selectedArea)
+            .preProcessors(preProcessorConfigs)
+            .apiConfig(ApiConfig.builder()
+                .method(debugOcrConfig.getOcrType().get())
+                .whitelist(debugOcrConfig.getWhiteList().get())
+                .blacklist(debugOcrConfig.getBlackList().get())
+                .ocrEngineMode(debugOcrConfig.getEngineMode().get())
+                .pageSegMode(debugOcrConfig.getPageSegMode().get())
+                .build())
+            .build();
+        codeSB.append("private static final OCR.Param param = OCR.Param.builder()\n")
+            .append(".area(Area.ofRect(").append(selectedArea.getX()).append(",")
+            .append(selectedArea.getY()).append(",").append(selectedArea.getWidth())
+            .append(",").append(selectedArea.getHeight()).append("))\n");
+        generatePreProcessorCode(codeSB);
+        codeSB.append(".apiConfig(ApiConfig.builder()\n")
+            .append(".method(OCR.Method.")
+            .append(debugOcrConfig.getOcrType().get().name()).append(")\n");
+        codeSB.append(".whitelist(\"")
+            .append(StringEscapeUtils.escapeJava(debugOcrConfig.getWhiteList().get()))
+            .append("\")\n")
+            .append(".blacklist(\"")
+            .append(StringEscapeUtils.escapeJava(debugOcrConfig.getBlackList().get()))
+            .append("\")\n")
+            .append(".ocrEngineMode(OCR.EngineMode.")
+            .append(debugOcrConfig.getEngineMode().get()).append(")\n")
+            .append(".pageSegMode(OCR.PageSegMode.")
+            .append(debugOcrConfig.getPageSegMode().get()).append(")\n")
+            .append(".build())\n")
+            .append(".build();");
+        OCR.Result detect = ocr.detect(param);
+        resultSB.append("Result:").append(detect.getTextWithoutSpace()).append("\n");
+        resultSB.append("Confidence:").append(detect.getConfidence()).append("\n");
+      }
+      long detectTime = System.currentTimeMillis() - start;
+      resultSB.append("Preprocess time: ").append(preProcessTime).append(" ms\n");
+      resultSB.append("Detect time: ").append(detectTime).append(" ms");
+      String v = resultSB.toString();
+      ((SimpleStringProperty) debugResultConfig.getDetectResult()).setValue(v);
+      debugResultConfig.getGeneratedCode().setValue(codeSB.toString());
+    }
+  }
+
+  private void generatePreProcessorCode(StringBuilder codeSB) {
+    if (debugFilterConfig.getEnableRGBFilter().get()) {
+      codeSB.append(".preProcessor(")
+          .append("ChannelsFilterPreProcessorConfig.builder()\n")
+          .append(".enable(true)\n")
+          .append(".redWeight(").append(debugFilterConfig.getRedWeight().get()).append(")\n")
+          .append(".greenWeight(").append(debugFilterConfig.getGreenWeight().get())
+          .append(")\n")
+          .append(".blueWeight(").append(debugFilterConfig.getBlueWeight().get()).append(")\n")
+          .append(".build()\n");
+    }
+    if (debugColorPickConfig.getEnableColorPickFilter().get()) {
+      codeSB.append(".preProcessor(")
+          .append("ColorPickerFilterPreProcessorConfig.builder()\n")
+          .append(".enable(true)\n")
+          .append(".targetColor(Color.color(")
+          .append(debugColorPickConfig.getTargetColor().get().getRed()).append(",")
+          .append(debugColorPickConfig.getTargetColor().get().getGreen()).append(",")
+          .append(debugColorPickConfig.getTargetColor().get().getBlue()).append("))\n")
+          .append(".hueRange(").append(debugColorPickConfig.getHueRange().get()).append(")\n")
+          .append(".saturationRange(").append(debugColorPickConfig.getSaturationRange().get())
+          .append(")\n")
+          .append(".valueRange(").append(debugColorPickConfig.getValueRange().get())
+          .append(")\n")
+          .append(".inverse(").append(debugColorPickConfig.getInverse().get()).append(")\n")
+          .append(".build()\n");
+    }
+    if (debugNormalizeConfig.getEnableNormalizeFilter().get()) {
+      codeSB.append(".preProcessor(")
+          .append("ColorPickerFilterPreProcessorConfig.builder()\n")
+          .append(".enable(true)\n")
+          .append(".build()\n");
+    }
+    if (debugThreshConfig.getEnableThresh().get()) {
+      codeSB.append(".preProcessor(")
+          .append("ThreshPreProcessorConfig.builder()\n")
+          .append(".enable(true)\n")
+          .append(".threshold(").append(debugThreshConfig.getBinaryThreshold().get()).append(")\n")
+          .append(".inverse(").append(debugThreshConfig.getInverse().get()).append(")\n")
+          .append(".threshType(ThreshPreProcessorConfig.ThreshType.")
+          .append(debugThreshConfig.getThreshType().get().name()).append(")\n")
+          .append(".adaptiveThreshC(").append(debugThreshConfig.getAdaptiveThreshC().get())
+          .append(")\n")
+          .append(".adaptiveThreshBlockSize(")
+          .append(debugThreshConfig.getAdaptiveBlockSize().get()).append(")\n")
+          .append(".build()\n");
     }
   }
 
@@ -469,9 +632,8 @@ public class MainPanel {
   }
 
   private FXForm<?> generateConfigNode(Object configBean) {
-    FXForm<?> configForm = new FXForm<>(configBean, labelFactoryProvider,
+    return new FXForm<>(configBean, labelFactoryProvider,
         tooltipFactoryProvider, editorFactoryProvider);
-    return configForm;
   }
 
 

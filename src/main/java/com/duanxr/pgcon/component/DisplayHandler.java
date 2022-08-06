@@ -37,7 +37,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class DisplayHandler {
-
   private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(
       "/img/no_input.bmp");
   private static final int NOTIFY_CANVAS_DELAY = 200;
@@ -112,7 +111,7 @@ public class DisplayHandler {
   @Subscribe
   public void renderScreen(BufferedImage frame) {
     if (screen != null && !frozenScreen.get()) {
-      BufferedImage resize = ImageResizeUtil.resizeV2(frame, guiConfig.getWidth(),
+      BufferedImage resize = ImageResizeUtil.resize(frame, guiConfig.getWidth(),
           guiConfig.getHeight());
       screen.accept(resize);
     }

@@ -1,14 +1,15 @@
 package com.duanxr.pgcon.script.component;
 
+import com.alibaba.fastjson.JSONObject;
+import com.duanxr.pgcon.component.DisplayHandler;
+import com.duanxr.pgcon.component.ScriptManager;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.model.Area;
-import com.duanxr.pgcon.component.ScriptManager;
-import com.duanxr.pgcon.gui.exception.GuiAlertException;
-import com.duanxr.pgcon.component.DisplayHandler;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
 import com.duanxr.pgcon.gui.display.impl.Text;
+import com.duanxr.pgcon.gui.exception.GuiAlertException;
 import com.duanxr.pgcon.gui.log.GuiLogger;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.output.action.ButtonAction;
@@ -16,6 +17,8 @@ import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.Script;
 import com.duanxr.pgcon.util.LogUtil;
 import java.awt.Color;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -24,6 +27,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
 
 /**
  * @author 段然 2021/12/29
@@ -97,7 +101,8 @@ public abstract class ScriptEngine {
       drawImageCompareParam(param);
       ImageCompare.Result detect = imageCompare.detect(param);
       drawImageCompareResult(param, detect);
-      debug("image compare {} similarity: {} , cost {} ms", param.hashCode(), detect.getSimilarity(), System.currentTimeMillis() - start);
+      debug("image compare {} similarity: {} , cost {} ms", param.hashCode(),
+          detect.getSimilarity(), System.currentTimeMillis() - start);
       return detect;
     } else {
       return imageCompare.detect(param);
@@ -200,7 +205,8 @@ public abstract class ScriptEngine {
     }
     subScript.execute();
   }
-//todo arrcur
+
+  //todo arrcur
   protected Long ocrNumber(OCR.Param param, int length) {
     return until(() -> ocr(param),
         input -> input.getTextWithoutSpace().length() == length && input.getTextAsNumber() != null,
