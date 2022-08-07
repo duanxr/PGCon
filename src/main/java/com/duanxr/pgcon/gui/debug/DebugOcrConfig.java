@@ -3,12 +3,15 @@ package com.duanxr.pgcon.gui.debug;
 import com.dooapp.fxform.annotation.FormFactory;
 import com.dooapp.fxform.view.factory.impl.EnumChoiceBoxFactory;
 import com.dooapp.fxform.view.factory.impl.TextAreaFactory;
+import com.dooapp.fxform.view.factory.impl.TextFactory;
+import com.dooapp.fxform.view.factory.impl.TextFieldFactory;
 import com.duanxr.pgcon.core.detect.api.OCR.Method;
 import com.duanxr.pgcon.core.detect.impl.TesseractOCR;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import lombok.Data;
 
 /**
@@ -24,12 +27,10 @@ public class DebugOcrConfig {
       Method.CHS);
 
   @ConfigLabel("White List")
-  @FormFactory(TextAreaFactory.class)
-  private SimpleObjectProperty<String> whiteList = new SimpleObjectProperty<>();
+  private SimpleStringProperty whiteList = new SimpleStringProperty();
 
   @ConfigLabel("Black List")
-  @FormFactory(TextAreaFactory.class)
-  private SimpleObjectProperty<String> blackList = new SimpleObjectProperty<>();
+  private SimpleStringProperty blackList = new SimpleStringProperty();
 
   @ConfigLabel("PageSeg Mode")
   private IntegerProperty pageSegMode = new SimpleIntegerProperty(

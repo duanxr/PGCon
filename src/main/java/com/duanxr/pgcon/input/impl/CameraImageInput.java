@@ -69,7 +69,7 @@ public class CameraImageInput implements ImageInput<BufferedImage> {
 
   @Override
   public BufferedImage read() {
-    if (camera != null) {
+    if (camera != null && camera.isOpen()) {
       return camera.getImage();
     }
     return null;

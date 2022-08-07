@@ -36,9 +36,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implements OCR {
-
-  public static final Integer DEFAULT_OCR_ENGINE_MODE = tesseract.OEM_LSTM_ONLY;
-  public static final Integer DEFAULT_PAGE_SEG_MODE = tesseract.PSM_SINGLE_LINE;
+  public static final Integer DEFAULT_OCR_ENGINE_MODE = tesseract.OEM_DEFAULT;
+  public static final Integer DEFAULT_PAGE_SEG_MODE = tesseract.PSM_RAW_LINE;
   private static final String TESSEDIT_CHAR_BLACKLIST = "tessedit_char_blacklist";
   private static final String TESSEDIT_CHAR_WHITELIST = "tessedit_char_whitelist";
   private final Map<Method, TessBaseAPI> defaultApiMap;

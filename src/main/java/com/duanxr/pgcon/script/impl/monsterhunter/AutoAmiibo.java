@@ -17,23 +17,33 @@ public class AutoAmiibo extends ScriptEngine implements MainScript {
 
   private int times = 1;
   private static final OCR.Param AMIIBO_READ = OCR.Param.builder()
-      .area(Area.ofPoints(763, 888, 915, 948))
-      .apiConfig(ApiConfig.builder()
-          .method(OCR.Method.ENG)
-          .build())
-      .build();
+      .area(Area.ofRect(764, 898, 154, 44))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
+      .apiConfig(ApiConfig.builder().method(OCR.Method.ENG).build()).build();
   private static final OCR.Param AMIIBO_SUCCESS = Param.builder()
-      .area(Area.ofPoints(960, 529, 1038, 567))
-      .apiConfig(ApiConfig.builder()
-          .method(OCR.Method.ENG)
-          .build())
-      .build();
+      .area(Area.ofRect(960, 534, 76, 34))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
+      .apiConfig(ApiConfig.builder().method(OCR.Method.ENG).build()).build();
+
   private static final OCR.Param AMIIBO_USED = OCR.Param.builder()
-      .area(Area.ofPoints(190, 991, 106, 1017))
-      .apiConfig(ApiConfig.builder()
-          .method(OCR.Method.ENG)
-          .build())
-      .build();
+      .area(Area.ofRect(108, 992, 82, 28))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(true).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
+      .apiConfig(ApiConfig.builder().method(OCR.Method.ENG).build()).build();
 
   @Override
   public String getScriptName() {

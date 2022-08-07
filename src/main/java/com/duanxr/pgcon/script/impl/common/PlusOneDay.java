@@ -3,7 +3,6 @@ package com.duanxr.pgcon.script.impl.common;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
-import com.duanxr.pgcon.core.detect.api.OCR.Method;
 import com.duanxr.pgcon.core.detect.api.OCR.Param;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.script.api.Script;
@@ -18,37 +17,90 @@ import org.springframework.stereotype.Component;
 public class PlusOneDay extends ScriptEngine implements Script {
 
   private static final OCR.Param ENABLE_TIME_SYNC = Param.builder()
-      .area(Area.ofPoints(1495, 225, 1581, 271))
-      .apiConfig(ApiConfig.builder()
-          .method(Method.CHS)
-          .build())
+      .area(Area.ofRect(1494, 226, 80, 50))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).apiConfig(
+          ApiConfig.builder().method(OCR.Method.CHS)
+              .build()).
+      build();
+
+  private static final OCR.Param DATE_SETTING_MENU = OCR.Param.builder()
+      .area(Area.ofRect(92, 42, 226, 66))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).apiConfig(
+          ApiConfig.builder().method(OCR.Method.CHS)
+              .build()).
+      build();
+
+  private static final OCR.Param DATE_CHANGE_MENU = OCR.Param.builder()
+      .area(Area.ofRect(106, 408, 286, 44))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).apiConfig(
+          ApiConfig.builder().method(OCR.Method.CHS).build()).build();
+
+  private static final ImageCompare.Param SETTING_MENU = ImageCompare.Param.builder()
+      .area(Area.ofRect(90, 26, 86, 94)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+              .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).template(
+          "{\"data\":\"H/8BAP//////exEAAQAPVQA9D1YA/0UOrgEPrQCHD1UAMC8AAFYAFg5qAA+YAAkPVgAEDBgADsEAD5gBGS4AAFcADxgBGg0/AAZSAAxaAAUaAA9WABcfAFQABQUcAB8AVgAhHwBUAAYNHAAPAwERDwEAHQ+uARIf/1YAQx//VQBCDlcAD3IACS///1cAIw4dAA9VACMPNgIMD1UAJQ7hAg8fAAQPVQA5DhgED1UAHA9XADgOMwAPcgUGD1UAOw5XAA9WAGoPJwAUD1YAag4uAA8jBwsPVgBoDooCDyoAKA6MBA/gBR8PIgAYD4oACA9WAO4NNAAfAFYAQg8jABAPVgAyDSwAD1wDkQ6uCw+0BIgOLwAPugYKDwwGaw4OBw+rADAPugdFDzQADx8AZwhBD1UAIg/0Cw0fAFYALh8AFAo3DjUEDGQNDxULLQc+AA/BCzofAMMMDQ8aDWYILwAPSwAJHwAcDiYPVwAGDnIOD5EIGx8AHg85D2oBBg+3BAAPCgYmDpYAD+QRHR8AIhFCDhgBD+wACC8A/1YAQR//VgD//y8OvBMPAQD///8MUP//////\",\"length\":8084,\"rows\":94,\"type\":0,\"cols\":86}")
       .build();
   private static final ImageCompare.Param MAIN_MENU = ImageCompare.Param.builder()
-      .method(ImageCompare.Method.TM_CCOEFF)
-      .template("/img/common/mainMenu.png")
-      .area(Area.ofPoints(1404, 781, 1489, 852)).build();
+      .area(Area.ofRect(1244, 778, 84, 78)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+              .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).template(
+          "{\"data\":\"H/8BAP///wgQAAEAD1MAPQ9VAEAPVACbD1AB/yUvAAD8ABQvAADgAigPVAADDrsAD5ABFRoAAQAPEAEiCj0AC1IAB1YAHwBUACQOUgAFVgAKewAPVgAPDwEAGB//VAAUD1MAQC///zsABg9TACcv//86AAcPUwAmCDsADhsAD1MAJB//OAAKD1QAKw+nBDkOigAP/AQCDzAFOw5VAA+DBRUPVAA/DyMAEA+nADkOVQAPVABnDyUAEg+nADoOVQAP0AYQDycAMg5zBA8wABoPVAD/Uyn/ACgADwwGKB//oAIsD/QCaA9EBJwPQAURHwDoBWsf/1QARw4zAA6NBw/gB2sO4QcPiAg3DzkAAi8AAPsAKQ46AA8bAAcPdAQeD4AKMA8oCxkP0AtnBy8AD0oABy8AAMwMOx//IA0lDwkBBg75Ag9wDiEOPgEPeBEfDpUCD8QOLQ+8AAgPYBKUD6gAPA9UAO4PpQFDDwEA//8KUP//////\",\"length\":6552,\"rows\":78,\"type\":0,\"cols\":84}")
+      .build();
   private static final String NUM_WHITELIST = "0123456789";
   private static final OCR.Param TIME_DAY = OCR.Param.builder()
-      .area(Area.ofPoints(769, 661, 861, 742))
-      .apiConfig(ApiConfig.builder()
-          .method(Method.NMU)
-          .whitelist(NUM_WHITELIST)
-          .build())
-      .build();
+      .area(Area.ofRect(750, 652, 120, 106))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).apiConfig(
+          ApiConfig.builder().method(OCR.Method.NMU).whitelist(NUM_WHITELIST)
+              .build()).build();
   private static final OCR.Param TIME_MONTH = OCR.Param.builder()
-      .area(Area.ofPoints(571, 661, 663, 736))
-      .apiConfig(ApiConfig.builder()
-          .method(Method.NMU)
-          .whitelist(NUM_WHITELIST)
-          .build())
-      .build();
+      .area(Area.ofRect(566, 654, 110, 96))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
+      .apiConfig(ApiConfig.builder().method(OCR.Method.NMU).whitelist(NUM_WHITELIST)
+          .build()).build();
   private static final OCR.Param TIME_YEAR = OCR.Param.builder()
-      .area(Area.ofPoints(277, 663, 454, 742))
-      .apiConfig(ApiConfig.builder()
-          .method(Method.NMU)
-          .whitelist(NUM_WHITELIST)
-          .build())
-      .build();
+      .area(Area.ofRect(274, 656, 176, 84))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true).build()).preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
+              .binaryThreshold(0.5).inverse(false).threshType(
+                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).apiConfig(
+          ApiConfig.builder().method(OCR.Method.NMU).whitelist(NUM_WHITELIST)
+              .build()).build();
 
   @Override
   public String getScriptName() {
@@ -161,7 +213,7 @@ public class PlusOneDay extends ScriptEngine implements Script {
     sleep(150);
     press(A);
     sleep(150);
-    info("date set to: {}", nextDay);
+    info("set date to {}", nextDay);
   }
 
   private void backToGame() {

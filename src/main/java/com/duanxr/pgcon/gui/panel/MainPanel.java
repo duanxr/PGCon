@@ -14,6 +14,7 @@ import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
 import com.duanxr.pgcon.core.detect.api.OCR.Param;
+import com.duanxr.pgcon.core.detect.impl.TesseractOCR;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
@@ -401,7 +402,8 @@ public class MainPanel {
             .template(template)
             .preProcessors(preProcessorConfigs)
             .build();
-        codeSB.append("private static final ImageCompare.Param param = ImageCompare.Param.builder()\n")
+        codeSB.append(
+                "private static final ImageCompare.Param param = ImageCompare.Param.builder()\n")
             .append(".area(Area.ofRect(").append(selectedArea.getX()).append(",")
             .append(selectedArea.getY()).append(",").append(selectedArea.getWidth())
             .append(",").append(selectedArea.getHeight()).append("))\n")
@@ -433,18 +435,25 @@ public class MainPanel {
         codeSB.append(".apiConfig(ApiConfig.builder()\n")
             .append(".method(OCR.Method.")
             .append(debugOcrConfig.getOcrType().get().name()).append(")\n");
-        codeSB.append(".whitelist(\"")
-            .append(StringEscapeUtils.escapeJava(debugOcrConfig.getWhiteList().get()))
-            .append("\")\n")
-            .append(".blacklist(\"")
-            .append(StringEscapeUtils.escapeJava(debugOcrConfig.getBlackList().get()))
-            .append("\")\n")
-            .append(".ocrEngineMode(OCR.EngineMode.")
-            .append(debugOcrConfig.getEngineMode().get()).append(")\n")
-            .append(".pageSegMode(OCR.PageSegMode.")
-            .append(debugOcrConfig.getPageSegMode().get()).append(")\n")
-            .append(".build())\n")
-            .append(".build();");
+        if (!Strings.isNullOrEmpty(debugOcrConfig.getWhiteList().get())) {
+          codeSB.append(".whitelist(\"")
+              .append(StringEscapeUtils.escapeJava(debugOcrConfig.getWhiteList().get()))
+              .append("\")\n");
+        }
+        if (!Strings.isNullOrEmpty(debugOcrConfig.getBlackList().get())) {
+          codeSB.append(".blacklist(\"")
+              .append(StringEscapeUtils.escapeJava(debugOcrConfig.getBlackList().get()))
+              .append("\")\n");
+        }
+        if (debugOcrConfig.getEngineMode().get() != TesseractOCR.DEFAULT_OCR_ENGINE_MODE) {
+          codeSB.append(".ocrEngineMode(")
+              .append(debugOcrConfig.getEngineMode().get()).append(")\n");
+        }
+        if (debugOcrConfig.getPageSegMode().get() != TesseractOCR.DEFAULT_PAGE_SEG_MODE) {
+          codeSB.append(".pageSegMode(")
+              .append(debugOcrConfig.getPageSegMode().get()).append(")\n");
+        }
+        codeSB.append(".build())\n.build();");
         OCR.Result detect = ocr.detect(param);
         resultSB.append("Result:").append(detect.getTextWithoutSpace()).append("\n");
         resultSB.append("Confidence:").append(detect.getConfidence()).append("\n");
@@ -461,19 +470,21 @@ public class MainPanel {
   private void generatePreProcessorCode(StringBuilder codeSB) {
     if (debugFilterConfig.getEnableRGBFilter().get()) {
       codeSB.append(".preProcessor(")
-          .append("ChannelsFilterPreProcessorConfig.builder()\n")
+          .append(
+              "com.duanxr.pgcon.core.preprocessing.config.ChannelsFilterPreProcessorConfig.builder()\n")
           .append(".enable(true)\n")
           .append(".redWeight(").append(debugFilterConfig.getRedWeight().get()).append(")\n")
           .append(".greenWeight(").append(debugFilterConfig.getGreenWeight().get())
           .append(")\n")
           .append(".blueWeight(").append(debugFilterConfig.getBlueWeight().get()).append(")\n")
-          .append(".build()\n");
+          .append(".build())\n");
     }
     if (debugColorPickConfig.getEnableColorPickFilter().get()) {
       codeSB.append(".preProcessor(")
-          .append("ColorPickerFilterPreProcessorConfig.builder()\n")
+          .append(
+              "com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()\n")
           .append(".enable(true)\n")
-          .append(".targetColor(Color.color(")
+          .append(".targetColor(javafx.scene.paint.Color.color(")
           .append(debugColorPickConfig.getTargetColor().get().getRed()).append(",")
           .append(debugColorPickConfig.getTargetColor().get().getGreen()).append(",")
           .append(debugColorPickConfig.getTargetColor().get().getBlue()).append("))\n")
@@ -483,27 +494,30 @@ public class MainPanel {
           .append(".valueRange(").append(debugColorPickConfig.getValueRange().get())
           .append(")\n")
           .append(".inverse(").append(debugColorPickConfig.getInverse().get()).append(")\n")
-          .append(".build()\n");
+          .append(".build())\n");
     }
     if (debugNormalizeConfig.getEnableNormalizeFilter().get()) {
       codeSB.append(".preProcessor(")
-          .append("ColorPickerFilterPreProcessorConfig.builder()\n")
+          .append(
+              "com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()\n")
           .append(".enable(true)\n")
-          .append(".build()\n");
+          .append(".build())\n");
     }
     if (debugThreshConfig.getEnableThresh().get()) {
       codeSB.append(".preProcessor(")
-          .append("ThreshPreProcessorConfig.builder()\n")
+          .append("com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()\n")
           .append(".enable(true)\n")
-          .append(".threshold(").append(debugThreshConfig.getBinaryThreshold().get()).append(")\n")
+          .append(".binaryThreshold(").append(debugThreshConfig.getBinaryThreshold().get())
+          .append(")\n")
           .append(".inverse(").append(debugThreshConfig.getInverse().get()).append(")\n")
-          .append(".threshType(ThreshPreProcessorConfig.ThreshType.")
+          .append(
+              ".threshType(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.")
           .append(debugThreshConfig.getThreshType().get().name()).append(")\n")
           .append(".adaptiveThreshC(").append(debugThreshConfig.getAdaptiveThreshC().get())
           .append(")\n")
-          .append(".adaptiveThreshBlockSize(")
+          .append(".adaptiveBlockSize(")
           .append(debugThreshConfig.getAdaptiveBlockSize().get()).append(")\n")
-          .append(".build()\n");
+          .append(".build())\n");
     }
   }
 
