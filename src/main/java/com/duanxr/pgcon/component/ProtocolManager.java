@@ -2,11 +2,12 @@ package com.duanxr.pgcon.component;
 
 import com.duanxr.pgcon.gui.exception.GuiAlertException;
 import com.duanxr.pgcon.output.api.Protocol;
-import com.duanxr.pgcon.output.impl.ec.EasyConProtocol;
+import com.duanxr.pgcon.output.impl.ec.EasyConProtocolV140;
+import com.duanxr.pgcon.output.impl.ec.EasyConProtocolV147;
 import com.duanxr.pgcon.output.impl.pc.PGConProtocol;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,11 +16,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProtocolManager {
 
-  private final LinkedHashMap<String, BiFunction<String, Integer, Protocol>> supportedProtocols;
+  private final LinkedHashMap<String, Function<String, Protocol>> supportedProtocols;
 
   public ProtocolManager() {
     supportedProtocols = new LinkedHashMap<>();
-    supportedProtocols.put("EasyCon V1.4", EasyConProtocol::new);
+    supportedProtocols.put("EasyCon V1.47", EasyConProtocolV147::new);
+    supportedProtocols.put("EasyCon V1.40", EasyConProtocolV140::new);
     supportedProtocols.put("PGCon", PGConProtocol::new);
   }
 
@@ -27,11 +29,11 @@ public class ProtocolManager {
     return supportedProtocols.keySet().stream().toList();
   }
 
-  public Protocol loadProtocol(String protocolName, String port, Integer baudRate) {
-    BiFunction<String, Integer, Protocol> protocolLoader = supportedProtocols.get(protocolName);
+  public Protocol loadProtocol(String protocolName, String port) {
+    Function<String, Protocol> protocolLoader = supportedProtocols.get(protocolName);
     if (protocolLoader == null) {
       throw new GuiAlertException("不支持的固件协议:" + protocolName);
     }
-    return protocolLoader.apply(port, baudRate);
+    return protocolLoader.apply(port);
   }
 }

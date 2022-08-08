@@ -841,8 +841,7 @@ public class MainPanel {
     controller.clear();
     String protocolName = protocolSelection.getSelectionModel().getSelectedItem();
     String port = portSelection.getSelectionModel().getSelectedItem();
-    Protocol protocol = protocolManager.loadProtocol(protocolName, port,
-        outputConfig.getBaudRate());
+    Protocol protocol = protocolManager.loadProtocol(protocolName, port);
     if (!protocol.isConnected()) {
       protocol.clear();
       throw new GuiAlertException("protocol not connected");

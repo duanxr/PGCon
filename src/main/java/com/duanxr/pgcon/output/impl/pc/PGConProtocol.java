@@ -14,8 +14,8 @@ public class PGConProtocol implements Protocol {
   private final SerialPort<Integer> serialPort;
 
   @SneakyThrows
-  public PGConProtocol(String portName, int baudRate) {
-    serialPort = new PGConSerialPort(portName, baudRate);
+  public PGConProtocol(String portName) {
+    serialPort = new PGConSerialPort(portName, 9600);
   }
 
   @Override

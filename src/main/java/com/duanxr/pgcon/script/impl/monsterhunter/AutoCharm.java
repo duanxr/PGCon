@@ -355,6 +355,8 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("逆袭", "逆袭");
     skills.put("逆效", "逆袭");
     skills.put("逆获", "逆袭");
+    skills.put("逆约", "逆袭");
+    skills.put("逆装", "逆袭");
     skills.put("挑战者", "挑战者");
     skills.put("无伤", "无伤");
     skills.put("怨恨", "怨恨");
@@ -364,6 +366,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("看破", "看破");
     skills.put("超会心", "超会心");
     skills.put("超会", "超会心");
+    skills.put("超会人", "超会心");
     skills.put("超会人心", "超会心");
     skills.put("超会心心", "超会心");
     skills.put("弱点特效", "弱点特效");
@@ -382,17 +385,21 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("毒属性强化", "毒属性强化");
     skills.put("属性强化", "毒属性强化");
     skills.put("麻痹属性强化", "麻痹属性强化");
+    skills.put("麻精属性强化", "麻痹属性强化");
     skills.put("麻属性强化", "麻痹属性强化");
     skills.put("麻王属性强化", "麻痹属性强化");
     skills.put("睡眠属性强化", "睡眠属性强化");
     skills.put("睡眠性强化", "睡眠属性强化");
     skills.put("爆破属性强化", "爆破属性强化");
+    skills.put("破属性强化", "爆破属性强化");
     skills.put("爆破罗性强化", "爆破属性强化");
     skills.put("匠", "匠");
     skills.put("利刃", "利刃");
     skills.put("弹丸节约", "弹丸节约");
     skills.put("刚刃打磨", "刚刃打磨");
+    skills.put("刃打磨", "刚刃打磨");
     skills.put("刚丸打磨", "刚刃打磨");
+    skills.put("刚丸打麻", "刚刃打磨");
     skills.put("心眼", "心眼");
     skills.put("弹道强化", "弹道强化");
     skills.put("钝器能手", "钝器能手");
@@ -424,6 +431,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("特殊射击强化", "特殊射击强化");
     skills.put("通常弹.连射箭强人", "通常弹连射箭强化");
     skills.put("通常弹.连射强化", "通常弹连射箭强化");
+    skills.put("通常弹.连射强人", "通常弹连射箭强化");
     skills.put("贯穿弹.贯穿箭强人", "贯穿弹贯穿箭强化");
     skills.put("散弹.扩散箭强人", "散弹扩散箭强化");
     skills.put("通常弹.连射箭强化", "通常弹连射箭强化");
@@ -442,6 +450,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("防御", "防御");
     skills.put("精灵加护", "精灵加护");
     skills.put("体力回复量提升", "体力回复量提升");
+    skills.put("体力回复最提升", "体力回复量提升");
     skills.put("回复速度", "回复速度");
     skills.put("器复速度", "回复速度");
     skills.put("快吃", "快吃");
@@ -528,9 +537,13 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("力大师", "蓄力大师");
     skills.put("攻势", "攻势");
     skills.put("零件改造", "零件改造");
+    skills.put("件改造", "零件改造");
+    skills.put("打魔术【锐】", "打磨术锐");
     skills.put("打磨术【锐】", "打磨术锐");
     skills.put("打麻术【锐", "打磨术锐");
+    skills.put("打麻术【锐】", "打磨术锐");
     skills.put("刃鳞打磨", "刃鳞打磨");
+    skills.put("刃鳞打麻", "刃鳞打磨");
     skills.put("走壁移动【翔】", "走壁移动翔");
     skills.put("迅之气息", "迅之气息");
     skills.put("连击", "连击");
@@ -830,7 +843,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     OCR.Result until = until(() -> ocr(param),
         input -> {
           String text = input.getTextWithoutSpace();
-          if (input.getConfidence() < 45) {
+          if (input.getConfidence() < 10) {
             return true;
           }
           boolean b = SKILLS.containsKey(text);

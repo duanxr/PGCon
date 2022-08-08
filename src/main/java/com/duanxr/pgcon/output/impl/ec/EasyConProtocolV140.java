@@ -11,15 +11,15 @@ import lombok.extern.slf4j.Slf4j;
  * @author 段然 2021/12/7
  */
 @Slf4j
-public class EasyConProtocol implements Protocol {
+public class EasyConProtocolV140 implements Protocol {
 
   private final SerialPort<byte[]> serialPort;
 
   private final byte[] currentBytes = getDefault();
 
   @SneakyThrows
-  public EasyConProtocol(String portName, int baudRate) {
-    serialPort = new EasyConSerialPort(portName, baudRate);
+  public EasyConProtocolV140(String portName) {
+    serialPort = new EasyConSerialPort(portName, 9600);
   }
 
   @Override
