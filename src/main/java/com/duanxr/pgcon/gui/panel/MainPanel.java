@@ -31,7 +31,7 @@ import com.duanxr.pgcon.gui.debug.DebugResultConfig;
 import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
-import com.duanxr.pgcon.gui.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.GuiAlertException;
 import com.duanxr.pgcon.gui.log.GuiLog;
 import com.duanxr.pgcon.gui.log.GuiLogLevel;
 import com.duanxr.pgcon.gui.log.GuiLogView;

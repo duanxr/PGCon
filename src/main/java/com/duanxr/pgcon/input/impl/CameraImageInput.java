@@ -2,7 +2,7 @@ package com.duanxr.pgcon.input.impl;
 
 
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.gui.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.GuiAlertException;
 import com.duanxr.pgcon.input.api.ImageInput;
 import com.github.sarxos.webcam.Webcam;
 import com.google.common.base.Strings;

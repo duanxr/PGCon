@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.gui.exception;
+package com.duanxr.pgcon.exception;
 
 import lombok.experimental.StandardException;
 
@@ -6,6 +6,6 @@ import lombok.experimental.StandardException;
  * @author 段然 2022/7/28
  */
 @StandardException
-public class GuiAlertException extends RuntimeException{
+public class ResetScriptException extends GuiWarnException{
 
 }

@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.script.component;
 
-import com.duanxr.pgcon.gui.exception.AbortScriptException;
+import com.duanxr.pgcon.exception.AbortScriptException;
 import com.duanxr.pgcon.script.api.MainScript;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.slf4j.Slf4j;

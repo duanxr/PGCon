@@ -11,8 +11,8 @@ import com.duanxr.pgcon.core.detect.api.OCR.Method;
 import com.duanxr.pgcon.core.detect.api.OCR.Param;
 import com.duanxr.pgcon.core.detect.api.OCR.Result;
 import com.duanxr.pgcon.core.model.Area;
-import com.duanxr.pgcon.gui.exception.AbortScriptException;
-import com.duanxr.pgcon.gui.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.AbortScriptException;
+import com.duanxr.pgcon.exception.GuiAlertException;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.ConfigurableScript;
@@ -360,6 +360,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("挑战者", "挑战者");
     skills.put("无伤", "无伤");
     skills.put("怨恨", "怨恨");
+    skills.put("息恨", "怨恨");
     skills.put("铠恨", "怨恨");
     skills.put("急恨", "怨恨");
     skills.put("死里逃生", "死里逃生");
@@ -371,6 +372,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("超会心心", "超会心");
     skills.put("弱点特效", "弱点特效");
     skills.put("力量解放", "力量解放");
+    skills.put("精神抖匠", "精神抖擞");
     skills.put("精神抖擞", "精神抖擞");
     skills.put("精神抖", "精神抖擞");
     skills.put("会心击【属性】", "会心击属性");
@@ -423,7 +425,10 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("纳刀术", "纳刀术");
     skills.put("击晕术", "击晕术");
     skills.put("击术", "击晕术");
+    skills.put("击术术", "击晕术");
+    skills.put("击加术", "击晕术");
     skills.put("夺取耐力", "夺取耐力");
+    skills.put("取耐力", "夺取耐力");
     skills.put("滑走强化", "滑走强化");
     skills.put("吹笛名人", "吹笛名人");
     skills.put("炮术", "炮术");
@@ -436,6 +441,8 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("散弹.扩散箭强人", "散弹扩散箭强化");
     skills.put("通常弹.连射箭强化", "通常弹连射箭强化");
     skills.put("贯穿弹.贯穿箭强化", "贯穿弹贯穿箭强化");
+    skills.put("穿弹.贯穿箭强化", "贯穿弹贯穿箭强化");
+    skills.put("贯穿.贯穿箭强化", "贯穿弹贯穿箭强化");
     skills.put("贯穿弹.穿箭强化", "贯穿弹贯穿箭强化");
     skills.put("散弹.扩散箭强化", "散弹扩散箭强化");
     skills.put("散弹.扩散强化", "散弹扩散箭强化");
@@ -458,6 +465,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("风压耐性", "风压耐性");
     skills.put("耐震", "耐震");
     skills.put("泡沫之舞", "泡沫之舞");
+    skills.put("放沫之舞", "泡沫之舞");
     skills.put("沫之舞", "泡沫之舞");
     skills.put("回避性能", "回避性能");
     skills.put("避性能", "回避性能");
@@ -496,6 +504,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("道具使用强化", "道具使用强化");
     skills.put("广域化", "广域化");
     skills.put("满足感", "满足感");
+    skills.put("满足不", "满足感");
     skills.put("火场怪力", "火场怪力");
     skills.put("不屈", "不屈");
     skills.put("减轻胆怯", "减轻胆怯");
@@ -516,6 +525,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("翔虫使", "翔虫使");
     skills.put("墙面移动", "墙面移动");
     skills.put("高速变形", "高速变形");
+    skills.put("火缠", "鬼火缠");
     skills.put("鬼火缠", "鬼火缠");
     skills.put("鬼火强", "鬼火缠");
     skills.put("鬼火雪", "鬼火缠");
@@ -817,6 +827,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     info("DingZhen the One-Eye identified the charm as : {}", result);
     if (isTarget) {
       warn("find a target charm:{}", result);
+      push("find a target charm:"+result);
       press(PLUS);
       sleep(200);
       if (config.getCaptureScreenWhenFind().get()) {

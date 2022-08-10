@@ -8,7 +8,7 @@ import com.duanxr.pgcon.core.preprocessing.impl.ChannelsFilterPreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.ColorPickFilterPreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.NormalizePreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.ThreshPreProcessor;
-import com.duanxr.pgcon.gui.exception.AbortScriptException;
+import com.duanxr.pgcon.exception.AbortScriptException;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.util.List;

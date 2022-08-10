@@ -1,6 +1,5 @@
 package com.duanxr.pgcon.script.component;
 
-import com.alibaba.fastjson.JSONObject;
 import com.duanxr.pgcon.component.DisplayHandler;
 import com.duanxr.pgcon.component.ScriptManager;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
@@ -9,16 +8,15 @@ import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
 import com.duanxr.pgcon.gui.display.impl.Text;
-import com.duanxr.pgcon.gui.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.GuiAlertException;
 import com.duanxr.pgcon.gui.log.GuiLogger;
+import com.duanxr.pgcon.notification.NotifyService;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.Script;
 import com.duanxr.pgcon.util.LogUtil;
 import java.awt.Color;
-import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -27,13 +25,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 
 /**
  * @author 段然 2021/12/29
  */
 @Setter
-public abstract class ScriptEngine {
+public abstract class ScriptEngine implements Script {
 
   protected static ButtonAction A = ButtonAction.A;
   protected static ButtonAction B = ButtonAction.B;
@@ -79,6 +76,7 @@ public abstract class ScriptEngine {
   private ImageCompare imageCompare;
   private OCR ocr;
   private ScriptManager scriptManager;
+  private NotifyService notifyService;
 
   protected ScriptEngine() {
   }
@@ -244,6 +242,14 @@ public abstract class ScriptEngine {
             rect, result,
             new Color(66, 60, 19, 255),
             14, 3000)));
+  }
+
+  protected void push(String message) {
+    try {
+      notifyService.push(getScriptName(), message);
+    }catch (Exception e) {
+      error("push error", e);
+    }
   }
 
   private void drawOCRParam(OCR.Param param) {

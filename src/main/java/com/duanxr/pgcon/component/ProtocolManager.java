@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.component;
 
-import com.duanxr.pgcon.gui.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.GuiAlertException;
 import com.duanxr.pgcon.output.api.Protocol;
 import com.duanxr.pgcon.output.impl.ec.EasyConProtocolV140;
 import com.duanxr.pgcon.output.impl.ec.EasyConProtocolV147;
