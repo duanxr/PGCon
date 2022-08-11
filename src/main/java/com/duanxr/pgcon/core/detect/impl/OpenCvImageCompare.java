@@ -6,7 +6,8 @@ import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
-import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.duanxr.pgcon.util.ImageUtil;
+import com.duanxr.pgcon.util.MatUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Strings;
@@ -51,7 +52,7 @@ public class OpenCvImageCompare extends
 
   @SneakyThrows
   private Mat loadTemplate(String template) {
-    return ImageConvertUtil.jsonToMat(template);
+    return ImageUtil.jsonToMat(template);
   }
 
   @Override
@@ -140,10 +141,10 @@ public class OpenCvImageCompare extends
   }
 
   private Mat getTarget(CachedFrame cachedFrame, Area area, boolean deepCopy) {
-    return area == null ? deepCopy ? ImageConvertUtil.deepCopyMat(cachedFrame.getMat())
+    return area == null ? deepCopy ? MatUtil.deepCopy(cachedFrame.getMat())
         : cachedFrame.getMat()
-        : deepCopy ? ImageConvertUtil.deepSplitMat(cachedFrame.getMat(), area)
-            : ImageConvertUtil.splitMat(cachedFrame.getMat(), area);
+        : deepCopy ? MatUtil.deepSplit(cachedFrame.getMat(), area)
+            : MatUtil.split(cachedFrame.getMat(), area);
   }
 
 }

@@ -18,12 +18,26 @@ public class ColorPickFilterPreProcessorConfig extends PreProcessorConfig {
 
   private Color targetColor = Color.BLUE;
 
-  private double hueRange = 0.2;
-
-  private double saturationRange = 0.2;
-
-  private double valueRange = 0.2;
-
   private boolean inverse = false;
 
+  private double range = 0.1;
+
+  private PickType pickType = PickType.CIE76;
+
+  private MaskType maskType = MaskType.BLACK;
+
+  public enum PickType {
+    CIE76,
+    CIE94,
+    CIEDE2000,
+    CMC,
+    ;
+  }
+
+  public enum MaskType {
+    BLACK,
+    WHITE,
+    GARY,
+    ;
+  }
 }

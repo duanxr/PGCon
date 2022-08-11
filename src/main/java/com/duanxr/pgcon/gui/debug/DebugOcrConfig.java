@@ -13,12 +13,13 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/8/1
  */
 @Data
-
+@Component
 public class DebugOcrConfig {
 
   @ConfigLabel("OCR Type")
@@ -33,11 +34,11 @@ public class DebugOcrConfig {
   private SimpleStringProperty blackList = new SimpleStringProperty();
 
   @ConfigLabel("PageSeg Mode")
-  private IntegerProperty pageSegMode = new SimpleIntegerProperty(
+  private SimpleIntegerProperty pageSegMode = new SimpleIntegerProperty(
       TesseractOCR.DEFAULT_PAGE_SEG_MODE);
 
   @ConfigLabel("Engine Mode")
-  private IntegerProperty engineMode = new SimpleIntegerProperty(
+  private SimpleIntegerProperty engineMode = new SimpleIntegerProperty(
       TesseractOCR.DEFAULT_OCR_ENGINE_MODE);
 
 }

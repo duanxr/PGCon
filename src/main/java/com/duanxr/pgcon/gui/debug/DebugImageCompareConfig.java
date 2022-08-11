@@ -6,12 +6,13 @@ import com.duanxr.pgcon.core.detect.api.ImageCompare.Method;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/8/1
  */
 @Data
-
+@Component
 public class DebugImageCompareConfig {
 
   @ConfigLabel("ImageCompare Type")

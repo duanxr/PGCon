@@ -7,11 +7,13 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.image.Image;
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/8/1
  */
 @Data
+@Component
 public class DebugMainConfig {
 
   @FormFactory(ImageViewerFactory.class)
@@ -25,7 +27,6 @@ public class DebugMainConfig {
   @FormFactory(ImageViewerFactory.class)
   @ConfigLabel("Live Image")
   private ObjectProperty<Image> liveImage = new SimpleObjectProperty<>();
-
 
 }
 

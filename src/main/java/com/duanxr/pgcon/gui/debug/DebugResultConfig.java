@@ -14,18 +14,16 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/8/1
  */
 @Data
+@Component
 public class DebugResultConfig {
 
   @ConfigLabel("Detect Result")
   private ReadOnlyStringProperty detectResult = new SimpleStringProperty();
-
-
-  @ConfigLabel("Generated Code")
-  private StringProperty generatedCode = new SimpleStringProperty();
 
 }

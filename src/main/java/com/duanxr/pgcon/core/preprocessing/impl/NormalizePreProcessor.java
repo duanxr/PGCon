@@ -2,7 +2,7 @@ package com.duanxr.pgcon.core.preprocessing.impl;
 
 import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig;
-import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.duanxr.pgcon.util.MatUtil;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -18,12 +18,12 @@ public class NormalizePreProcessor implements PreProcessor {
   }
 
   @Override
-  public Mat preProcess(Mat src) {
+  public Mat preProcess(Mat mat) {
     if (normalizePreProcessorConfig.isEnable()) {
-      ImageConvertUtil.BGR2GRAY(src);
-      Core.normalize(src,src,0,255, Core.NORM_MINMAX, CvType.CV_8U);
+      mat = MatUtil.toGrayMat(mat);
+      Core.normalize(mat,mat,0,255, Core.NORM_MINMAX, CvType.CV_8U);
     }
-    return src;
+    return mat;
   }
 }
 

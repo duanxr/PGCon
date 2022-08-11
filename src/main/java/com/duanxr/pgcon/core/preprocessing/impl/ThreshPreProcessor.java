@@ -1,9 +1,9 @@
 package com.duanxr.pgcon.core.preprocessing.impl;
 
+import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType;
-import com.duanxr.pgcon.core.preprocessing.PreProcessor;
-import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.duanxr.pgcon.util.MatUtil;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
@@ -21,23 +21,22 @@ public class ThreshPreProcessor implements PreProcessor {
   }
 
   @Override
-  public Mat preProcess(Mat src) {
+  public Mat preProcess(Mat mat) {
     if (threshConfig.isEnable()) {
-      ImageConvertUtil.BGR2GRAY(src);
+      mat = MatUtil.toGrayMat(mat);
       ThreshType threshType = threshConfig.getThreshType();
       if (!threshType.isAdaptive()) {
         int thresh = (int) Math.round(threshConfig.getBinaryThreshold() * THRESH_MAX_VAL);
-        Imgproc.threshold(src, src, thresh, THRESH_MAX_VAL, threshType.getCvVal());
+        Imgproc.threshold(mat, mat, thresh, THRESH_MAX_VAL, threshType.getCvVal());
       } else {
-        Imgproc.adaptiveThreshold(src, src, THRESH_MAX_VAL, threshType.getCvVal(),
-            Imgproc.THRESH_BINARY,
-            threshConfig.getAdaptiveBlockSize(), threshConfig.getAdaptiveThreshC());
+        Imgproc.adaptiveThreshold(mat, mat, THRESH_MAX_VAL, threshType.getCvVal(),
+            Imgproc.THRESH_BINARY, threshConfig.getAdaptiveBlockSize(), threshConfig.getAdaptiveThreshC());
       }
       if (threshConfig.isInverse()) {
-        Core.bitwise_not(src, src);
+        Core.bitwise_not(mat, mat);
       }
     }
-    return src;
+    return mat;
   }
 }
 

@@ -2,7 +2,12 @@ package com.duanxr.pgcon.core.preprocessing.impl;
 
 import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig;
+import com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType;
+import com.duanxr.pgcon.util.ColorDifferenceUtil;
+import com.duanxr.pgcon.util.MatUtil;
+import javafx.scene.paint.Color;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
@@ -14,51 +19,80 @@ public class ColorPickFilterPreProcessor implements PreProcessor {
 
   private final ColorPickFilterPreProcessorConfig filterConfig;
 
-  private final double hue;
-  private final double saturation;
-  private final double value;
-
   public ColorPickFilterPreProcessor(ColorPickFilterPreProcessorConfig filterConfig) {
     this.filterConfig = filterConfig;
-    this.hue = filterConfig.getTargetColor().getHue() / 360.0 * 180.0;
-    this.saturation = filterConfig.getTargetColor().getSaturation() * 255.0;
-    this.value = filterConfig.getTargetColor().getBrightness() * 255.0;
   }
 
   @Override
-  public Mat preProcess(Mat src) {
-    if (filterConfig.isEnable() && src.channels() == 3) {
-      Mat hsv = new Mat();
-      Mat mask = new Mat();
-      Mat black = new Mat(src.size(), src.type(), new Scalar(0));
-      Imgproc.cvtColor(src, hsv, Imgproc.COLOR_BGR2HSV);
-      double hr = filterConfig.getHueRange() * 180.0;
-      double sr = filterConfig.getSaturationRange() * 255.0;
-      double vr = filterConfig.getValueRange() * 255.0;
-      Scalar lower = new Scalar(Math.max(hue - hr, 0.0),
-          Math.max(saturation - sr, 0.0),
-          Math.max(value - vr, 0.0));
-      Scalar higher = new Scalar(Math.min(hue + hr, 180.0),
-          Math.min(saturation + sr, 255.0),
-          Math.min(value + vr, 255.0));
-      Core.inRange(hsv, lower, higher, mask);
-      if (hue - hr < 0) {
-        lower = new Scalar(180 + hue - hr,
-            Math.max(saturation - sr, 0.0),
-            Math.max(value - vr, 0.0));
-        higher = new Scalar(180.0,
-            Math.min(saturation + sr, 255.0),
-            Math.min(value + vr, 255.0));
-        Mat mask2 = new Mat();
-        Core.inRange(hsv, lower, higher, mask2);
-        Core.bitwise_or(mask, mask2, mask);
+  public Mat preProcess(Mat mat) {
+    if (filterConfig.isEnable() && mat.channels() == 3) {
+      byte[] targetLab = getLabTarget(filterConfig.getTargetColor());
+      Mat lab = new Mat(mat.size(), mat.type());
+      Mat cover = getCover(mat);
+      Mat mask = new Mat(mat.size(), CvType.CV_8UC1, new Scalar(0));
+      Imgproc.cvtColor(mat, lab, Imgproc.COLOR_BGR2Lab);
+      byte[] matLab = new byte[3];
+      double range = getRange();
+      for (int row = 0; row < lab.rows(); row++) {
+        for (int col = 0; col < lab.cols(); col++) {
+          lab.get(row, col, matLab);
+          double distance = calcDistance(matLab, targetLab);
+          if (distance < range) {
+            mask.put(row, col, 255);
+          }
+        }
       }
       if (filterConfig.isInverse()) {
         Core.bitwise_not(mask, mask);
       }
-      Core.bitwise_and(src, black, src, mask);
+      cover.copyTo(mat, mask);
     }
-    return src;
+    return mat;
+  }
+
+  private byte[] getLabTarget(Color color) {
+    Mat target = new Mat(1, 1, CvType.CV_8UC3);
+    target.put(0, 0, color.getRed() * 100, color.getGreen() * 255, color.getBlue() * 255);
+    Imgproc.cvtColor(target, target, Imgproc.COLOR_RGB2Lab);
+    byte[] targetLab = new byte[3];
+    target.get(0, 0, targetLab);
+    return targetLab;
+  }
+
+  private Mat getCover(Mat mat) {
+    return filterConfig.getMaskType() == MaskType.GARY ? get3ChannelsGary(MatUtil.toGrayMat(mat))
+        : filterConfig.getMaskType() == MaskType.BLACK ? new Mat(mat.size(), mat.type(),
+            new Scalar(0)) : new Mat(mat.size(), mat.type(), new Scalar(255, 255, 255, 255));
+  }
+
+  private double getRange() {
+    return Math.round(filterConfig.getRange() * 100);
+  }
+
+  private double calcDistance(byte[] matLab, byte[] targetLab) {
+    return switch (filterConfig.getPickType()) {
+      case CMC -> ColorDifferenceUtil.deltaECMC(
+          Byte.toUnsignedInt(targetLab[0]), Byte.toUnsignedInt(targetLab[1]),
+          Byte.toUnsignedInt(targetLab[2]), Byte.toUnsignedInt(matLab[0]),
+          Byte.toUnsignedInt(matLab[1]), Byte.toUnsignedInt(matLab[2]));
+      case CIE94 -> ColorDifferenceUtil.deltaECIE94(
+          Byte.toUnsignedInt(targetLab[0]), Byte.toUnsignedInt(targetLab[1]),
+          Byte.toUnsignedInt(targetLab[2]), Byte.toUnsignedInt(matLab[0]),
+          Byte.toUnsignedInt(matLab[1]), Byte.toUnsignedInt(matLab[2]));
+      case CIEDE2000 -> ColorDifferenceUtil.deltaECIEDE2000(
+          Byte.toUnsignedInt(targetLab[0]), Byte.toUnsignedInt(targetLab[1]),
+          Byte.toUnsignedInt(targetLab[2]), Byte.toUnsignedInt(matLab[0]),
+          Byte.toUnsignedInt(matLab[1]), Byte.toUnsignedInt(matLab[2]));
+      case CIE76 -> ColorDifferenceUtil.deltaECIE76(
+          Byte.toUnsignedInt(targetLab[0]), Byte.toUnsignedInt(targetLab[1]),
+          Byte.toUnsignedInt(targetLab[2]), Byte.toUnsignedInt(matLab[0]),
+          Byte.toUnsignedInt(matLab[1]), Byte.toUnsignedInt(matLab[2]));
+    };
+  }
+
+  private Mat get3ChannelsGary(Mat mat) {
+    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2BGR);
+    return mat;
   }
 
 }

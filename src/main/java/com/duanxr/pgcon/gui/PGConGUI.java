@@ -11,7 +11,7 @@ import com.duanxr.pgcon.component.DaemonTask;
 import com.duanxr.pgcon.gui.debug.DebugFilterConfig;
 import com.duanxr.pgcon.gui.debug.DebugMainConfig;
 import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
-import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.duanxr.pgcon.util.ImageUtil;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
@@ -137,11 +137,11 @@ public class PGConGUI extends Application {
           Arrays.asList(debugFilterConfig.convertToPreProcessorConfig(),
               debugThreshConfig.convertToThreshPreProcessorConfig()));
       BufferedImage subImage = finalBufferedImage;
-      Mat mat = ImageConvertUtil.bufferedImageToMat(subImage);
+      Mat mat = ImageUtil.bufferedImageToMat(subImage);
       for (PreProcessor preProcessor : preProcessors) {
         preProcessor.preProcess(mat);
       }
-      subImage = ImageConvertUtil.matToBufferedImage(mat);
+      subImage = ImageUtil.matToBufferedImage(mat);
       BufferedImage finalSubImage = subImage;
       Platform.runLater(() -> SwingFXUtils.toFXImage(finalSubImage, liveImage));
     }));

@@ -14,12 +14,13 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/8/1
  */
 @Data
-
+@Component
 public class DebugDetectConfig {
   @ConfigLabel("Detect Type")
   @FormFactory(EnumChoiceBoxFactory.class)

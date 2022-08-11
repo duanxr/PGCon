@@ -252,12 +252,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
           "{\"data\":\"HwABAP////8RH/9JADof/6MAQh//8QA7DwEA//////9wPv///wsADzAAEQwIAAhAAA5KAA8GAaMf/wEAAgMZAAguAAxAAA0xAA8GAcIaAAgAG/9AAB//BgGpDrsABhcAGwDUAAkNAgs6AQ8LAqIP8gEHBiAADcoAD/kCBgs0AQ8GAbkPOgASBxIADwYBqAoeBA8LAgsfABECAAtLAA8GAZwIGAQO5QYPCwIBATgBHgAyAQ8GAQQf/wYBpAoACA8GAQsLEQEPJAYAH/8MAq4PMAQDH/9VBgAPBgGyD7oAAw8YAAUPBgELDnQHDyYGpQ8GAREJ+QEPBgGsDtMECfoCDjUHDnkMDoEJDyoHpA8eBQAv//8GAREfAAYBsxQAKggMFAcMRQgMBgEOOQUPBgGpHwAGAQcfAAYB4Q4bAA8GAQgPOAUIH/8GAdYLPAgvAAAGAbMf/wYBIw4eBQ8GAakPsQAED0gICB8ABgEJDScADysHkg5BDw8GAQ0fAAYBDh//BgHPCfcADmMEDwYBog4JHA8YBAoKIgAODgAHBgEfAAEA////////////////////uw7gEw/bAN0OCRIPAwHADtwAD2oeDQ8FAccP3QAFH/8GAT0OQwAP9C8jDo0ADwYBMw8jFwMPBwEBDwYBUg4nAA+qBAMPcyZIDicADwYBYQ/CABMPBgE9Hv8mAA8GAYkvAAAGAUMf/wYBTy8AAAYBFw9NABQPBgFLCBEADxUcOQ8SLxYPBgFRD+EADgkQAA8GAc0P4QAFCRYADIEqDxIDTQ5nAA8SA0oLKh8PJAAFDwYBPA8LAnIaAOEAAAYADlQACJIHDwYBywdfJQuJMQ4kAA8GAYAf/zYJMgbzHQ4GAQ4kAA8GAVgPBQEXH/9/KDQKkCwPBgEAH/8GAYkfAAYBMB//hCoLCioBDwYBfR//TQ0yCfABDgYBDiQADwYBVg5NBw8QA0ANdi8HEAgfAKEwBQ57AA8GAUcPBQFTHQCCMQcLBg+uAAMPBgGCHwCKADgPJAYLH/9ODUEPCwJyD+IABA8GAZ8OPAoPBgHaDo8ADwYBnA7lAA8LAgAPBgHvHwAGARcPEgNVD4oXvw/iABEPAQD//////////yRQAAAAAAA=\",\"length\":21484,\"rows\":82,\"type\":0,\"cols\":262}")
       .build();
   private static final ImageCompare.Param MHR_IN_GAME_MENU = ImageCompare.Param.builder()
-      .area(Area.ofRect(936, 902, 48, 40)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
-              .enable(true).targetColor(
-                  javafx.scene.paint.Color.color(1.0, 0.6000000238418579, 0.4000000059604645))
-              .hueRange(0.27216494646558176).saturationRange(0.7734106521016544)
-              .valueRange(0.46288657850884346).inverse(true).build())
+      .area(Area.ofRect(936, 902, 48, 40)).method(ImageCompare.Method.TM_CCOEFF)
       .preProcessor(
           com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
               .binaryThreshold(0.5).inverse(false).threshType(

@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.component;
 
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.duanxr.pgcon.util.ImageUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.awt.image.BufferedImage;
@@ -24,7 +24,7 @@ public class FrameManager {
   @Autowired
   public FrameManager(InputConfig inputConfig) {
     this.matCache = Caffeine.newBuilder().maximumSize(inputConfig.getCacheSize())
-        .expireAfterAccess(10, TimeUnit.SECONDS).build(ImageConvertUtil::bufferedImageToMat);
+        .expireAfterAccess(10, TimeUnit.SECONDS).build(ImageUtil::bufferedImageToMat);
   }
 
   public void setFrame(BufferedImage frame) {

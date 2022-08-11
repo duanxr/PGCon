@@ -26,14 +26,17 @@ public class SaveUtil {
   public static File saveImage(BufferedImage image) {
     File file = new File("images/" + System.currentTimeMillis() + ".png");
     if (!file.exists()) {
-      file.mkdirs();
+      boolean mkdirs = file.mkdirs();
+      if (!mkdirs) {
+        log.warn("Cannot create image folder");
+      }
     }
     ImageIO.write(image, "png", file);
     return file;
   }
 
   public static File saveTempImage(Mat m) {
-    return saveImage(ImageConvertUtil.matToBufferedImage(m));
+    return saveImage(ImageUtil.matToBufferedImage(m));
   }
 
 

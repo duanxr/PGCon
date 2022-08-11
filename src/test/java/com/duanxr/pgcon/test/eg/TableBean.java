@@ -1,6 +1,6 @@
-package com.duanxr.pgcon.component.eg;
+package com.duanxr.pgcon.test.eg;
 
-import com.duanxr.pgcon.component.eg.ConfigBeanExample.Subject;
+import com.duanxr.pgcon.test.eg.ConfigBeanExample.Subject;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;

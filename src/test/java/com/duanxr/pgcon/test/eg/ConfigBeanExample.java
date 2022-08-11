@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.component.eg;
+package com.duanxr.pgcon.test.eg;
 
 import com.dooapp.fxform.annotation.FormFactory;
 import com.dooapp.fxform.view.factory.impl.PasswordFieldFactory;

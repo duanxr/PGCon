@@ -15,7 +15,6 @@ import purejavacomm.CommPortIdentifier;
 @UtilityClass
 public class SystemUtil {
   public static List<String> getCameraList() {
-
     List<Webcam> list = Webcam.getWebcams();
     return list.isEmpty() ? Collections.emptyList() : list.stream().map(Webcam::getName).collect(
         Collectors.toList());

@@ -3,6 +3,8 @@ package com.duanxr.pgcon.component;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.gui.log.GuiLogger;
+import com.duanxr.pgcon.notification.NotifyService;
+import com.duanxr.pgcon.notification.impl.PushPlusNotifyService;
 import com.duanxr.pgcon.output.Controller;
 import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.api.Script;
@@ -39,6 +41,7 @@ public class ScriptManager {
   @Getter
   private Map<String, Script> scripts;
 
+  private NotifyService notifyService;
   @Autowired
   public ScriptManager(@Qualifier("enableDebug") AtomicBoolean enableDebug,
       List<ScriptEngine> scriptEngineList, List<MainScript> mainScriptList,
@@ -53,6 +56,10 @@ public class ScriptManager {
     this.executorService = executorService;
     this.enableDebug = enableDebug;
     this.displayHandler = displayHandler;
+    PushPlusNotifyService pushPlusNotifyService = new PushPlusNotifyService();
+    pushPlusNotifyService.setToken("33242cfb6ef347909b11e0f0a96f8aac");
+    pushPlusNotifyService.setChannel(PushPlusNotifyService.Channel.wechat);
+    this.notifyService = pushPlusNotifyService;
   }
 
   @PostConstruct
@@ -72,6 +79,7 @@ public class ScriptManager {
     scriptEngine.setScriptManager(this);
     scriptEngine.setDisplayHandler(displayHandler);
     scriptEngine.setExecutorService(executorService);
+    scriptEngine.setNotifyService(notifyService);
   }
 
   public void register(GuiLogger guiLogger) {

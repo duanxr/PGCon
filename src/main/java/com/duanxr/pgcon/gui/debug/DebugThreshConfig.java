@@ -9,39 +9,40 @@ import com.duanxr.pgcon.gui.fxform.annotation.ConfigPercentage;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/8/1
  */
 @Data
-
+@Component
 public class DebugThreshConfig {
 
   @ConfigLabel("Enable Thresh")
-  private BooleanProperty enableThresh = new SimpleBooleanProperty(false);
+  private SimpleBooleanProperty enableThresh = new SimpleBooleanProperty(false);
 
   @ConfigLabel("Threshold")
   @ConfigPercentage
-  private DoubleProperty binaryThreshold = new SimpleDoubleProperty(0.5);
+  private SimpleDoubleProperty binaryThreshold = new SimpleDoubleProperty(0.5);
 
   @ConfigLabel("Inverse")
-  private BooleanProperty inverse = new SimpleBooleanProperty(false);
+  private SimpleBooleanProperty inverse = new SimpleBooleanProperty(false);
 
   @ConfigLabel("Thresh Type")
   @FormFactory(EnumChoiceBoxFactory.class)
-  private SimpleObjectProperty<ThreshType> threshType = new SimpleObjectProperty<>(
-      ThreshType.BINARY);
+  private SimpleObjectProperty<ThreshType> threshType = new SimpleObjectProperty<>(ThreshType.BINARY);
 
   @ConfigLabel("Adaptive Thresh C")
-  private IntegerProperty adaptiveThreshC = new SimpleIntegerProperty(2);
+  private SimpleIntegerProperty adaptiveThreshC = new SimpleIntegerProperty(2);
 
   @ConfigLabel("Adaptive Thresh Block Size")
-  private IntegerProperty adaptiveBlockSize = new SimpleIntegerProperty(11);
+  private SimpleIntegerProperty adaptiveBlockSize = new SimpleIntegerProperty(11);
 
   public ThreshPreProcessorConfig convertToThreshPreProcessorConfig() {
     return ThreshPreProcessorConfig.builder()

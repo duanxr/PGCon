@@ -20,7 +20,6 @@ public class CameraImageInput implements ImageInput<BufferedImage> {
   public CameraImageInput(String device, InputConfig inputConfig) {
     camera = openCamera(device, inputConfig.getWidth(), inputConfig.getHeight());
   }
-
   private Webcam openCamera(String device, Integer width, Integer height) {
     if (!Strings.isNullOrEmpty(device)) {
       Webcam webcam;

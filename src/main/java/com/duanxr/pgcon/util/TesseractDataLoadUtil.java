@@ -12,6 +12,7 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 public class TesseractDataLoadUtil {
+
   public static String tessdataTempFolder;
 
   public static String getDataPath(String language) throws IOException {
@@ -31,15 +32,13 @@ public class TesseractDataLoadUtil {
       temp.deleteOnExit();
     }
     File tessDataFile = new File(tessdataTempFolder + "/tessdata");
-    tessDataFile.mkdir();
+    boolean mkdir = tessDataFile.mkdir();
     File langFile = new File(tessDataFile.getAbsolutePath() + "/" + language + ".traineddata");
-
     InputStream is = TesseractDataLoadUtil.class.getResourceAsStream(
         "/tessdata/" + language + ".traineddata");
     if (is == null) {
       throw new IOException("Training file does not contain " + language + ".traineddata");
     }
-
     byte[] buffer = new byte[1024];
     int length;
     OutputStream os = new FileOutputStream(langFile);

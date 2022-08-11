@@ -7,7 +7,8 @@ import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
-import com.duanxr.pgcon.util.ImageConvertUtil;
+import com.duanxr.pgcon.util.ImageUtil;
+import com.duanxr.pgcon.util.MatUtil;
 import com.duanxr.pgcon.util.TesseractDataLoadUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
@@ -87,7 +88,7 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
     CachedFrame cachedFrame = getImage();
     Mat targetMat = getTarget(cachedFrame, area, !preProcessors.isEmpty());
     targetMat = tryPreProcess(targetMat, preProcessors);
-    PIX image = ImageConvertUtil.matToPix(targetMat);
+    PIX image = ImageUtil.matToPix(targetMat);
     Pair<String, Integer> result = getText(tessBaseAPI, image);
     return warpResult(result, cachedFrame);
   }
@@ -97,10 +98,10 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
   }
 
   private Mat getTarget(CachedFrame cachedFrame, Area area, boolean deepCopy) {
-    return area == null ? deepCopy ? ImageConvertUtil.deepCopyMat(cachedFrame.getMat())
+    return area == null ? deepCopy ? MatUtil.deepCopy(cachedFrame.getMat())
         : cachedFrame.getMat()
-        : deepCopy ? ImageConvertUtil.deepSplitMat(cachedFrame.getMat(), area)
-            : ImageConvertUtil.splitMat(cachedFrame.getMat(), area);
+        : deepCopy ? MatUtil.deepSplit(cachedFrame.getMat(), area)
+            : MatUtil.split(cachedFrame.getMat(), area);
   }
 
   private TessBaseAPI getApi(ApiConfig apiConfig) {
@@ -129,7 +130,7 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
 
   private Mat splitMat(CachedFrame cachedFrame, Area area) {
     Mat originMat = cachedFrame.getMat();
-    return area == null ? originMat : ImageConvertUtil.splitMat(originMat, area);
+    return area == null ? originMat : MatUtil.split(originMat, area);
   }
 
   private boolean isDefaultApi(ApiConfig apiConfig) {

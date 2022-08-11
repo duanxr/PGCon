@@ -24,7 +24,7 @@ public class PreprocessorFactory {
   private final LoadingCache<List<PreProcessorConfig>, List<PreProcessor>> preProcessorCache;
 
   public PreprocessorFactory() {
-    preProcessorCache = Caffeine.newBuilder().build(PreprocessorFactory::loadList);
+    preProcessorCache = Caffeine.newBuilder().maximumSize(100).build(PreprocessorFactory::loadList);
   }
 
   private static List<PreProcessor> loadList(List<PreProcessorConfig> preProcessorConfigs) {

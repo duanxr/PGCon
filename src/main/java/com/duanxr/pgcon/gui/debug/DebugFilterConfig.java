@@ -8,26 +8,25 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/8/1
  */
 @Data
+@Component
 public class DebugFilterConfig {
-
   @ConfigLabel("Enable RGB Filter")
-  private BooleanProperty enableRGBFilter = new SimpleBooleanProperty(false);
+  private SimpleBooleanProperty enableRGBFilter = new SimpleBooleanProperty(false);
   @ConfigLabel("Red Weight")
   @ConfigPercentage
-  private DoubleProperty redWeight = new SimpleDoubleProperty(1.0);
+  private SimpleDoubleProperty redWeight = new SimpleDoubleProperty(1.0);
   @ConfigLabel("Green Weight")
   @ConfigPercentage
-  private DoubleProperty greenWeight = new SimpleDoubleProperty(1.0);
-
+  private SimpleDoubleProperty greenWeight = new SimpleDoubleProperty(1.0);
   @ConfigLabel("Blue Weight")
   @ConfigPercentage
-  private DoubleProperty blueWeight = new SimpleDoubleProperty(1.0);
-
+  private SimpleDoubleProperty blueWeight = new SimpleDoubleProperty(1.0);
   public ChannelsFilterPreProcessorConfig convertToPreProcessorConfig() {
     return ChannelsFilterPreProcessorConfig.builder()
         .enable(enableRGBFilter.get())
@@ -36,4 +35,5 @@ public class DebugFilterConfig {
         .blueWeight(blueWeight.get())
         .build();
   }
+
 }

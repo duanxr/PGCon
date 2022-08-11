@@ -64,9 +64,9 @@ public class DisplayHandler {
   }
 
   /**
-   * v1 readFrame cost 8-30 ms, v2 readFrame cost 8-15 ms
+   * readFrame cost 15-25 ms
    */
-  private synchronized void readFrame() {
+  private void readFrame() {
     if (screen != null && imageInput != null) {
       BufferedImage read = imageInput.read();
       if (read != null) {
@@ -106,7 +106,7 @@ public class DisplayHandler {
   }
 
   /**
-   * v1 resize cost 95 ms v2 resize cost 6 ms, the fastest so far,
+   * v2 resize cost 6 ms, the fastest so far,
    */
   @Subscribe
   public void renderScreen(BufferedImage frame) {
@@ -177,7 +177,7 @@ public class DisplayHandler {
   }
 
   @PreDestroy
-  public synchronized void close() {
+  public void close() {
     if (imageInput != null) {
       imageInput.close();
       imageInput = null;
