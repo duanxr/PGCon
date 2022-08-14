@@ -23,7 +23,7 @@ public class SmoothingPreProcessorConfig extends PreProcessorConfig {
 
   private SmoothingType type = SmoothingType.GAUSSIAN;
   public enum SmoothingType {
-    CONVOLUTION,
+    //CONVOLUTION,
     AVERAGING,
     GAUSSIAN,
     MEDIAN,

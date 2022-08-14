@@ -57,6 +57,7 @@ public class ScriptManager {
     this.enableDebug = enableDebug;
     this.displayHandler = displayHandler;
     PushPlusNotifyService pushPlusNotifyService = new PushPlusNotifyService();
+    //TODO
     pushPlusNotifyService.setToken("33242cfb6ef347909b11e0f0a96f8aac");
     pushPlusNotifyService.setChannel(PushPlusNotifyService.Channel.wechat);
     this.notifyService = pushPlusNotifyService;

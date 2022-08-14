@@ -141,9 +141,9 @@ public class ImageUtil {
       int rows = mat.rows();
       int elemSize = (int) mat.elemSize();
       int type = mat.type();
-      obj.put("rows", rows);
-      obj.put("cols", cols);
-      obj.put("type", type);
+      obj.put("R", rows);
+      obj.put("C", cols);
+      obj.put("T", type);
       String dataString;
       int dataLength;
       if (type == CvType.CV_32S || type == CvType.CV_32SC2 || type == CvType.CV_32SC3
@@ -178,8 +178,8 @@ public class ImageUtil {
       } else {
         throw new AbortScriptException("unknown type");
       }
-      obj.put("length", dataLength);
-      obj.put("data", dataString);
+      obj.put("L", dataLength);
+      obj.put("D", dataString);
       return obj.toJSONString();
     } else {
       throw new AbortScriptException("Mat not continuous.");
@@ -188,12 +188,12 @@ public class ImageUtil {
 
   public static Mat jsonToMat(String json) {
     JSONObject parse = JSONObject.parseObject(json);
-    int rows = parse.getIntValue("rows");
-    int cols = parse.getIntValue("cols");
-    int type = parse.getIntValue("type");
+    int rows = parse.getIntValue("R");
+    int cols = parse.getIntValue("C");
+    int type = parse.getIntValue("T");
     Mat mat = new Mat(rows, cols, type);
-    String dataString = parse.getString("data");
-    int dataLength = parse.getIntValue("length");
+    String dataString = parse.getString("D");
+    int dataLength = parse.getIntValue("L");
     if (type == CvType.CV_32S || type == CvType.CV_32SC2 || type == CvType.CV_32SC3
         || type == CvType.CV_16S) {
       int[] data = SerializationUtils.deserialize(

@@ -25,7 +25,7 @@ public class SmoothingPreProcessor implements PreProcessor {
   public Mat preProcess(Mat mat) {
     if (processorConfig.isEnable()) {
       switch (processorConfig.getType()) {
-        case CONVOLUTION -> mat = convolutionFilter(mat);
+        //case CONVOLUTION -> mat = convolutionFilter(mat);
         case AVERAGING -> mat = averagingFilter(mat);
         case MEDIAN -> mat = medianBlur(mat);
         case BILATERAL -> mat = bilateralFilter(mat);
@@ -40,7 +40,7 @@ public class SmoothingPreProcessor implements PreProcessor {
   private Mat gaussianBlur(Mat mat) {
     Mat dst = new Mat();
     Imgproc.GaussianBlur(mat, dst, new Size(processorConfig.getSize(),
-        processorConfig.getSigmaColor()),0);
+        processorConfig.getSigmaColor()),0,0);
     return dst;
   }
 

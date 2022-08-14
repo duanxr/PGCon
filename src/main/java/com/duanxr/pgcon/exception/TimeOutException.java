@@ -3,9 +3,10 @@ package com.duanxr.pgcon.exception;
 import lombok.experimental.StandardException;
 
 /**
- * @author 段然 2022/7/28
+ * @author 段然 2022/8/14
  */
 @StandardException
-public class AbortScriptException extends ErrorException{
+public class TimeOutException extends ResetScriptException {
 
 }
+

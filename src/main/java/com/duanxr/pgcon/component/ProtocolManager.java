@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.component;
 
-import com.duanxr.pgcon.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.AlertException;
 import com.duanxr.pgcon.output.api.Protocol;
 import com.duanxr.pgcon.output.impl.ec.EasyConProtocolV140;
 import com.duanxr.pgcon.output.impl.ec.EasyConProtocolV147;
@@ -32,7 +32,7 @@ public class ProtocolManager {
   public Protocol loadProtocol(String protocolName, String port) {
     Function<String, Protocol> protocolLoader = supportedProtocols.get(protocolName);
     if (protocolLoader == null) {
-      throw new GuiAlertException("不支持的固件协议:" + protocolName);
+      throw new AlertException("不支持的固件协议:" + protocolName);
     }
     return protocolLoader.apply(port);
   }

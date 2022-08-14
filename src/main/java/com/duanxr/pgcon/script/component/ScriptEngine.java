@@ -5,10 +5,11 @@ import com.duanxr.pgcon.component.ScriptManager;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.model.Area;
+import com.duanxr.pgcon.exception.AlertException;
+import com.duanxr.pgcon.exception.TimeOutException;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
 import com.duanxr.pgcon.gui.display.impl.Text;
-import com.duanxr.pgcon.exception.GuiAlertException;
 import com.duanxr.pgcon.gui.log.GuiLogger;
 import com.duanxr.pgcon.notification.NotifyService;
 import com.duanxr.pgcon.output.Controller;
@@ -74,9 +75,9 @@ public abstract class ScriptEngine implements Script {
   private ExecutorService executorService;
   private GuiLogger guiLogger;
   private ImageCompare imageCompare;
+  private NotifyService notifyService;
   private OCR ocr;
   private ScriptManager scriptManager;
-  private NotifyService notifyService;
 
   protected ScriptEngine() {
   }
@@ -87,10 +88,6 @@ public abstract class ScriptEngine implements Script {
 
   protected void warn(String msg, Object... args) {
     guiLogger.warn(msg, args);
-  }
-
-  protected void error(String msg, Object... args) {
-    guiLogger.error(msg, args);
   }
 
   protected ImageCompare.Result imageCompare(ImageCompare.Param param) {
@@ -107,6 +104,15 @@ public abstract class ScriptEngine implements Script {
     }
   }
 
+  private void drawImageCompareParam(ImageCompare.Param param) {
+    Area rect = getDebugRectArea(param.getArea());
+    displayHandler.draw(
+        new DrawEvent("RECT_" + param, new Rectangle(
+            rect,
+            new Color(84, 216, 255, 190),
+            3000)));
+  }
+
   private void drawImageCompareResult(ImageCompare.Param param, ImageCompare.Result detect) {
     String similarity = LogUtil.format("%.02f", detect.getSimilarity()).toString();
     Area rect = getDebugRectArea(param.getArea());
@@ -117,21 +123,12 @@ public abstract class ScriptEngine implements Script {
             14, 3000)));
   }
 
-  private Area getDebugRectArea(Area rect) {
-    return Area.ofRect(rect.getX() / 2, rect.getY() / 2, rect.getWidth() / 2, rect.getHeight() / 2);
-  }
-
-  private void drawImageCompareParam(ImageCompare.Param param) {
-    Area rect = getDebugRectArea(param.getArea());
-    displayHandler.draw(
-        new DrawEvent("RECT_" + param, new Rectangle(
-            rect,
-            new Color(84, 216, 255, 190),
-            3000)));
-  }
-
   protected void debug(String msg, Object... args) {
     guiLogger.debug(msg, args);
+  }
+
+  private Area getDebugRectArea(Area rect) {
+    return Area.ofRect(rect.getX() / 2, rect.getY() / 2, rect.getWidth() / 2, rect.getHeight() / 2);
   }
 
   protected void press(ButtonAction action) {
@@ -172,7 +169,7 @@ public abstract class ScriptEngine implements Script {
     long limit = System.currentTimeMillis() + maxMillis;
     while (!checker.apply(d)) {
       if (System.currentTimeMillis() > limit) {
-        return null;
+        throw new TimeOutException();
       }
       action.run();
       d = supplier.get();
@@ -186,7 +183,7 @@ public abstract class ScriptEngine implements Script {
     int times = 0;
     while (!checker.apply(d)) {
       if (times >= maxTimes) {
-        return null;
+        throw new TimeOutException();
       }
       action.run();
       d = supplier.get();
@@ -199,16 +196,9 @@ public abstract class ScriptEngine implements Script {
   protected void script(String script) {
     Script subScript = scriptManager.getScripts().get(script);
     if (subScript == null) {
-      throw new GuiAlertException("cannot find script: " + script);
+      throw new AlertException("cannot find script: " + script);
     }
     subScript.execute();
-  }
-
-  //todo arrcur
-  protected Long ocrNumber(OCR.Param param, int length) {
-    return until(() -> ocr(param),
-        input -> input.getTextWithoutSpace().length() == length && input.getTextAsNumber() != null,
-        () -> sleep(200)).getTextAsNumber();
   }
 
   protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action) {
@@ -223,9 +213,9 @@ public abstract class ScriptEngine implements Script {
   protected OCR.Result ocr(OCR.Param param) {
     if (enableDebug.get()) {
       long start = System.currentTimeMillis();
-      drawOCRParam(param);
+      drawOcrParam(param);
       OCR.Result detect = ocr.detect(param);
-      drawOCRResult(param, detect);
+      drawOcrResult(param, detect);
       debug("ocr {} detected: {} , confidence: {}, cost {} ms", param.hashCode(),
           detect.getTextWithoutSpace(), detect.getConfidence(), System.currentTimeMillis() - start);
       return detect;
@@ -234,7 +224,22 @@ public abstract class ScriptEngine implements Script {
     }
   }
 
-  private void drawOCRResult(OCR.Param param, OCR.Result detect) {
+  @SneakyThrows
+  protected void sleep(long millis) {
+    Thread.sleep(millis);
+  }
+
+  private void drawOcrParam(OCR.Param param) {
+
+    Area rect = getDebugRectArea(param.getArea());
+    displayHandler.draw(
+        new DrawEvent("RECT_" + param, new Rectangle(
+            rect,
+            new Color(237, 224, 77, 190),
+            3000)));
+  }
+
+  private void drawOcrResult(OCR.Param param, OCR.Result detect) {
     String result = detect.getTextWithoutSpace();
     Area rect = getDebugRectArea(param.getArea());
     displayHandler.draw(
@@ -247,30 +252,19 @@ public abstract class ScriptEngine implements Script {
   protected void push(String message) {
     try {
       notifyService.push(getScriptName(), message);
-    }catch (Exception e) {
+    } catch (Exception e) {
       error("push error", e);
     }
   }
 
-  private void drawOCRParam(OCR.Param param) {
-
-    Area rect = getDebugRectArea(param.getArea());
-    displayHandler.draw(
-        new DrawEvent("RECT_" + param, new Rectangle(
-            rect,
-            new Color(237, 224, 77, 190),
-            3000)));
+  protected void error(String msg, Object... args) {
+    guiLogger.error(msg, args);
   }
 
-  @SneakyThrows
-  protected void sleep(long millis) {
-    Thread.sleep(millis);
-  }
-
-  protected Long ocrNumber(OCR.Param param) {
+  protected Long numberOcr(OCR.Param param, int times) {
     return until(() -> ocr(param),
         input -> input.getTextAsNumber() != null,
-        () -> sleep(200)).getTextAsNumber();
+        () -> sleep(50), times).getTextAsNumber();
   }
 
 

@@ -13,7 +13,7 @@ import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
-import com.duanxr.pgcon.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.AlertException;
 import com.duanxr.pgcon.gui.FXFormGenerator;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
@@ -430,7 +430,7 @@ public class MainPanel {
   private MainScript findScript(String scriptName) {
     MainScript script = scriptManager.getMainScripts().get(scriptName);
     if (script == null) {
-      throw new GuiAlertException("cannot find script: " + scriptName);
+      throw new AlertException("cannot find script: " + scriptName);
     }
     return script;
 
@@ -471,23 +471,23 @@ public class MainPanel {
     Protocol protocol = protocolManager.loadProtocol(protocolName, port);
     if (!protocol.isConnected()) {
       protocol.clear();
-      throw new GuiAlertException("protocol not connected");
+      throw new AlertException("protocol not connected");
     }
     controller.setProtocol(protocol);
   }
 
   private void checkSelections() {
     if (Strings.isNullOrEmpty(videoSelection.getSelectionModel().getSelectedItem())) {
-      throw new GuiAlertException("please select a video");
+      throw new AlertException("please select a video");
     }
     if (Strings.isNullOrEmpty(protocolSelection.getSelectionModel().getSelectedItem())) {
-      throw new GuiAlertException("please select a protocol");
+      throw new AlertException("please select a protocol");
     }
     if (Strings.isNullOrEmpty(portSelection.getSelectionModel().getSelectedItem())) {
-      throw new GuiAlertException("please select a port");
+      throw new AlertException("please select a port");
     }
     if (Strings.isNullOrEmpty(scriptSelection.getSelectionModel().getSelectedItem())) {
-      throw new GuiAlertException("please select a script");
+      throw new AlertException("please select a script");
     }
   }
 

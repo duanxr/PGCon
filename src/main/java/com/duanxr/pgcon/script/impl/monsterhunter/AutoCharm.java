@@ -1,18 +1,15 @@
 package com.duanxr.pgcon.script.impl.monsterhunter;
 
-import static org.bytedeco.tesseract.global.tesseract.PSM_SINGLE_CHAR;
-
 import com.dooapp.fxform.annotation.FormFactory;
 import com.dooapp.fxform.view.factory.impl.TextAreaFactory;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
-import com.duanxr.pgcon.core.detect.api.OCR.Method;
 import com.duanxr.pgcon.core.detect.api.OCR.Param;
-import com.duanxr.pgcon.core.detect.api.OCR.Result;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.exception.AbortScriptException;
-import com.duanxr.pgcon.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.AlertException;
+import com.duanxr.pgcon.exception.ResetScriptException;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.ConfigurableScript;
@@ -25,15 +22,15 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.Data;
 import lombok.SneakyThrows;
+import org.apache.commons.math3.util.Pair;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.stereotype.Component;
 
 /**
@@ -42,50 +39,114 @@ import org.springframework.stereotype.Component;
 @Component
 public class AutoCharm extends ScriptEngine implements ConfigurableScript {
 
-  private static final String CHARM_LEVEL_WHITELIST = "1234567890";
-  private static final OCR.Param CHARM_LEVEL_1 = Param.builder()
-      .area(Area.ofPoints(1447, 453, 1482, 484))
-      .apiConfig(ApiConfig.builder()
-          .method(OCR.Method.NMU)
-          .whitelist(CHARM_LEVEL_WHITELIST)
-          .pageSegMode(PSM_SINGLE_CHAR)
+  private static final OCR.Param CHARM_LEVEL_1 = OCR.Param.builder()
+      .area(Area.ofRect(1452, 442, 32, 46))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ResizePreProcessorConfig.builder()
+          .enable(true)
+          .scale(2.0)
+          .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig.builder()
+          .enable(true)
+          .type(
+              com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig.SmoothingType.MEDIAN)
+          .size(5)
+          .sigmaColor(75.0)
+          .sigmaSpace(75.0)
           .build())
       .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(true).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(0.0, 0.0, 0.0))
+              .range(0.36804116879328197)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.WHITE)
+              .inverse(true)
               .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .apiConfig(ApiConfig.builder()
+          .method(OCR.Method.NMU)
+          .whitelist("01234567890")
+          .pageSegMode(10)
+          .build())
       .build();
   private static final OCR.Param CHARM_LEVEL_2 = OCR.Param.builder()
-      .area(Area.ofPoints(1447, 528, 1482, 561))
-      .apiConfig(ApiConfig.builder()
-          .method(OCR.Method.NMU)
-          .whitelist(CHARM_LEVEL_WHITELIST)
-          .pageSegMode(PSM_SINGLE_CHAR)
+      .area(Area.ofRect(1448, 520, 36, 44))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ResizePreProcessorConfig.builder()
+          .enable(true)
+          .scale(2.0)
+          .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig.builder()
+          .enable(true)
+          .type(
+              com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig.SmoothingType.MEDIAN)
+          .size(5)
+          .sigmaColor(75.0)
+          .sigmaSpace(75.0)
           .build())
       .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(true).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(0.0, 0.0, 0.0))
+              .range(0.36804116879328197)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.WHITE)
+              .inverse(true)
               .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .apiConfig(ApiConfig.builder()
+          .method(OCR.Method.NMU)
+          .whitelist("01234567890")
+          .pageSegMode(10)
+          .build())
       .build();
+  private static final String CHARM_LEVEL_WHITELIST = "1234567890";
   private static final Area CHARM_O1 = Area.ofRect(1346, 314, 62, 48);
   private static final Area CHARM_O2 = Area.ofRect(1394, 314, 52, 48);
   private static final Area CHARM_O3 = Area.ofRect(1432, 314, 56, 48);
-  private static final String CHARM_RARE_WHITELIST = "RAE0123456789";
   private static final OCR.Param CHARM_RARE = OCR.Param.builder()
-      .area(Area.ofPoints(1362, 283, 1482, 319))
+      .area(Area.ofRect(1364, 288, 120, 34))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ResizePreProcessorConfig.builder()
+          .enable(true)
+          .scale(2.0)
+          .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig.builder()
+          .enable(true)
+          .type(
+              com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig.SmoothingType.BILATERAL)
+          .size(5)
+          .sigmaColor(75.0)
+          .sigmaSpace(75.0)
+          .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true)
+          .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
       .apiConfig(ApiConfig.builder()
           .method(OCR.Method.ENG)
-          .whitelist(CHARM_RARE_WHITELIST)
+          .whitelist("0123456789RAE")
           .build())
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(true).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .build())
       .build();
-  private static final String CHARM_S0 = "{\"data\":\"HwABAP//Zx//AQAPDyoAbA8BAP//t1AAAAAAAA==\",\"length\":1512,\"rows\":36,\"type\":0,\"cols\":42}";
+  private static final String CHARM_RARE_WHITELIST = "RAE0123456789";
+  private static final String CHARM_S0 = "{\"D\":\"HwABAP//Zx//AQAPDyoAbA8BAP//t1AAAAAAAA==\",\"L\":1512,\"R\":36,\"T\":0,\"C\":42}";
   private static final ImageCompare.Param CHARM_S0O1 = ImageCompare.Param.builder()
       .method(ImageCompare.Method.TM_CCOEFF)
       .template(CHARM_S0)
@@ -113,7 +174,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
                   com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
               .build())
       .area(CHARM_O3).build();
-  private static final String CHARM_S1 = "{\"data\":\"HwABALhf////AP8BAAEPLwAEDwEABw8vABwv//8vABwv//8vAAwOEgAOXgAPMAALH/8vAAwPMQAKDxoAAw8wAE0fAGAANh8AMAArDiABDoEBDjAAD+EBGQwRAA9wAgAPMAAdHwAwAAcfAAEDDww+AA8xAw4PMAAUD5ADdgyBAR//wAMaDg4CD+ABCw8PAgAPQAIqH/+gAhwPHQEBDzAAOQ4xAA/hBA8PsQELDwEA31AAAAAAAA==\",\"length\":1920,\"rows\":40,\"type\":0,\"cols\":48}";
+  private static final String CHARM_S1 = "{\"D\":\"HwABALhf////AP8BAAEPLwAEDwEABw8vABwv//8vABwv//8vAAwOEgAOXgAPMAALH/8vAAwPMQAKDxoAAw8wAE0fAGAANh8AMAArDiABDoEBDjAAD+EBGQwRAA9wAgAPMAAdHwAwAAcfAAEDDww+AA8xAw4PMAAUD5ADdgyBAR//wAMaDg4CD+ABCw8PAgAPQAIqH/+gAhwPHQEBDzAAOQ4xAA/hBA8PsQELDwEA31AAAAAAAA==\",\"L\":1920,\"R\":40,\"T\":0,\"C\":48}";
   private static final ImageCompare.Param CHARM_S1O1 = ImageCompare.Param.builder()
       .method(ImageCompare.Method.TM_CCOEFF)
       .template(CHARM_S1)
@@ -141,7 +202,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
                   com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
               .build())
       .area(CHARM_O3).build();
-  private static final String CHARM_S2 = "{\"data\":\"HwABAP9pH/8BAAEPKwAYDzEABS///y8AGAcaAA8KAAAMLwAPFwAMH/8VAAcJBgAOLwAOLQAPLwAAD4cADg8dAAMOWwAPLgAVH/8uABYe/1wADucADkABD1sBDA5dAA+IAQkItgEu//+eAQ+2ARoPoQASD7UCBA8rAQQPLgARAh8AL/8AEAMODz0DMQ8tABoPagMeD5gDLw8zAAIvAADLAQMPYgACBxwADFsALwAAgwACD1YCAQ+/AAIfAC8AAQOhAA+KAAMPPwIEDxcBBA8uACAPcAECDywCBg8BANVQAAAAAAA=\",\"length\":2024,\"rows\":44,\"type\":0,\"cols\":46}";
+  private static final String CHARM_S2 = "{\"D\":\"HwABAP9pH/8BAAEPKwAYDzEABS///y8AGAcaAA8KAAAMLwAPFwAMH/8VAAcJBgAOLwAOLQAPLwAAD4cADg8dAAMOWwAPLgAVH/8uABYe/1wADucADkABD1sBDA5dAA+IAQkItgEu//+eAQ+2ARoPoQASD7UCBA8rAQQPLgARAh8AL/8AEAMODz0DMQ8tABoPagMeD5gDLw8zAAIvAADLAQMPYgACBxwADFsALwAAgwACD1YCAQ+/AAIfAC8AAQOhAA+KAAMPPwIEDxcBBA8uACAPcAECDywCBg8BANVQAAAAAAA=\",\"L\":2024,\"R\":44,\"T\":0,\"C\":46}";
   private static final ImageCompare.Param CHARM_S2O1 = ImageCompare.Param.builder()
       .method(ImageCompare.Method.TM_CCOEFF)
       .template(CHARM_S2)
@@ -169,7 +230,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
                   com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
               .build())
       .area(CHARM_O3).build();
-  private static final String CHARM_S3 = "{\"data\":\"HwABAK4f/wEABQ8tABov//8tABov//8tAAYCCwASACMAAwoADC8ADp8ADx0ACAoQAA95AAIPLQAWCyEADogAD14BAA8tABcIIwAU/wEBC4kABxAAD4oAAB//twACH/+4AB4PFQEBD3EBGgXHAA+IAAUOXgAPWgAGDi8ADy0AFg4vAA4XAA9yABIf/z0DGg9qA10PmAMpHwCYAw8GMwAYAAsADy4AAwZiAAYKAAQLAA/5AQMHeQAGawENiQEFSgMHjwEGrgEP9AMGBbcABxUADNEBDqkED64ECg8uAA8PAQD/A1AAAAAAAA==\",\"length\":1840,\"rows\":40,\"type\":0,\"cols\":46}";
+  private static final String CHARM_S3 = "{\"D\":\"HwABAK4f/wEABQ8tABov//8tABov//8tAAYCCwASACMAAwoADC8ADp8ADx0ACAoQAA95AAIPLQAWCyEADogAD14BAA8tABcIIwAU/wEBC4kABxAAD4oAAB//twACH/+4AB4PFQEBD3EBGgXHAA+IAAUOXgAPWgAGDi8ADy0AFg4vAA4XAA9yABIf/z0DGg9qA10PmAMpHwCYAw8GMwAYAAsADy4AAwZiAAYKAAQLAA/5AQMHeQAGawENiQEFSgMHjwEGrgEP9AMGBbcABxUADNEBDqkED64ECg8uAA8PAQD/A1AAAAAAAA==\",\"L\":1840,\"R\":40,\"T\":0,\"C\":46}";
   private static final ImageCompare.Param CHARM_S3O1 = ImageCompare.Param.builder()
       .method(ImageCompare.Method.TM_CCOEFF)
       .template(CHARM_S3)
@@ -197,7 +258,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
                   com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
               .build())
       .area(CHARM_O3).build();
-  private static final String CHARM_S4 = "{\"data\":\"HwABAIov//8rABgBAQAPKwAYBgEADywAEAk4AA8sABAOEQAPhAAHDpAADy4AGgsvAA91AA0PEwAAD84AEwQsAAOVAR3/qgEOLgAPwwEFHf8vAA8tAAgDFwAPLgAGH/8uAAQPigAUBiEAD+YAAQ4uAA4VAQ8vAAQAGAANXwEELwAMuQAELQAPhQECHwDMARMOzgEORgAPMwMADy4AEw5XAg4XAA6wAg+zAgUPLgAbH/87AgEHGQAHQQAuAACEAgpJAA0OAAtWAg6PAA8uAA4KVQAGmQAMhAIGowANkAAKhQIv//94BAUOFgEPLgAJHwBDAQMOdAEOfAQO0QEPLQAWCqUADi4ADwEApFAAAAAAAA==\",\"length\":1840,\"rows\":40,\"type\":0,\"cols\":46}";
+  private static final String CHARM_S4 = "{\"D\":\"HwABAIov//8rABgBAQAPKwAYBgEADywAEAk4AA8sABAOEQAPhAAHDpAADy4AGgsvAA91AA0PEwAAD84AEwQsAAOVAR3/qgEOLgAPwwEFHf8vAA8tAAgDFwAPLgAGH/8uAAQPigAUBiEAD+YAAQ4uAA4VAQ8vAAQAGAANXwEELwAMuQAELQAPhQECHwDMARMOzgEORgAPMwMADy4AEw5XAg4XAA6wAg+zAgUPLgAbH/87AgEHGQAHQQAuAACEAgpJAA0OAAtWAg6PAA8uAA4KVQAGmQAMhAIGowANkAAKhQIv//94BAUOFgEPLgAJHwBDAQMOdAEOfAQO0QEPLQAWCqUADi4ADwEApFAAAAAAAA==\",\"L\":1840,\"R\":40,\"T\":0,\"C\":46}";
   private static final ImageCompare.Param CHARM_S4O1 = ImageCompare.Param.builder()
       .method(ImageCompare.Method.TM_CCOEFF)
       .template(CHARM_S4)
@@ -225,119 +286,281 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
                   com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
               .build())
       .area(CHARM_O3).build();
-  private static final ImageCompare.Param MAIN_MENU = ImageCompare.Param.builder()
-      .area(Area.ofRect(1244, 778, 84, 78)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
-              .enable(true).build()).preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(false).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).template(
-          "{\"data\":\"H/8BAP///wgQAAEAD1MAPQ9VAEAPVACbD1AB/yUvAAD8ABQvAADgAigPVAADDrsAD5ABFRoAAQAPEAEiCj0AC1IAB1YAHwBUACQOUgAFVgAKewAPVgAPDwEAGB//VAAUD1MAQC///zsABg9TACcv//86AAcPUwAmCDsADhsAD1MAJB//OAAKD1QAKw+nBDkOigAP/AQCDzAFOw5VAA+DBRUPVAA/DyMAEA+nADkOVQAPVABnDyUAEg+nADoOVQAP0AYQDycAMg5zBA8wABoPVAD/Uyn/ACgADwwGKB//oAIsD/QCaA9EBJwPQAURHwDoBWsf/1QARw4zAA6NBw/gB2sO4QcPiAg3DzkAAi8AAPsAKQ46AA8bAAcPdAQeD4AKMA8oCxkP0AtnBy8AD0oABy8AAMwMOx//IA0lDwkBBg75Ag9wDiEOPgEPeBEfDpUCD8QOLQ+8AAgPYBKUD6gAPA9UAO4PpQFDDwEA//8KUP//////\",\"length\":6552,\"rows\":78,\"type\":0,\"cols\":84}")
+  private static final ImageCompare.Param HAS_SKILL_2 = ImageCompare.Param.builder()
+      .area(Area.ofRect(1408, 524, 52, 44))
+      .method(ImageCompare.Method.TM_CCOEFF)
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.18762888793975818)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .template(
+          "{\"R\":44,\"C\":52,\"T\":0,\"D\":\"H/8BAP///wgvAAAzACAPNADILgAAGAEPNABIHwA0ABkDNQAOswEPNAA9Ai8ADzQAIA5+AQ80AEEO5QEPCAIODzQAFAUBAA40AA81AA8HbwEPAQD//2tQ//////8=\",\"L\":2288}")
       .build();
-  private static final ImageCompare.Param MELDING_POT_SELECTION = ImageCompare.Param.builder()
-      .area(Area.ofRect(270, 984, 54, 38)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(false).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).template(
-          "{\"data\":\"HwABAP82J///DAAPNQAXBjcAGP9CAAIbAAwBAA4qAAlCAA40AAg4AApBAAAMAB//NgAXDhoADzYABwYLAA6+AA74AA3wAA82AAovAAA3AAQeAEoBDmsADnoBDjYADjUADzYASwnsABz/pQEODgEP6QEADzYAFA/kAQEOegEPNgAxD7wBBwYZAA0OAR//NgAcB1wBDygCBg82AAgfADYADQ85AgsONgAOawAPNgBMD28CCQ/KAwQe/2sADzYAEg5rAA9sADEfAKIEBB//YwUQDl0ADwEA/yNQAAAAAAA=\",\"length\":2052,\"rows\":38,\"type\":0,\"cols\":54}")
+  private static final ImageCompare.Param MAIN_MENU = ImageCompare.Param.builder()
+      .area(Area.ofRect(1248, 778, 72, 78))
+      .method(ImageCompare.Method.TM_CCOEFF)
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .binaryThreshold(0.0)
+          .inverse(false)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .template(
+          "{\"R\":78,\"C\":72,\"T\":0,\"D\":\"H/8BAP//lxAAAQAPRwA0LwAASAD/hg4xAA9IACIOMgAOkAAOKAAPdAIQA0cALwAAnAIZCzMAHAABAA80ARUJMAANRgAOGgAPSAANHwBHAAUBGwAGGgAPkQAHDwEAGQ9pAQkPSAA1H/9GADMNSQAPYgAHH/9JABgPGgAJD0gAFw8cAAAPSAAhD2UACw9HACsPHwAADygADA9JBA4PbwQuDkgAD7cAJA9IABgPJABSDyUAEQ9EAVkPJgAMB3UEDx0CJQ/MAysfAEgATR//SADEDyABJgwhAA+IAnIOSQAPPQMLD/ADEQ8UBJkORAEPoAVJDkkADzAKBA95BiwO9AIPUAchL/8ASAAgD7sKAA9HACIOcwoPzAMoHwDMAyMPjwleDmMCD2MBBA8+AAcvAABACxkPhQAID0gAFQ/kAAcOcAAPYAwUDhABD4IEEh8A8AwYD7EBDA8wD/9mH//YAMUO0w8PAQD/ZlD//////w==\",\"L\":5616}")
+      .build();
+  private static final ImageCompare.Param MATERIAL_CHECK_READY = ImageCompare.Param.builder()
+      .area(Area.ofRect(52, 950, 142, 42))
+      .method(ImageCompare.Method.TM_CCOEFF)
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .template(
+          "{\"R\":42,\"C\":142,\"T\":0,\"D\":\"H/8BAP///0gvAAANAAU//wD/GwAGT/8AAABaAA8fABQADQ0jAAggABkAHgAFGgAAiQAfAI4AAhkAAQAPjgAzAm0ADVkACQgAD44AEQUuAA8BAAAPjgAuBI8ADgABD44ACR//jgAqD48AAg+PAQ8LsgAZ/xsACDMACv8BD44ADh//jgAMD44BCQlAAQc3AQ8aAQMfAMYBCwQ/AA+QAgoH5gAs/wATAAoMAA+OAAsfAI4AEx//jgANDFQBBYwBBykBL///HAEvB9wBD68ABAZ0AA9wBAQN3QEvAACQAAoLtwAOhwEe/z4AD6kADQ/hAgEPjwEPHgBgAg+OADcPHAABD44ADx8AjgAGA1gAHwBYAAYf/wQCGgocAAhDBQngAg+OAAEPVQQUGABGAA4gAg7oAg+mAg0GKAEf/44AHweXAQxSBB//NwESD20DAA5wBg+OAC8ONgAPjgAKB8MABwIGD44AHgg6AActAA7EBw+PAAsJ7wEPjgAqDAYAHv8bAw4bBg+HAwAEKgADvQYPjgAgCDoACYQCDwsHAw9tAwYIYQEPVAUELv//kAIPVQQADp8DD3AEAg+OAAof/44ACg46BA+OCAENZgAPjgAaBJcBDhcJDWAGD1oBDg+HAgEf/44ADQr3AgvjBAuDBw8JAAIIwAAGHwkOLAgHtwsPOAIHB9cCBY4AHwBuCQ0LWAcOHwgPAAcIDvEAD8UCBA7jBwz7Bw8lAQEPjgABDgUHD44AEQkiAA5ICA+JCAUf/zQBAwgDAw6zCQxPDA8cAQIPbAAJD8IHBws/CR//FA4aDzwAAQ9QABEvAP8BAP//////kVD//////w==\",\"L\":5964}")
       .build();
   private static final ImageCompare.Param MELDING_POT_DONE = ImageCompare.Param.builder()
-      .area(Area.ofRect(1174, 150, 262, 82)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(false).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).template(
-          "{\"data\":\"HwABAP////8RH/9JADof/6MAQh//8QA7DwEA//////9wPv///wsADzAAEQwIAAhAAA5KAA8GAaMf/wEAAgMZAAguAAxAAA0xAA8GAcIaAAgAG/9AAB//BgGpDrsABhcAGwDUAAkNAgs6AQ8LAqIP8gEHBiAADcoAD/kCBgs0AQ8GAbkPOgASBxIADwYBqAoeBA8LAgsfABECAAtLAA8GAZwIGAQO5QYPCwIBATgBHgAyAQ8GAQQf/wYBpAoACA8GAQsLEQEPJAYAH/8MAq4PMAQDH/9VBgAPBgGyD7oAAw8YAAUPBgELDnQHDyYGpQ8GAREJ+QEPBgGsDtMECfoCDjUHDnkMDoEJDyoHpA8eBQAv//8GAREfAAYBsxQAKggMFAcMRQgMBgEOOQUPBgGpHwAGAQcfAAYB4Q4bAA8GAQgPOAUIH/8GAdYLPAgvAAAGAbMf/wYBIw4eBQ8GAakPsQAED0gICB8ABgEJDScADysHkg5BDw8GAQ0fAAYBDh//BgHPCfcADmMEDwYBog4JHA8YBAoKIgAODgAHBgEfAAEA////////////////////uw7gEw/bAN0OCRIPAwHADtwAD2oeDQ8FAccP3QAFH/8GAT0OQwAP9C8jDo0ADwYBMw8jFwMPBwEBDwYBUg4nAA+qBAMPcyZIDicADwYBYQ/CABMPBgE9Hv8mAA8GAYkvAAAGAUMf/wYBTy8AAAYBFw9NABQPBgFLCBEADxUcOQ8SLxYPBgFRD+EADgkQAA8GAc0P4QAFCRYADIEqDxIDTQ5nAA8SA0oLKh8PJAAFDwYBPA8LAnIaAOEAAAYADlQACJIHDwYBywdfJQuJMQ4kAA8GAYAf/zYJMgbzHQ4GAQ4kAA8GAVgPBQEXH/9/KDQKkCwPBgEAH/8GAYkfAAYBMB//hCoLCioBDwYBfR//TQ0yCfABDgYBDiQADwYBVg5NBw8QA0ANdi8HEAgfAKEwBQ57AA8GAUcPBQFTHQCCMQcLBg+uAAMPBgGCHwCKADgPJAYLH/9ODUEPCwJyD+IABA8GAZ8OPAoPBgHaDo8ADwYBnA7lAA8LAgAPBgHvHwAGARcPEgNVD4oXvw/iABEPAQD//////////yRQAAAAAAA=\",\"length\":21484,\"rows\":82,\"type\":0,\"cols\":262}")
-      .build();
-  private static final ImageCompare.Param MHR_IN_GAME_MENU = ImageCompare.Param.builder()
-      .area(Area.ofRect(936, 902, 48, 40)).method(ImageCompare.Method.TM_CCOEFF)
+      .area(Area.ofRect(1134, 150, 354, 80))
+      .method(ImageCompare.Method.TM_CCOEFF)
       .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(false).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).template(
-          "{\"data\":\"HwABAFs/////MAAaDy8AHg8xABsR/wMAD74AHgBnAA5qAA+OAAIW/y8AL///MAARAJMADzEAAB//MAAHBi8ABTIAD2cBAw1fAAgBAA8wAC8OjwAPXwAQHv8mAQ4wAA9gACIf/78AAy8AAL8AFQNOAg9gAAQa/zAAAKoCCD8ADx8BDgLdAg/vABsvAADvAA4PMAAdBygAHwDeARcuAAAwAA8fAQoMWwEPMAAQHwAwABEf/zAAFQI0AC8A/z4CGS8AAM0CFx8AMAAcChcAD18AEgkYAA+PABMOMQAOHQEPYQQFDi0ADwEAsA7RAA+ABmdQAAAA//8=\",\"length\":1920,\"rows\":40,\"type\":0,\"cols\":48}")
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.18762888793975818)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .template(
+          "{\"R\":80,\"C\":354,\"T\":0,\"D\":\"H/8BAP//////////////////TDYAAAALAA8xABMOCAAPSwABD2IB/wQZABgADQEACSYAAwgADlcBBxwAL///YgH7CHoCLwAAYwEFGgC9Agw/AA6UAQ9iAfQOFgENgAEMFAAtAAChAQxjAQ9gAfEOFwEJeQIPUAUCDzIABQILAAAOAAUJAA/BAvEEFwEfAI0FBA86AAwHPgQFYgEPxAL6B9sDDwcIAS8AAMQFFgW4Ag9iAf8bDyQBAC8AABsHBAJiAQDKAg78Ag9iAf8HDucGD2IBCAeCBQ5NCA9iAf8JBbsGAZsCD30IBAS2CQ+uCf8IA+oGBYICDxMLBQUYAA9iAQkPiAX/Ay8AAHwJBx7/ZAgK5QIN2wkPYgH7BQgBBucOBxUPDxsLBA/qBgQHYgEEBAAPYgH/ARz/igIOGwsPYgEKAksADloLD+oG+wQXAC///2IBCQa1BQytDA82D/wNeQIFFwAPBAQED+ERAwepEA9iAf8XHP8VAAnEAiUAAMYCBz0ABlUICzIAD2IB/wkP6gYED5MFAQ/EAv8NHwDEAhAPYgH/Lg8bAAUtAABrEA4tGguuCQ9MCPoFuwoPohQPD64JHA5WAA8RC+cOpRQPwxsACMQCH/9iARAPJgT5DxsACB8APQAbCf8cDm4eDwEA/////////////////////////////9QO5SgP3AD/PA4ZKQ8BAEIP3QDnLwAAhgA8DkMAD3caIARKAA/dAH0PgwAhD4UAPQ5DAA+9GyMOjQAP3wBmD2IBzB8AYgGrDoIADycENA4nAA8EBB0Gyx8P4AApD2MBYQ9yPAMf/4MAOQ9iARUPTAA3H/9CAh0PmD5HD2AABw7kAQ9iAbIP4QAIDiQDDxQENQ9fAAMIYDUPxAJRHwDEAlQe/24oDjhAD3QFPA4SAA9iAWMPTQAVD/MAMw/xKQEP8wA3CnMFD4EAAw9iAVwONAsPxAJACUICD/1CBQ8XCj8PgQACHwBiAYQfAGIBNQrnAA9fRAQPmw89CoAAD2IBXg9LADYf/3kGEAgrBAzuBw65EA+yCCsPgAACD2IBPg/DAnIH/gwIWAsPYgEJHwDEAkAf/2IBiA6MAA8jESQI1gAOTggPKAQ9Hv9lOA9iAWEPYQFQBUEABuoAD8MCAA/sBj8c/+IBHwBiAYgf/2IBMR0AYgEOsgoO9gAPEAswC80BD9cANQ5DAA+UDEsPQgAVDuoGDxALOwdPAA9iAQsPxAJSD2EBEg9iAVgv//+YEEIZAFdDA401DyYEUg4xCw9hAUIFz0YH6T8L6z8PmBA8A1QADSIDDQEAD2IBdR8AGgU2DuIAD4YzSQ9iAXEPnQAaD2EBQA4BAA9iAf89D2MBGw/iAaMP4wDbBCoKDv0dDwEAuQ//OP//////////gVD//////w==\",\"L\":28320}")
+      .build();
+  private static final ImageCompare.Param MELDING_POT_SELECTION = ImageCompare.Param.builder()
+      .area(Area.ofRect(44, 950, 296, 76))
+      .method(ImageCompare.Method.TM_CCOEFF)
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .template(
+          "{\"R\":76,\"C\":296,\"T\":0,\"D\":\"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\",\"L\":22496}")
+      .build();
+  private static final ImageCompare.Param MHR_IN_GAME = ImageCompare.Param.builder()
+      .area(Area.ofRect(896, 972, 68, 70))
+      .method(ImageCompare.Method.TM_CCOEFF)
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.2649484612513914)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIE94)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .template(
+          "{\"R\":70,\"C\":68,\"T\":0,\"D\":\"H/8BAP///1o/AAAAQQAuD0QALB4AQwAPQAAdDkMAD0EAHA9EACwHPQAOUQEPBQEdDoYAD4kBGw5EAA9DABsPGgIqCUQBDoYAD1ACFQ+hAioIjAEHBwAPQwAmHgBDAA9CABcPGQIoCRICD4YAKAlfAg+gAg4fAEMAAwEGAA9DABUGRAIq/wCGAC///8oAEwQgAAycAwSHAARJAA9EAB4JwQAOXQIPywAELAAARQAHnAEf/0QAEQxCAAdFAB8ARAAUHwABAAIIfQQPRAAOD0MAAx4AxwUPLAUSDxQBAg9EACwOgQIPYAMRDsMFDx4DFw9EACsv//9EADEGFgMPiAAqDlUBD0QANR8ATwcmD4kALh//RAAlBkgADygIMwhFAB//RAD/OA/LAHsf/8sKKQ+GALYf/0EALggHCA8BAP//slD//////w==\",\"L\":4760}")
       .build();
   private static final double MHR_IN_GAME_MENU_THRESHOLD = 0.9;
-  private static final ImageCompare.Param MP_NAME = ImageCompare.Param.builder()
-      .area(Area.ofRect(490, 288, 206, 56)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(false).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build()).template(
-          "{\"data\":\"HwABAP//////////////////i0//////zQC6L///zgD/Th//zgBHByIACS0ADwwABQ0bAB//TwADL///MwAIDzcDRg/OAAce/4AADxsACxj/PwEMTQAf/84AKwRcAA88AAkv///OAAkf/84AGx7/zgAHDQAv///OACEELAADygAOLQEPjAICBIoAKP//QAAEQQAv//93AQEMGgAJ2QIFPwAFMwAPzgAkCnkBCBQBD84AGQsUAAu0AA/pAAQJvgAIzgAPTgACD84AHQnDAA/OAAYCKQAcAJgCDrIAD84AGhsAsgAv/wDOACAeAM4AD1wDDi///wMCBAP9AgLBAQ7OAAU0AAd8AgKAAAkXAASUAA/OACEfAM4AMi3//84ABkwAD84AAwvCAQblAARZAAXjAATkAQ/OADsFlQAPUQIDAz8AD84AAh8AzgAJBs0BAqsBCd0BHwDOAGQb/0YGCZsBDzQAAAf8AwrVAR8AzgAADwYEPwhjAQWnAwOhBgVUBQjzAAbjAw/OAAYnAP+MAQ0wBg+cAR0IYgUJzgAP5wUEATsDDxoICAm7AAaBAR//nAEPC0AHDjgDD84AIR//zgAQD/MAAg6JAQl6Ag/UBAQL4wAO+ggPcAYjDQMBD3AGCA9nAAcPRwMFDr0EDXwCByAAD84AJgSsAwnJBgf1BQ7NAA/SAwMHHwQJGAIPzgANB1MJBqkCBn4DAyAADgYED3ECFA7XBA/1CgELfQAIzwcLGQADlgAPVQICBV0CD84ABghrAA/NACEPpgUQD84ABR//zgABD9QEBgctAA6BAQ/OACwJSAIPzgASDX8AB+0DBCAAD84AAx8AkQUCDe8CD84AIAYrAAtSCQ7CDgxCDA4DBRv/CAALzgAYAK8GKQAA+wAPzgA1H//OAAQf/84ACgvRBQ4LCA7sBQ6XDgemCgw2Aw/OAAAf/84AIB8AzgAlHgD4BA/OABkDwAQvAADCBQcPagIVCS8KAzgDD84ADAhUAQ6SBQzsCA/OAAsH0wAODAkPcAYaHAAvDQ7TAQ/OABIHFgALYgIPzgAOHgDOAA4rCA9wBj4PzgABD8cKCA2ZBw/OAAEP0wcIDCwAHwDPABcOBAEPAQCqD80AugTRAB8AAQD/////////E1AAAAAAAA==\",\"length\":11536,\"rows\":56,\"type\":0,\"cols\":206}")
-      .build();
-  private static final String NUM_WHITELIST = "0123456789";
-  private static final OCR.Param MP_NUM = OCR.Param.builder()
-      .area(Area.ofRect(908, 296, 106, 46))
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(true).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
-      .apiConfig(ApiConfig.builder().method(OCR.Method.NMU).whitelist(NUM_WHITELIST).build())
-      .build();
   private static final OCR.Param MPA_NUM = OCR.Param.builder()
-      .area(Area.ofRect(1464, 32, 138, 26))
+      .area(Area.ofRect(1444, 28, 174, 38))
       .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(true).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
-      .apiConfig(ApiConfig.builder().method(OCR.Method.NMU).whitelist(NUM_WHITELIST).build())
-      .build();
-  private static final OCR.Param POINT_LACK = OCR.Param.builder()
-      .area(Area.ofPoints(134, 982, 250, 1024))
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(true).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.2649484612513914)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
       .apiConfig(ApiConfig.builder()
-          .method(OCR.Method.CHS)
-          .whitelist("点数不足")
+          .method(OCR.Method.NMU)
+          .whitelist("0123456789")
           .build())
       .build();
-
+  private static final OCR.Param MP_NUM = OCR.Param.builder()
+      .area(Area.ofRect(904, 298, 114, 44))
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.2649484612513914)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .apiConfig(ApiConfig.builder()
+          .method(OCR.Method.NMU)
+          .whitelist("0123456789")
+          .build())
+      .build();
+  private static final OCR.Param POINTS_NUM = OCR.Param.builder()
+      .area(Area.ofRect(1694, 28, 124, 38))
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.2649484612513914)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .apiConfig(ApiConfig.builder()
+          .method(OCR.Method.NMU)
+          .whitelist("0123456789")
+          .build())
+      .build();
+  private static final OCR.Param POT_SLOT = OCR.Param.builder()
+      .area(Area.ofRect(1558, 416, 88, 50))
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.2649484612513914)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .apiConfig(ApiConfig.builder()
+          .method(OCR.Method.NMU)
+          .whitelist("0123456789")
+          .build())
+      .build();
   private static final Map<String, String> SKILLS = getSkills();
   private static final String SKILLS_WHITELIST = getSkillsWhitelist();
-  private static final OCR.Param CHARM_SKILL_1 = Param.builder()
-      .area(Area.ofPoints(1158, 415, 1351, 451))
+  private static final OCR.Param CHARM_SKILL_1 = OCR.Param.builder()
+      .area(Area.ofRect(1158, 414, 310, 38))
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ChannelsFilterPreProcessorConfig.builder()
+              .enable(true)
+              .redWeight(1.0)
+              .greenWeight(1.0)
+              .blueWeight(1.0)
+              .build())
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.6239261551118693)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
       .apiConfig(ApiConfig.builder()
-          .method(Method.CHS)
+          .method(OCR.Method.CHS)
           .whitelist(SKILLS_WHITELIST)
           .build())
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(true).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
       .build();
-  private static final OCR.Param CHARM_SKILL_2 = OCR.Param.builder()
-      .area(Area.ofPoints(1156, 492, 1474, 522))
+  private static final OCR.Param CHARM_SKILL_2 = Param.builder()
+      .area(Area.ofRect(1160, 488, 312, 42))
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ChannelsFilterPreProcessorConfig.builder()
+              .enable(true)
+              .redWeight(1.0)
+              .greenWeight(1.0)
+              .blueWeight(1.0)
+              .build())
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.6239261551118693)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
       .apiConfig(ApiConfig.builder()
-          .method(Method.CHS)
+          .method(OCR.Method.CHS)
           .whitelist(SKILLS_WHITELIST)
           .build())
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder().enable(true)
-              .binaryThreshold(0.5).inverse(true).threshType(
-                  com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-              .adaptiveThreshC(2).adaptiveBlockSize(11).build())
       .build();
-  private static Map<String, Integer> skillTargets;
   private static List<List<Integer>> slotTargets;
+  private final Config config = new Config();
   int number = 0;
-  private Config config = new Config();
-  private Long meldingPuddingCount;
-  private Long mpAccelerantCount;
-  private int pt = 10;
+  private Map<String, Integer> skillTargets;
 
   private static String getSkillsWhitelist() {
     Set<Character> characterSet = new HashSet<>();
-    for (String skill : SKILLS.keySet()) {
+    for (String skill : SKILLS.values()) {
       skill.trim().chars().boxed().map(input -> (char) input.intValue()).forEach(characterSet::add);
     }
     StringBuilder sb = new StringBuilder();
@@ -346,7 +569,16 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
   }
 
   private static Map<String, String> getSkills() {
-    Map<String, String> skills = Maps.newHashMap();
+    Map<String, String> skills = Maps.newConcurrentMap();
+    skills.put("放弹.扩散强化", "散弹扩散箭强化"); //1
+    skills.put("利丸", "利刃"); //1
+    skills.put("放弹.扩散箭强化", "散弹扩散箭强化"); //1
+    skills.put("打麻术【锐]", "打磨术锐");
+    skills.put("拔刀术【力]", "拔刀术力");
+    skills.put("爆破风性强化", "爆破属性强化");
+    skills.put("麻狂局性强化", "麻痹属性强化");
+    skills.put("鬼火地", "鬼火缠");
+    skills.put("爆破局性强化", "爆破属性强化");
     skills.put("逆袭", "逆袭");
     skills.put("逆效", "逆袭");
     skills.put("逆获", "逆袭");
@@ -552,18 +784,81 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     skills.put("走壁移动【翔】", "走壁移动翔");
     skills.put("迅之气息", "迅之气息");
     skills.put("连击", "连击");
+    skills.put("击暴术", "击晕术");
+    skills.put("拔刀术[力]", "拔刀术力"); //2
+    skills.put("睡眠局性强化", "睡眠属性强化"); //1
+    skills.put("丸旺打磨", "刚刃打磨"); //2
+    skills.put("丰石使用高速化", "砥石使用高速化"); //1
+    skills.put("遂具使用强化", "道具使用强化"); //1
+    skills.put("逆敬", "逆袭"); //1
+    skills.put("耳计", "耳塞"); //1
+    skills.put("耳讲", "耳塞"); //1
+    skills.put("回避虐离提升", "回避距离提升"); //1
+    skills.put("而震", "耐震"); //1
+    skills.put("著力大师", "蓄力大师"); //1
+    skills.put("鬼火总", "鬼火缠"); //1
+    skills.put("击景术", "击晕术"); //1
+    skills.put("局性异常状态的耐性", "属性异常状态的耐性");
+    skills.put("走壁移动【翔", "走壁移动翔"); //1
+    skills.put("饥局耐性", "饥饿耐性"); //1
+    skills.put("会心击【局性]", "会心击属性"); //2
+    skills.put("最爱蓄菇", "最爱蘑菇"); //1
+    skills.put("中者", "跑者"); //1
+    skills.put("精神抖扩", "精神抖擞"); //1
+    skills.put("而力急速回复", "耐力急速回复"); //1
+    skills.put("力最解放", "力量解放"); //1
+    skills.put("会心击属性", "会心击属性");
+    skills.put("走壁移动翔", "走壁移动翔");
+    skills.put("通常弹连射箭强化", "通常弹连射箭强化");
+    skills.put("穿弹贯穿箭强化", "贯穿弹贯穿箭强化");
+    skills.put("贯穿弹贯穿箭强化", "贯穿弹贯穿箭强化");
+    skills.put("睡眠风性强化", "睡眠属性强化");
+    skills.put("打磨术锐", "打磨术锐");
+    skills.put("麻业属性强化", "麻痹属性强化"); //1
+    skills.put("麻狂性强化", "麻痹属性强化"); //1
+    skills.put("丸打磨", "刚刃打磨"); //1
+    skills.put("打麻术锐", "打磨术锐"); //1
+    skills.put("精神抖激", "精神抖擞"); //1
+    skills.put("通具使用强化", "道具使用强化"); //1
+    skills.put("放弹扩散强化", "散弹扩散箭强化"); //2
+    skills.put("散弹扩散强化", "散弹扩散箭强化"); //1
+    skills.put("散弹扩散箭强化", "散弹扩散箭强化"); //0
+    skills.put("耳雪", "耳塞"); //1
+    skills.put("夺人人", "达人艺"); //2
+    skills.put("耳夺", "耳塞"); //1
+    skills.put("扩具使用强化", "道具使用强化"); //1
+    skills.put("麻狂属性强化", "麻痹属性强化"); //1
+    skills.put("会心击性", "会心击属性"); //1
+    skills.put("性异常状态的耐性", "属性异常状态的耐性"); //1
+    skills.put("耳守", "耳塞"); //1
+    skills.put("鬼火", "鬼火缠"); //1
+    skills.put("用者", "跑者"); //1
+    skills.put("爆破性强化", "爆破属性强化"); //1
+    skills.put("风丸打磨", "刚刃打磨"); //2
+    skills.put("饥蚀耐性", "饥饿耐性"); //1
+    skills.put("会心击罗性", "会心击属性"); //1
+    skills.put("逆节", "逆袭"); //1
+    skills.put("雷风性攻击强化", "雷属性攻击强化"); //1
+    skills.put("昏打耐性", "昏厥耐性"); //1
+    skills.put("丸鳞打磨", "刃鳞打磨"); //1
+    skills.put("饥蚀性", "饥饿耐性"); //2
+    skills.put("地件改造", "零件改造"); //1
     return skills;
   }
 
   @Override
+  @SneakyThrows
   public void execute() {
     info("{} charms has been checked.", number);
     launchGame();
     walkToShop();
     toMeldingPot();
-    if (!watchStars(pt)) {
-      toNewCharmRandomSeed();
+    try {
+      watchStars();
+    } catch (ResetScriptException e) {
+      info("Reset script, change charm seed.", e);
     }
+    toNewCharmRandomSeed();
   }
 
   @Override
@@ -571,54 +866,50 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     return "MHR auto charm(CHS.Ver)";
   }
 
-  private boolean watchStars(int pt) {
-    for (int i = 0; i < pt; i++) {
-      fillPot(10);
-      boolean findTarget = checkCharm();
-      if (findTarget) {
+  private boolean watchStars() {
+    while (true) {
+      sleep(100);
+      long potSlot = numberOcr(POT_SLOT, 100);
+      if (potSlot == 0) {
+        info("No pots left, reset script.");
+        throw new ResetScriptException();
+      }
+      fillPot(potSlot);
+      if (checkCharms()) {
         backToGameMenu();
         saveAndExit();
-        return true;
+        launchGame();
+        walkToShop();
+        toMeldingPot();
+      } else {
+        sleep(150);
+        press(D_BOTTOM);
+        sleep(150);
       }
-      press(A);
-      sleep(200);
-      press(D_BOTTOM);
-      sleep(150);
-    }
-    return false;
-  }
-
-
-  private void checkMeldingPuddingCount(int need) {
-    if (meldingPuddingCount == null) {
-      ImageCompare.Result result = until(() -> imageCompare(MP_NAME),
-          input -> input.getSimilarity() > 0.8,
-          () -> sleep(50), 10);
-      if (result == null) {
-        throw new AbortScriptException("Cannot find any Melding Pudding! Get some with amiibo!");
-      }
-      sleep(150);
-      meldingPuddingCount = until(() -> ocrNumber(MP_NUM),
-          Objects::nonNull,
-          () -> sleep(50), 10);
-      if (meldingPuddingCount < need * 5) {
-        //throw new AbortScriptException("You have only " + meldingPuddingCount + "  MP Accelerants!  Get some with amiibo");
-      }
-      info("You have " + meldingPuddingCount + " Melding Pudding!");
-      mpAccelerantCount = ocrNumber(MPA_NUM);
-      mpAccelerantCount = until(() -> ocrNumber(MPA_NUM),
-          Objects::nonNull,
-          () -> sleep(50), 10);
-      if (mpAccelerantCount < need) {
-        //throw new AbortScriptException("You have only " + mpAccelerantCount + "  MP Accelerants!  Get some with amiibo");
-      }
-      info("You have " + mpAccelerantCount + " MP Accelerants");
     }
   }
 
-  private void cleanMaterialNum() {
-    mpAccelerantCount = null;
-    meldingPuddingCount = null;
+  private void checkMaterial(long need) {
+    //until(() -> imageCompare(MATERIAL_CHECK_READY), input -> input.getSimilarity() > 0.8, () -> sleep(50));
+    long mp = numberOcr(MP_NUM, 100);
+    long mpa = numberOcr(MPA_NUM, 100);
+    long point = numberOcr(POINTS_NUM, 100);
+    info("You have " + mp + " Melding Puddings and " + mpa + " MP Accelerants and " + point
+        + " Points");
+    long mpn = need * 5;
+    if (mp < mpn) {
+      throw new ResetScriptException(
+          "Lack of Melding Puddings! need " + mpn + " but only have " + mp);
+    }
+    if (mpa < need) {
+      throw new ResetScriptException(
+          "Lack of MP Accelerants! need " + need + " but only have " + mpa);
+    }
+    long pn = need * 1000;
+    if (point < pn) {
+      throw new ResetScriptException(
+          "Lack of Points! need " + pn + " but only have " + point);
+    }
   }
 
   private void toNewCharmRandomSeed() {
@@ -626,21 +917,32 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     launchGame();
     walkToShop();
     toMeldingPot();
-    fillPot(1);
+    try {
+      fillPot(1);
+    } catch (ResetScriptException e) {
+      error("you have no enough material to reset, abort script!", e);
+      throw new AbortScriptException();
+    }
     getAllCharms();
     backToGameMenu();
     saveAndExit();
   }
 
-  private void fillPot(int times) {
-    cleanMaterialNum();
+  private void fillPot(long times) {
+    press(A);
+    sleep(150);
+    checkMaterial(times);
     for (int i = 0; i < times; i++) {
-      fillPotOnce(times);
+      fillPotOnce();
+      if (i != times - 1) {
+        press(A);
+        sleep(200);
+      }
     }
   }
 
   private void launchGame() {
-    until(() -> imageCompare(MHR_IN_GAME_MENU),
+    until(() -> imageCompare(MHR_IN_GAME),
         input -> input.getSimilarity() > MHR_IN_GAME_MENU_THRESHOLD,
         () -> {
           press(A);
@@ -656,7 +958,6 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     hold(StickAction.L_LEFT);
     sleep(1300);
     release(StickAction.L_LEFT);
-
   }
 
   private void toMeldingPot() {
@@ -669,20 +970,16 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
           sleep(250);
         });
     press(A);
-    sleep(500);
+    sleep(300);
   }
 
-  private void fillPotOnce(int times) {
-    press(A);
-    sleep(200);
-    checkMeldingPuddingCount(times);
+  private void fillPotOnce() {
     press(A);
     sleep(200);
     press(D_BOTTOM);
     sleep(200);
     press(A);
     sleep(200);
-    checkPoint();
     press(D_TOP);
     sleep(200);
     press(A);
@@ -691,23 +988,15 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     sleep(200);
     press(A);
     sleep(200);
-    checkPoint();
     press(A);
     sleep(200);
   }
 
-  private void checkPoint() {
-    Result ocr = ocr(POINT_LACK);
-    if (ocr.getTextWithoutSpace().contains("点数不足")) {
-      throw new AbortScriptException("You have no point! Get some with hunt!");
-    }
-  }
-
-  private boolean checkCharm() {
+  private boolean checkCharms() {
     press(D_TOP);
     sleep(200);
     press(A);
-    sleep(2000);
+    sleep(1000);
     AtomicBoolean find = new AtomicBoolean(false);
     until(() -> imageCompare(MELDING_POT_DONE),
         input -> input.getSimilarity() < 0.9,
@@ -716,7 +1005,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
             find.set(true);
           }
           press(A);
-          sleep(200);
+          sleep(500);
         });
     sleep(200);
     press(A);
@@ -744,7 +1033,7 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
   }
 
   private void backToGameMenu() {
-    until(() -> imageCompare(MHR_IN_GAME_MENU),
+    until(() -> imageCompare(MHR_IN_GAME),
         input -> input.getSimilarity() > MHR_IN_GAME_MENU_THRESHOLD,
         () -> {
           press(B);
@@ -775,11 +1064,15 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
 
   @SneakyThrows
   private boolean charmAnalyze() {
+    Future<ImageCompare.Result> hasSkills2 = async(() -> imageCompare(HAS_SKILL_2));
+
     Future<OCR.Result> rareF = async(() -> ocr(CHARM_RARE));
     Future<OCR.Result> level1F = async(() -> ocr(CHARM_LEVEL_1));
-    Future<String> skill1F = async(() -> detectSkill(CHARM_SKILL_1));
     Future<OCR.Result> level2F = async(() -> ocr(CHARM_LEVEL_2));
+
+    Future<String> skill1F = async(() -> detectSkill(CHARM_SKILL_1));
     Future<String> skill2F = async(() -> detectSkill(CHARM_SKILL_2));
+
     Future<ImageCompare.Result> s0o1F = async(() -> imageCompare(CHARM_S0O1));
     Future<ImageCompare.Result> s1o1F = async(() -> imageCompare(CHARM_S1O1));
     Future<ImageCompare.Result> s2o1F = async(() -> imageCompare(CHARM_S2O1));
@@ -795,14 +1088,15 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     Future<ImageCompare.Result> s2o3F = async(() -> imageCompare(CHARM_S2O3));
     Future<ImageCompare.Result> s3o3F = async(() -> imageCompare(CHARM_S3O3));
     Future<ImageCompare.Result> s4o3F = async(() -> imageCompare(CHARM_S4O3));
+
     String rare = rareF.get().getTextWithoutSpace().toUpperCase();
     rare = rare.startsWith("RARE") ? rare.substring(4) : "?";
+    boolean hasSkill2 = hasSkills2.get().getSimilarity() > 0.8;
+
     String skill1 = skill1F.get();
-    String skill2 = skill2F.get();
+    String skill2 = hasSkill2 ? skill2F.get() : "";
     Long level1 = level1F.get().getTextAsNumber();
     Long level2 = level2F.get().getTextAsNumber();
-    level1 = level1 == null ? 1 : level1;
-    level2 = Strings.isNullOrEmpty(skill2) ? null : level2 == null ? 1 : level2;
 
     List<ImageCompare.Result> o1L = Arrays.asList(s0o1F.get(), s1o1F.get(), s2o1F.get(),
         s3o1F.get(), s4o1F.get());
@@ -816,13 +1110,16 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
     int o3 = getMax(o3L);
 
     boolean isTarget = checkSkill(skill1, level1, skill2, level2) && checkGem(o1, o2, o3);
-    String result = String.format("R%s %s%s %s%s S%s%s%s", rare, skill1, level1, skill2,
-        Strings.isNullOrEmpty(skill2) ? "" : level2 == null ? "" : level2, o1,
-        o2, o3);
+    String result = String.format("R%s %s%s %s%s S%s%s%s", rare, skill1, level1,
+        hasSkill2 ? skill2 : "",
+        hasSkill2 ? level2 : "",
+        o1,
+        o2,
+        o3);
     info("DingZhen the One-Eye identified the charm as : {}", result);
     if (isTarget) {
       warn("find a target charm:{}", result);
-      push("find a target charm:"+result);
+      push("find a target charm:" + result);
       press(PLUS);
       sleep(200);
       if (config.getCaptureScreenWhenFind().get()) {
@@ -846,21 +1143,40 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
   }
 
   private String detectSkill(OCR.Param param) {
-    OCR.Result until = until(() -> ocr(param),
-        input -> {
-          String text = input.getTextWithoutSpace();
-          if (input.getConfidence() < 10) {
-            return true;
-          }
-          boolean b = SKILLS.containsKey(text);
-          if (!b) {
-            info("Unknown skill detected: {} , confidence: {} ", text, input.getConfidence());
-          }
-          return b;
-        },
-        () -> sleep(100), 5);
-    return until == null ? ""
-        : until.getConfidence() < 30 ? "" : SKILLS.get(until.getTextWithoutSpace());
+    try {
+      OCR.Result until = until(() -> ocr(param),
+          input -> {
+            if (input.getConfidence() < 10) {
+              return false;
+            }
+            String text = input.getTextWithoutSpace();
+            boolean containsKey = SKILLS.containsKey(text);
+            if (!Strings.isNullOrEmpty(input.getTextWithoutSpace()) && !containsKey) {
+              info("Unknown skill detected: {} , confidence: {} ", text, input.getConfidence());
+              calculateSkill(text);
+            }
+            return containsKey;
+          },
+          () -> sleep(50), 30);
+      return until == null ? "" : SKILLS.get(until.getTextWithoutSpace());
+    } catch (Exception e) {
+      return "";
+    }
+
+  }
+
+  private void calculateSkill(String text) {
+    LevenshteinDistance defaultInstance = LevenshteinDistance.getDefaultInstance();
+    List<Pair<Integer, String>> list = new ArrayList<>();
+    SKILLS.forEach((k, v) -> {
+      Integer score = defaultInstance.apply(v, text);
+      list.add(Pair.create(score, v));
+    });
+    list.sort(Comparator.comparing(Pair::getFirst));
+    String formatted = "skills.put(\"%s\", \"%s\"); //%s\n".formatted(text, list.get(0).getSecond(),
+        list.get(0).getFirst());
+    System.out.println(formatted);
+    SKILLS.put(text, list.get(0).getSecond());
   }
 
   private int getMax(List<ImageCompare.Result> list) {
@@ -899,16 +1215,10 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
 
   @Override
   public void load() {
-    Integer pt = config.getHow_Many_Round_To_Change().getValue();
-    if (pt == null || pt < 0) {//TODO
-      throw new GuiAlertException("How_Many_Pot_To_Change must be greater than 0!");
-    }
-    this.pt = pt;
-    info("How many rounds to change: {}", pt);
     String ts = config.getTarget_Slots().getValue();
     slotTargets = getSlotTargets(ts);
     if (slotTargets.isEmpty()) {
-      throw new GuiAlertException("Slot targets is empty!");
+      throw new AlertException("Slot targets is empty!");
     }
     info("Slot targets: {}", slotTargets);
     Set<String> collect = new HashSet<>(SKILLS.values());
@@ -927,13 +1237,13 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
         continue;
       }
       if (s.length() != 3) {
-        throw new GuiAlertException("Invalid slot target: " + s);
+        throw new AlertException("Invalid slot target: " + s);
       }
       List<Integer> ints = new ArrayList<>();
       for (int i = 0; i < s.length(); i++) {
         char c = s.charAt(i);
         if (c < 48 || c > 52) {
-          throw new GuiAlertException("Invalid slot target: " + s);
+          throw new AlertException("Invalid slot target: " + s);
         }
         ints.add(c - 48);
       }
@@ -952,15 +1262,15 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
         continue;
       }
       if (s.length() < 2) {
-        throw new GuiAlertException("Invalid skill target: " + s);
+        throw new AlertException("Invalid skill target: " + s);
       }
       char level = s.charAt(s.length() - 1);
       if (level < 48 || level > 57) {
-        throw new GuiAlertException("Invalid skill level: " + s);
+        throw new AlertException("Invalid skill level: " + s);
       }
       String skill = s.substring(0, s.length() - 1);
       if (!collect.contains(skill)) {
-        throw new GuiAlertException("Invalid skill: " + s);
+        throw new AlertException("Invalid skill: " + s);
       }
       target.put(skill, level - 48);
     }
@@ -979,7 +1289,6 @@ public class AutoCharm extends ScriptEngine implements ConfigurableScript {
   @Data
   public static class Config {
 
-    private SimpleIntegerProperty How_Many_Round_To_Change = new SimpleIntegerProperty(10);
     @FormFactory(TextAreaFactory.class)
     private SimpleStringProperty Target_Skills = new SimpleStringProperty();
     @FormFactory(TextAreaFactory.class)

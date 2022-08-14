@@ -5,6 +5,7 @@ import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.component.FrameManager.CachedFrame;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.api.Drawable;
+import com.duanxr.pgcon.gui.display.impl.Text;
 import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.input.impl.StaticImageInput;
 import com.duanxr.pgcon.util.ImageResizeUtil;
@@ -13,9 +14,12 @@ import com.google.common.eventbus.Subscribe;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
@@ -91,15 +95,18 @@ public class DisplayHandler {
       if (canvas != null && !frozenScreen.get()) {
         BufferedImage transparentCanvas = createTransparentCanvas();
         Graphics graphics = transparentCanvas.getGraphics();
+        List<Drawable> drawables = new ArrayList<>();
         for (Iterator<Entry<String, Drawable>> iterator = canvasDrawables.entrySet().iterator();
             iterator.hasNext(); ) {
           Drawable drawable = iterator.next().getValue();
           if (drawable.isExpired()) {
             iterator.remove();
           } else {
-            drawable.draw(graphics);
+            drawables.add(drawable);
           }
         }
+        drawables.sort((o1, o2) -> Boolean.compare(o1 instanceof Text, o2 instanceof Text));
+        drawables.forEach(drawable -> drawable.draw(graphics));
         canvas.accept(transparentCanvas);
       }
     }

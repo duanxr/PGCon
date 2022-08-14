@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.util;
 
-import com.duanxr.pgcon.exception.GuiAlertException;
+import com.duanxr.pgcon.exception.AlertException;
 import com.duanxr.pgcon.gui.log.GuiLogger;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,7 +29,7 @@ public class JavaFxUtil {
   private static void alertException(Exception e) {
     Alert alert = new Alert(Alert.AlertType.ERROR);
     alert.setTitle("Error!");
-    if (e instanceof GuiAlertException) {
+    if (e instanceof AlertException) {
       if (guiLogger != null) {
         guiLogger.error(e.getMessage());
       }
@@ -68,7 +68,7 @@ public class JavaFxUtil {
   }
 
   private static void logException(Exception e) {
-    if (e instanceof GuiAlertException) {
+    if (e instanceof AlertException) {
       if (guiLogger != null) {
         guiLogger.error(e.getMessage());
       }

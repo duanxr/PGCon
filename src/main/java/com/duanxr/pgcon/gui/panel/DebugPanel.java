@@ -11,6 +11,7 @@ import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
+import com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType;
 import com.duanxr.pgcon.gui.FXFormGenerator;
 import com.duanxr.pgcon.gui.debug.DebugBlurConfig;
 import com.duanxr.pgcon.gui.debug.DebugColorPickConfig;
@@ -91,7 +92,8 @@ public class DebugPanel {
       DebugImageCompareConfig debugImageCompareConfig, DebugNormalizeConfig debugNormalizeConfig,
       DebugOcrConfig debugOcrConfig, DebugResultConfig debugResultConfig,
       DebugThreshConfig debugThreshConfig, FXFormGenerator fxFormGenerator,
-      DebugBlurConfig debugBlurConfig, DebugResizeConfig debugResizeConfig, PreprocessorFactory preprocessorFactory, ImageCompare imageCompare, OCR ocr,
+      DebugBlurConfig debugBlurConfig, DebugResizeConfig debugResizeConfig,
+      PreprocessorFactory preprocessorFactory, ImageCompare imageCompare, OCR ocr,
       FrameManager frameManager) {
     this.debugColorPickConfig = debugColorPickConfig;
     this.debugConfig = debugConfig;
@@ -157,6 +159,18 @@ public class DebugPanel {
         BufferedImage convertedDebugImage = ImageUtil.matToBufferedImage(convertedMat);
 
         Platform.runLater(() -> {
+          if (liveImage.getWidth() != liveDebugImage.getWidth()
+              || liveImage.getHeight() != liveDebugImage.getHeight()) {
+            this.liveImage = new WritableImage(liveDebugImage.getWidth(),
+                liveDebugImage.getHeight());
+            debugConfig.getLiveImage().set(liveImage);
+          }
+          if (convertedImage.getWidth() != convertedDebugImage.getWidth()
+              || convertedImage.getHeight() != convertedDebugImage.getHeight()) {
+            this.convertedImage = new WritableImage(convertedDebugImage.getWidth(),
+                convertedDebugImage.getHeight());
+            debugConfig.getConvertedImage().set(convertedImage);
+          }
           SwingFXUtils.toFXImage(liveDebugImage, liveImage);
           SwingFXUtils.toFXImage(convertedDebugImage, convertedImage);
         });
@@ -289,6 +303,27 @@ public class DebugPanel {
           .append(".blueWeight(").append(debugFilterConfig.getBlueWeight().get()).append(")\n")
           .append(".build())\n");
     }
+    if (debugResizeConfig.getEnableResize().get()) {
+      code.append(".preProcessor(")
+          .append(
+              "com.duanxr.pgcon.core.preprocessing.config.ResizePreProcessorConfig.builder()\n")
+          .append(".enable(true)\n")
+          .append(".scale(").append(Math.min(debugResizeConfig.getScale().get(), 10.0))
+          .append(")\n")
+          .append(".build())\n");
+    }
+    if (debugBlurConfig.getEnableSmoothing().get()) {
+      code.append(".preProcessor(")
+          .append(
+              "com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig.builder()\n")
+          .append(".enable(true)\n")
+          .append(".type(com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig.SmoothingType.")
+          .append(debugBlurConfig.getSmoothingType().get().name()).append(")\n")
+          .append(".size(").append(debugBlurConfig.getSize().get()).append(")\n")
+          .append(".sigmaColor(").append(debugBlurConfig.getSigmaColor().get()).append(")\n")
+          .append(".sigmaSpace(").append(debugBlurConfig.getSigmaSpace().get()).append(")\n")
+          .append(".build())\n");
+    }
     if (debugColorPickConfig.getEnableColorPickFilter().get()) {
       code.append(".preProcessor(")
           .append(
@@ -319,10 +354,13 @@ public class DebugPanel {
       code.append(".preProcessor(")
           .append(
               "com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()\n")
-          .append(".enable(true)\n")
-          .append(".binaryThreshold(").append(debugThreshConfig.getBinaryThreshold().get())
-          .append(")\n")
-          .append(".inverse(").append(debugThreshConfig.getInverse().get()).append(")\n")
+          .append(".enable(true)\n");
+      if (debugThreshConfig.getThreshType().get() != ThreshType.OTSU) {
+        code.append(".binaryThreshold(")
+            .append(debugThreshConfig.getBinaryThreshold().get())
+            .append(")\n");
+      }
+      code.append(".inverse(").append(debugThreshConfig.getInverse().get()).append(")\n")
           .append(
               ".threshType(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.")
           .append(debugThreshConfig.getThreshType().get().name()).append(")\n");
@@ -391,12 +429,14 @@ public class DebugPanel {
       }
     });
   }
+
   private void copyCodeToClipboard() {
     Clipboard clipboard = Clipboard.getSystemClipboard();
     ClipboardContent content = new ClipboardContent();
     content.putString(generateCode());
     clipboard.setContent(content);
   }
+
   private void setDebugWindowSize(FXForm<?> debugNode) {
     double width = 280;
     ArrayList<Node> nodes = getAllNodes(debugNode, null);
