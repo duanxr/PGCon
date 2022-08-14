@@ -12,7 +12,7 @@ import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
 import com.duanxr.pgcon.gui.FXFormGenerator;
-import com.duanxr.pgcon.util.PropertyCacheUtil;
+import com.duanxr.pgcon.gui.debug.DebugBlurConfig;
 import com.duanxr.pgcon.gui.debug.DebugColorPickConfig;
 import com.duanxr.pgcon.gui.debug.DebugDetectConfig;
 import com.duanxr.pgcon.gui.debug.DebugDetectConfig.DetectType;
@@ -21,10 +21,12 @@ import com.duanxr.pgcon.gui.debug.DebugImageCompareConfig;
 import com.duanxr.pgcon.gui.debug.DebugMainConfig;
 import com.duanxr.pgcon.gui.debug.DebugNormalizeConfig;
 import com.duanxr.pgcon.gui.debug.DebugOcrConfig;
+import com.duanxr.pgcon.gui.debug.DebugResizeConfig;
 import com.duanxr.pgcon.gui.debug.DebugResultConfig;
 import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
 import com.duanxr.pgcon.util.ImageUtil;
 import com.duanxr.pgcon.util.LogUtil;
+import com.duanxr.pgcon.util.PropertyCacheUtil;
 import com.google.common.base.Strings;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -59,6 +61,7 @@ import org.springframework.stereotype.Component;
 public class DebugPanel {
 
   private static final String DEBUG_WINDOW_TITLE = "Debug";
+  private final DebugBlurConfig debugBlurConfig;
   private final DebugColorPickConfig debugColorPickConfig;
   private final DebugMainConfig debugConfig;
   private final DebugDetectConfig debugDetectConfig;
@@ -66,25 +69,29 @@ public class DebugPanel {
   private final DebugImageCompareConfig debugImageCompareConfig;
   private final DebugNormalizeConfig debugNormalizeConfig;
   private final DebugOcrConfig debugOcrConfig;
+  private final DebugResizeConfig debugResizeConfig;
   private final DebugResultConfig debugResultConfig;
   private final DebugThreshConfig debugThreshConfig;
+  private final FrameManager frameManager;
   private final FXFormGenerator fxFormGenerator;
   private final ImageCompare imageCompare;
   private final OCR ocr;
   private final PreprocessorFactory preprocessorFactory;
   private WritableImage convertedImage;
   private Exception debugException;
+  private Stage debugStage;
   private WritableImage liveImage;
   private Area selectedArea;
   private BufferedImage selectedBufferedImage;
   private WritableImage selectedImage;
+  private String template;
 
   public DebugPanel(DebugColorPickConfig debugColorPickConfig, DebugMainConfig debugConfig,
       DebugDetectConfig debugDetectConfig, DebugFilterConfig debugFilterConfig,
       DebugImageCompareConfig debugImageCompareConfig, DebugNormalizeConfig debugNormalizeConfig,
       DebugOcrConfig debugOcrConfig, DebugResultConfig debugResultConfig,
       DebugThreshConfig debugThreshConfig, FXFormGenerator fxFormGenerator,
-      PreprocessorFactory preprocessorFactory, ImageCompare imageCompare, OCR ocr,
+      DebugBlurConfig debugBlurConfig, DebugResizeConfig debugResizeConfig, PreprocessorFactory preprocessorFactory, ImageCompare imageCompare, OCR ocr,
       FrameManager frameManager) {
     this.debugColorPickConfig = debugColorPickConfig;
     this.debugConfig = debugConfig;
@@ -96,6 +103,8 @@ public class DebugPanel {
     this.debugResultConfig = debugResultConfig;
     this.debugThreshConfig = debugThreshConfig;
     this.fxFormGenerator = fxFormGenerator;
+    this.debugBlurConfig = debugBlurConfig;
+    this.debugResizeConfig = debugResizeConfig;
     this.preprocessorFactory = preprocessorFactory;
     this.imageCompare = imageCompare;
     this.ocr = ocr;
@@ -118,12 +127,6 @@ public class DebugPanel {
     }
   }
 
-  private String template;
-
-  private Stage debugStage;
-
-  private final FrameManager frameManager;
-
   public void processDebug() {
     if (debugStage != null && debugStage.isShowing()) {
       try {
@@ -134,6 +137,8 @@ public class DebugPanel {
         Mat convertedMat = ImageUtil.bufferedImageToMat(selectedBufferedImage);
         List<PreProcessorConfig> preProcessorConfigs = Arrays.asList(
             debugFilterConfig.convertToPreProcessorConfig(),
+            debugResizeConfig.convertToResizePreProcessorConfig(),
+            debugBlurConfig.convertToSmoothingPreProcessorConfig(),
             debugColorPickConfig.convertToColorPickerFilterPreProcessorConfig(),
             debugNormalizeConfig.convertToNormalizeConfig(),
             debugThreshConfig.convertToThreshPreProcessorConfig());
@@ -189,7 +194,7 @@ public class DebugPanel {
         long detectTime = System.currentTimeMillis() - start;
         result.append("Preprocess time: ").append(preProcessTime).append(" ms\n");
         result.append("Detect time: ").append(detectTime).append(" ms");
-        ((SimpleStringProperty)debugResultConfig.getDetectResult()).set(result.toString());
+        ((SimpleStringProperty) debugResultConfig.getDetectResult()).set(result.toString());
       } catch (Exception e) {
         if (!isSameException(e)) {
           log.error("debug error", e);
@@ -197,7 +202,6 @@ public class DebugPanel {
       }
     }
   }
-
 
 
   private boolean isSameException(Exception e) {
@@ -321,12 +325,14 @@ public class DebugPanel {
           .append(".inverse(").append(debugThreshConfig.getInverse().get()).append(")\n")
           .append(
               ".threshType(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.")
-          .append(debugThreshConfig.getThreshType().get().name()).append(")\n")
-          .append(".adaptiveThreshC(").append(debugThreshConfig.getAdaptiveThreshC().get())
-          .append(")\n")
-          .append(".adaptiveBlockSize(").append(debugThreshConfig.getAdaptiveBlockSize().get())
-          .append(")\n")
-          .append(".build())\n");
+          .append(debugThreshConfig.getThreshType().get().name()).append(")\n");
+      if (debugThreshConfig.getThreshType().get().isAdaptive()) {
+        code.append(".adaptiveThreshC(").append(debugThreshConfig.getAdaptiveThreshC().get())
+            .append(")\n")
+            .append(".adaptiveBlockSize(").append(debugThreshConfig.getAdaptiveBlockSize().get())
+            .append(")\n");
+      }
+      code.append(".build())\n");
     }
   }
 
@@ -344,6 +350,8 @@ public class DebugPanel {
     PropertyCacheUtil.bindPropertyBean("DEBUG_DETECT_CONFIG", debugDetectConfig);
     PropertyCacheUtil.bindPropertyBean("DEBUG_OCR_CONFIG", debugOcrConfig);
     PropertyCacheUtil.bindPropertyBean("DEBUG_IMAGE_COMPARE_CONFIG", debugImageCompareConfig);
+    PropertyCacheUtil.bindPropertyBean("DEBUG_BLUR_CONFIG", debugBlurConfig);
+    PropertyCacheUtil.bindPropertyBean("DEBUG_RESIZE_CONFIG", debugResizeConfig);
     FXForm<?> debugNode = fxFormGenerator.generateNode(debugConfig);
     FXForm<?> filterDebugNode = fxFormGenerator.generateNode(debugFilterConfig);
     FXForm<?> colorPickDebugNode = fxFormGenerator.generateNode(debugColorPickConfig);
@@ -353,7 +361,11 @@ public class DebugPanel {
     FXForm<?> ocrDebugNode = fxFormGenerator.generateNode(debugOcrConfig);
     FXForm<?> imageCompareDebugNode = fxFormGenerator.generateNode(debugImageCompareConfig);
     FXForm<?> resultDebugNode = fxFormGenerator.generateNode(debugResultConfig);
+    FXForm<?> resizeDebugNode = fxFormGenerator.generateNode(debugResizeConfig);
+    FXForm<?> blurDebugNode = fxFormGenerator.generateNode(debugBlurConfig);
     setDebugWindowSize(debugNode);
+    setDebugConfigSize(resizeDebugNode);
+    setDebugConfigSize(blurDebugNode);
     setDebugConfigSize(filterDebugNode);
     setDebugConfigSize(colorPickDebugNode);
     setDebugConfigSize(normalizeDebugNode);
@@ -365,7 +377,8 @@ public class DebugPanel {
     Button generateCodeButton = new Button("Generate Code");
     VBox detectBox = new VBox(imageCompareDebugNode);
     pane.getChildren().add(new HBox(debugNode,
-        new VBox(filterDebugNode, colorPickDebugNode),
+        new VBox(filterDebugNode, resizeDebugNode),
+        new VBox(blurDebugNode, colorPickDebugNode),
         new VBox(normalizeDebugNode, binaryDebugNode),
         new VBox(detectDebugNode, detectBox, resultDebugNode, generateCodeButton)));
     generateCodeButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> copyCodeToClipboard());
@@ -378,15 +391,12 @@ public class DebugPanel {
       }
     });
   }
-
   private void copyCodeToClipboard() {
     Clipboard clipboard = Clipboard.getSystemClipboard();
     ClipboardContent content = new ClipboardContent();
     content.putString(generateCode());
     clipboard.setContent(content);
   }
-
-
   private void setDebugWindowSize(FXForm<?> debugNode) {
     double width = 280;
     ArrayList<Node> nodes = getAllNodes(debugNode, null);

@@ -3,10 +3,14 @@ package com.duanxr.pgcon.core.preprocessing;
 import com.duanxr.pgcon.core.preprocessing.config.ChannelsFilterPreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig;
+import com.duanxr.pgcon.core.preprocessing.config.ResizePreProcessorConfig;
+import com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.impl.ChannelsFilterPreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.ColorPickFilterPreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.NormalizePreProcessor;
+import com.duanxr.pgcon.core.preprocessing.impl.ResizePreProcessor;
+import com.duanxr.pgcon.core.preprocessing.impl.SmoothingPreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.ThreshPreProcessor;
 import com.duanxr.pgcon.exception.AbortScriptException;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -41,6 +45,10 @@ public class PreprocessorFactory {
       return new NormalizePreProcessor((NormalizePreProcessorConfig) config);
     } else if (config instanceof ColorPickFilterPreProcessorConfig) {
       return new ColorPickFilterPreProcessor((ColorPickFilterPreProcessorConfig) config);
+    } else if (config instanceof ResizePreProcessorConfig) {
+      return new ResizePreProcessor((ResizePreProcessorConfig) config);
+    } else if (config instanceof SmoothingPreProcessorConfig) {
+      return new SmoothingPreProcessor((SmoothingPreProcessorConfig) config);
     } else {
       throw new AbortScriptException("unknown preprocessor config: " + config.getClass());
     }
