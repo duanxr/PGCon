@@ -4,6 +4,7 @@ package com.duanxr.pgcon.input.impl;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.exception.AlertException;
 import com.duanxr.pgcon.input.api.ImageInput;
+import com.duanxr.pgcon.util.ImageResizeUtil;
 import com.github.sarxos.webcam.Webcam;
 import com.google.common.base.Strings;
 import java.awt.Dimension;
@@ -16,10 +17,14 @@ import java.util.List;
 public class CameraImageInput implements ImageInput<BufferedImage> {
 
   private volatile Webcam camera;
+  private InputConfig inputConfig;
 
   public CameraImageInput(String device, InputConfig inputConfig) {
-    camera = openCamera(device, inputConfig.getWidth(), inputConfig.getHeight());
+    this.inputConfig = inputConfig;
+    this.camera = openCamera(device, inputConfig.getWidth(), inputConfig.getHeight());
+
   }
+
   private Webcam openCamera(String device, Integer width, Integer height) {
     if (!Strings.isNullOrEmpty(device)) {
       Webcam webcam;
@@ -69,7 +74,12 @@ public class CameraImageInput implements ImageInput<BufferedImage> {
   @Override
   public BufferedImage read() {
     if (camera != null && camera.isOpen()) {
-      return camera.getImage();
+      BufferedImage image = camera.getImage();
+      if (image.getWidth() != inputConfig.getWidth()
+          || image.getHeight() != inputConfig.getHeight()) {
+        image = ImageResizeUtil.resize(image, inputConfig.getWidth(), inputConfig.getHeight());
+      }
+      return image;
     }
     return null;
   }

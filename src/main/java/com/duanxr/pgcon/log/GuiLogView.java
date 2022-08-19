@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.gui.log;
+package com.duanxr.pgcon.log;
 
 import java.text.SimpleDateFormat;
 import javafx.animation.Animation;
@@ -42,7 +42,6 @@ public class GuiLogView extends ListView<GuiLogRecord> {
             Duration.seconds(1),
             event -> {
               guiLogger.getLog().drainTo(logItems);
-
               if (logItems.size() > MAX_ENTRIES) {
                 logItems.remove(0, logItems.size() - MAX_ENTRIES);
               }

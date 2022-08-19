@@ -2,7 +2,6 @@ package com.duanxr.pgcon.gui.debug;
 
 import com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import lombok.Data;
 import org.springframework.stereotype.Component;

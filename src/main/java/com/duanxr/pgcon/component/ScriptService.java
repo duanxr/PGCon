@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.component;
 
-import com.duanxr.pgcon.script.component.CachedScript;
+import com.duanxr.pgcon.script.component.ScriptCache;
 import com.duanxr.pgcon.script.component.ScriptLoader;
 import com.duanxr.pgcon.script.component.ScriptParser;
 import java.io.File;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScriptService {
   @Getter
-  private final Map<String, CachedScript> cachedScriptMap;
+  private final Map<String, ScriptCache> cachedScriptMap;
   private final ScriptLoader scriptLoader;
   private final ScriptParser scriptParser;
 
@@ -39,7 +39,7 @@ public class ScriptService {
     List<File> files = scriptLoader.loadScripts();
     if (!files.isEmpty()) {
       files.stream().map(scriptParser::parseScript).filter(Objects::nonNull)
-          .forEach(cachedScript -> cachedScriptMap.put(cachedScript.getScriptName(), cachedScript));
+          .forEach(scriptCache -> cachedScriptMap.put(scriptCache.getScriptName(), scriptCache));
     } else {
       log.error("no script file found");
     }

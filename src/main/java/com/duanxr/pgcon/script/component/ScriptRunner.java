@@ -25,12 +25,12 @@ public class ScriptRunner {
         Executors.newSingleThreadExecutor());
   }
 
-  public synchronized void run(Script script) {
+  public synchronized void run(Script<Object> script) {
     stop();
     currentScriptTask = new ScriptTask(script);
     currentScriptListenable = listeningExecutorService.submit(currentScriptTask);
   }
-  public synchronized void run(Script script,Runnable callback) {
+  public synchronized void run(Script<Object> script,Runnable callback) {
     stop();
     script.load();
     currentScriptTask = new ScriptTask(script,callback);

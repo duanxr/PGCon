@@ -7,15 +7,17 @@ import com.duanxr.pgcon.exception.TimeOutException;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
 import com.duanxr.pgcon.gui.display.impl.Text;
+import com.duanxr.pgcon.log.Logger;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
-import com.duanxr.pgcon.script.api.BasicScriptEngine;
 import com.duanxr.pgcon.util.LogUtil;
 import java.awt.Color;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
@@ -24,15 +26,28 @@ import lombok.SneakyThrows;
  */
 @Setter
 public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
+
+  @Getter(value = AccessLevel.PRIVATE, lazy = true)
+  private final Logger logger = getLoggerEndPoint();
+
   protected PGConScriptEngineV1(ScriptInfo<T> scriptInfo) {
     super(scriptInfo);
   }
+
+  protected void debug(String msg, Object... args) {
+    getLogger().debug(msg, args);
+  }
+
   protected void info(String msg, Object... args) {
-    components.getGuiLogger().info(msg, args);
+    getLogger().info(msg, args);
   }
 
   protected void warn(String msg, Object... args) {
-    components.getGuiLogger().warn(msg, args);
+    getLogger().warn(msg, args);
+  }
+
+  protected void error(String msg, Object... args) {
+    getLogger().error(msg, args);
   }
 
   protected ImageCompare.Result detect(ImageCompare.Param param) {
@@ -59,7 +74,7 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
   }
 
   private void drawImageCompareResult(ImageCompare.Param param, ImageCompare.Result detect) {
-    String similarity = LogUtil.format("%.02f", detect.getSimilarity()).toString();
+    String similarity = LogUtil.formatToString("%.02f", detect.getSimilarity()).toString();
     Area rect = getDebugRectArea(param.getArea());
     components.getDisplayService().draw(
         new DrawEvent("TEXT_" + param, new Text(
@@ -68,9 +83,6 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
             14, 3000)));
   }
 
-  protected void debug(String msg, Object... args) {
-    components.getGuiLogger().debug(msg, args);
-  }
 
   private Area getDebugRectArea(Area rect) {
     return Area.ofRect(rect.getX() / 2, rect.getY() / 2, rect.getWidth() / 2, rect.getHeight() / 2);
@@ -139,9 +151,6 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
     }
   }
 
-  protected void error(String msg, Object... args) {
-    components.getGuiLogger().error(msg, args);
-  }
 
   protected Long numberOcr(OCR.Param param, int times) {
     return until(() -> detect(param),
@@ -178,10 +187,6 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
     }
   }
 
-  @SneakyThrows
-  protected void sleep(long millis) {
-    Thread.sleep(millis);
-  }
 
   private void drawOcrParam(OCR.Param param) {
 
@@ -211,8 +216,16 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
     return components.getExecutorService().submit(callable);
   }
 
+  @SneakyThrows
+  protected void sleep(long millis) {
+    Thread.sleep(millis);
+  }
+
   protected void script(String name) {
 
+  }
+  private Logger getLoggerEndPoint() {
+    return components.getGuiLogger().getEndPoint(PGConScriptEngineV1.class);
   }
 
 }

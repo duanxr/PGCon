@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.output.impl.ec;
+package com.duanxr.pgcon.output.impl.easycon;
 
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
@@ -11,15 +11,15 @@ import lombok.extern.slf4j.Slf4j;
  * @author 段然 2021/12/7
  */
 @Slf4j
-public class EasyConProtocolV147 implements Protocol {
+public class EasyConProtocolV140 implements Protocol {
 
   private final SerialPort<byte[]> serialPort;
 
   private final byte[] currentBytes = getDefault();
 
   @SneakyThrows
-  public EasyConProtocolV147(String portName) {
-    serialPort = new EasyConSerialPort(portName, 115200);
+  public EasyConProtocolV140(String portName) {
+    serialPort = new EasyConSerialPort(portName, 9600);
   }
 
   @Override

@@ -24,7 +24,7 @@ public class FrameManager {
   @Autowired
   public FrameManager(InputConfig inputConfig) {
     this.matCache = Caffeine.newBuilder().maximumSize(inputConfig.getCacheSize())
-        .expireAfterAccess(10, TimeUnit.SECONDS).build(ImageUtil::bufferedImageToMat);
+        .expireAfterAccess(5, TimeUnit.SECONDS).build(ImageUtil::bufferedImageToMat);
   }
 
   public void setFrame(BufferedImage frame) {

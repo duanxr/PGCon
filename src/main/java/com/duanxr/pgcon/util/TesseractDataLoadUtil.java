@@ -1,22 +1,47 @@
 package com.duanxr.pgcon.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.io.IOUtils;
 
 /**
  * @author 段然 2022/8/5
  */
 @UtilityClass
 public class TesseractDataLoadUtil {
+  public static volatile String tessdataTempFolder;
+  public static String loadResourceTesseractData(String language) throws IOException {
+    File tessDataFile = createTessdataTempFolder();
+    File langFile = new File(tessDataFile.getAbsolutePath() + "/" + language + ".traineddata");
+    @Cleanup InputStream inputStream = TesseractDataLoadUtil.class.getResourceAsStream(
+        "/tessdata/" + language + ".traineddata");
+    if (inputStream == null) {
+      throw new IOException("Training file does not contain " + language + ".traineddata");
+    }
+    @Cleanup FileOutputStream outputStream = new FileOutputStream(langFile);
+    IOUtils.copy(inputStream, outputStream);
+    return tessDataFile.getAbsolutePath();
+  }
 
-  public static String tessdataTempFolder;
+  @SneakyThrows
+  public static String loadFileTesseractData(String path, String language) {
+    File tessDataFile = createTessdataTempFolder();
+    File langFile = new File(tessDataFile.getAbsolutePath() + "/" + language + ".traineddata");
+    @Cleanup InputStream inputStream = new FileInputStream(path);
+    @Cleanup FileOutputStream outputStream = new FileOutputStream(langFile);
+    IOUtils.copy(inputStream, outputStream);
+    return tessDataFile.getAbsolutePath();
+  }
 
-  public static String getDataPath(String language) throws IOException {
-
+  @SneakyThrows
+  private synchronized File createTessdataTempFolder() {
     if (tessdataTempFolder == null || !(new File(tessdataTempFolder)).exists()) {
       File temp = File.createTempFile("tessdata", "");
       if (!temp.exists()) {
@@ -33,24 +58,9 @@ public class TesseractDataLoadUtil {
     }
     File tessDataFile = new File(tessdataTempFolder + "/tessdata");
     boolean mkdir = tessDataFile.mkdir();
-    File langFile = new File(tessDataFile.getAbsolutePath() + "/" + language + ".traineddata");
-    InputStream is = TesseractDataLoadUtil.class.getResourceAsStream(
-        "/tessdata/" + language + ".traineddata");
-    if (is == null) {
-      throw new IOException("Training file does not contain " + language + ".traineddata");
-    }
-    byte[] buffer = new byte[1024];
-    int length;
-    OutputStream os = new FileOutputStream(langFile);
-    try {
-      while ((length = is.read(buffer)) != -1) {
-        os.write(buffer, 0, length);
-      }
-    } finally {
-      os.close();
-      is.close();
-    }
-    return tessDataFile.getAbsolutePath();
+    return tessDataFile;
   }
+
+
 
 }

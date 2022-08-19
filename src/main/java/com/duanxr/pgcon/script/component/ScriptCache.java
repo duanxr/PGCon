@@ -10,10 +10,10 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class CachedScript {
+public class ScriptCache<T> {
 
   private String scriptName;
-  private Script script;
+  private Script<T> script;
   private File scriptFile;
 
 }

@@ -1,13 +1,14 @@
-package com.duanxr.pgcon.script.api;
+package com.duanxr.pgcon.script.engine;
 
 import com.duanxr.pgcon.component.PGConComponents;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
+import com.duanxr.pgcon.script.api.Script;
 
 /**
  * @author 段然 2022/8/16
  */
-public abstract class BasicScriptEngine<T> implements Script {
+public abstract class BasicScriptEngine<T> implements Script<T> {
   protected static ButtonAction A = ButtonAction.A;
   protected static ButtonAction B = ButtonAction.B;
   protected static ButtonAction X = ButtonAction.X;
@@ -44,9 +45,8 @@ public abstract class BasicScriptEngine<T> implements Script {
   protected static StickAction R_TOP_LEFT = StickAction.R_TOP_LEFT;
   protected static StickAction L_CENTER = StickAction.L_CENTER;
   protected static StickAction R_CENTER = StickAction.R_CENTER;
-  private final ScriptInfo<T> scriptInfo;
   protected final T config;
-
+  private final ScriptInfo<T> scriptInfo;
   protected PGConComponents components;
 
 
@@ -54,7 +54,6 @@ public abstract class BasicScriptEngine<T> implements Script {
     this.scriptInfo = scriptInfo;
     this.config = scriptInfo.getConfig();
   }
-
   @Override
   public ScriptInfo<T> getInfo() {
     return this.scriptInfo;

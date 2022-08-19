@@ -2,9 +2,9 @@ package com.duanxr.pgcon.component;
 
 import com.duanxr.pgcon.exception.AlertException;
 import com.duanxr.pgcon.output.api.Protocol;
-import com.duanxr.pgcon.output.impl.ec.EasyConProtocolV140;
-import com.duanxr.pgcon.output.impl.ec.EasyConProtocolV147;
-import com.duanxr.pgcon.output.impl.pc.PGConProtocol;
+import com.duanxr.pgcon.output.impl.easycon.EasyConProtocolV140;
+import com.duanxr.pgcon.output.impl.easycon.EasyConProtocolV147;
+import com.duanxr.pgcon.output.impl.pgcon.PGConProtocol;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Function;

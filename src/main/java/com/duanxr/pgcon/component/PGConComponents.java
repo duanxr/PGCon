@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.component;
 
-import com.duanxr.pgcon.gui.log.GuiLogger;
+import com.duanxr.pgcon.log.GuiLogger;
 import com.duanxr.pgcon.notification.NotifyService;
 import com.duanxr.pgcon.service.Controller;
 import com.duanxr.pgcon.service.DetectService;
@@ -15,14 +15,13 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 public class PGConComponents {
-  private final AtomicBoolean enableDebug;
   private final Controller controller;
+  private final DetectService detectService;
   private final DisplayService displayService;
+  private final AtomicBoolean enableDebug;
   private final ExecutorService executorService;
   private final GuiLogger guiLogger;
   private final NotifyService notifyService;
-  private final DetectService detectService;
-
   public PGConComponents( AtomicBoolean enableDebug, Controller controller,
       DisplayService displayService, ExecutorService executorService, GuiLogger guiLogger,
      NotifyService notifyService, DetectService detectService) {

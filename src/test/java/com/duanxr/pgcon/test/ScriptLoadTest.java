@@ -23,7 +23,7 @@ public class ScriptLoadTest {
     Runnable runner = (Runnable) newInstance;
     runner.run();
     Script newInstance1 = (Script) newInstance;
-    System.out.printf("%s", newInstance1.getScriptName());
+    System.out.printf("%s", newInstance1.getInfo().getName());
     newInstance1.execute();
   }
 }

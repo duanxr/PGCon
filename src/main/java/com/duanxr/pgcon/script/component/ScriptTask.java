@@ -11,17 +11,15 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ScriptTask implements Runnable {
-  private final Script script;
+  private final Script<?> script;
   private final Runnable callback;
   private final AtomicBoolean running;
-
-  ScriptTask(Script script, Runnable callback) {
+  ScriptTask(Script<Object> script, Runnable callback) {
     this.script = script;
     this.callback = callback;
     this.running = new AtomicBoolean(false);
   }
-
-  ScriptTask(Script script) {
+  ScriptTask(Script<Object> script) {
     this(script, null);
   }
 

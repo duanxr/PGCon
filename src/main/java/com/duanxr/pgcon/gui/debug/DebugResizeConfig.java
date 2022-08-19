@@ -2,7 +2,6 @@ package com.duanxr.pgcon.gui.debug;
 
 import com.duanxr.pgcon.core.preprocessing.config.ResizePreProcessorConfig;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
-import com.duanxr.pgcon.gui.fxform.annotation.ConfigPercentage;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.script.component;
 
 import com.duanxr.pgcon.component.PGConComponents;
-import com.duanxr.pgcon.script.api.BasicScriptEngine;
+import com.duanxr.pgcon.script.engine.BasicScriptEngine;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import lombok.SneakyThrows;
@@ -16,20 +16,22 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ScriptParser {
+
   private final PGConComponents component;
 
   public ScriptParser(PGConComponents component) {
     this.component = component;
   }
 
-  public CachedScript parseScript(File scriptFile) {
+  @SuppressWarnings("unchecked")
+  public ScriptCache<Object> parseScript(File scriptFile) {
     String name = scriptFile.getName();
     Object scriptInstance = compileScript(scriptFile);
     if (scriptInstance != null) {
       if (checkEngine(scriptInstance)) {
-        BasicScriptEngine<?> script = (BasicScriptEngine<?>) scriptInstance;
+        BasicScriptEngine<Object> script = (BasicScriptEngine<Object>) scriptInstance;
         script.setComponents(component);
-        return CachedScript.builder()
+        return ScriptCache.builder()
             .scriptName(script.getInfo().getName())
             .script(script)
             .scriptFile(scriptFile)

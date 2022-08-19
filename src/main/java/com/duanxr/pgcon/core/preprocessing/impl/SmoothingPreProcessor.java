@@ -2,8 +2,6 @@ package com.duanxr.pgcon.core.preprocessing.impl;
 
 import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.config.SmoothingPreProcessorConfig;
-import com.duanxr.pgcon.util.ImageResizeUtil;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;

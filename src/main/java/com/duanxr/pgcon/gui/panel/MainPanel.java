@@ -17,13 +17,13 @@ import com.duanxr.pgcon.exception.AlertException;
 import com.duanxr.pgcon.gui.FXFormGenerator;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
-import com.duanxr.pgcon.gui.log.GuiLogLevel;
-import com.duanxr.pgcon.gui.log.GuiLogView;
-import com.duanxr.pgcon.gui.log.GuiLogger;
+import com.duanxr.pgcon.log.GuiLogLevel;
+import com.duanxr.pgcon.log.GuiLogView;
+import com.duanxr.pgcon.log.GuiLogger;
 import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.script.api.Script;
 import com.duanxr.pgcon.script.api.Script.ScriptInfo;
-import com.duanxr.pgcon.script.component.CachedScript;
+import com.duanxr.pgcon.script.component.ScriptCache;
 import com.duanxr.pgcon.service.Controller;
 import com.duanxr.pgcon.output.api.Protocol;
 import com.duanxr.pgcon.script.component.ScriptRunner;
@@ -277,7 +277,7 @@ public class MainPanel {
   private void initializeScripts() {
     scriptService.loadScripts();
     scriptService.getCachedScriptMap().values().stream()
-        .map(CachedScript::getScript).map(Script::getInfo)
+        .map(ScriptCache::getScript).map(Script::getInfo)
         .filter(ScriptInfo::isConfigurable)
         .forEach(this::bindScriptConfigurationToGUI);
     initializeConfigurationWindow();
@@ -417,7 +417,7 @@ public class MainPanel {
   private void loadScript(String scriptName) {
     if (!Strings.isNullOrEmpty(scriptName)) {
       scriptConfig.setDisable(true);
-      CachedScript script = findScript(scriptName);
+      ScriptCache script = findScript(scriptName);
       if (script.getScript().getInfo().isConfigurable()) {
         Node node = dynamicConfigurationMap.get(scriptName);
         if (node != null) {
@@ -428,8 +428,8 @@ public class MainPanel {
     }
   }
 
-  private CachedScript findScript(String scriptName) {
-    CachedScript script = scriptService.getCachedScriptMap().get(scriptName);
+  private ScriptCache findScript(String scriptName) {
+    ScriptCache script = scriptService.getCachedScriptMap().get(scriptName);
     if (script == null) {
       throw new AlertException("cannot find script: " + scriptName);
     }
@@ -449,7 +449,7 @@ public class MainPanel {
   private void runScript() {
     checkSelections();
     loadProtocol();
-    CachedScript script = findScript(getCurrentSelectedScriptName());
+    ScriptCache script = findScript(getCurrentSelectedScriptName());
     scriptConfigurationWindow.hide();
     scriptRunner.run(script.getScript(), () -> Platform.runLater(this::enableScripts));
     disableSelections();

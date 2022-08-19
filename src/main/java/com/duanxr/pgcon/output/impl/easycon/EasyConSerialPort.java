@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.output.impl.ec;
+package com.duanxr.pgcon.output.impl.easycon;
 
 
 import com.duanxr.pgcon.output.api.SerialPort;

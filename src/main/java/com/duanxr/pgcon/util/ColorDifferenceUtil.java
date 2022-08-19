@@ -37,9 +37,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ColorDifferenceUtil {
   // indexes to values L, a and b in the lab array used as input
-  final static int l = 0;
-  final static int a = 1;
-  final static int b = 2;
+  final static int L = 0;
+  final static int A = 1;
+  final static int B = 2;
 
   /**
    * <p>CIE76 simple color difference equation in CIELAB color space.
@@ -56,7 +56,7 @@ public class ColorDifferenceUtil {
    * @return colors distance (>=0)
    */
   public static double deltaECIE76( double[] lab1, double[] lab2 ) {
-    return deltaECIE76(lab1[l], lab1[a], lab1[b], lab2[l], lab2[a], lab2[b]);
+    return deltaECIE76(lab1[L], lab1[A], lab1[B], lab2[L], lab2[A], lab2[B]);
   }
 
   public static double deltaECIE76( double l1, double a1, double b1, double l2, double a2, double b2 ) {
@@ -88,7 +88,7 @@ public class ColorDifferenceUtil {
    */
   public static double deltaECIE94( double[] lab1, double[] lab2, double KL, double KC, double KH,
       double K1, double K2 ) {
-    return deltaECIE94(lab1[l], lab1[a], lab1[b], lab2[l], lab2[a], lab2[b], KL, KC, KH, K1, K2);
+    return deltaECIE94(lab1[L], lab1[A], lab1[B], lab2[L], lab2[A], lab2[B], KL, KC, KH, K1, K2);
   }
 
   public static double deltaECIE94( double l1, double a1, double b1, double l2, double a2, double b2,
@@ -132,7 +132,7 @@ public class ColorDifferenceUtil {
    * @return colors distance (>=0)
    */
   public static double deltaECIE94( double[] lab1, double[] lab2 ) {
-    return deltaECIE94(lab1[l], lab1[a], lab1[b], lab2[l], lab2[a], lab2[b]);
+    return deltaECIE94(lab1[L], lab1[A], lab1[B], lab2[L], lab2[A], lab2[B]);
   }
 
   public static double deltaECIE94( double l1, double a1, double b1, double l2, double a2, double b2 ) {
@@ -156,7 +156,7 @@ public class ColorDifferenceUtil {
    * @return color distance (>=0)
    */
   public static double deltaECIEDE2000( double[] lab1, double[] lab2 ) {
-    return deltaECIEDE2000(lab1[l], lab1[a], lab1[b], lab2[l], lab2[a], lab2[b]);
+    return deltaECIEDE2000(lab1[L], lab1[A], lab1[B], lab2[L], lab2[A], lab2[B]);
   }
 
   public static double deltaECIEDE2000( double l1, double a1, double b1, double l2, double a2, double b2 ) {
@@ -259,7 +259,7 @@ public class ColorDifferenceUtil {
    * @return color distance (>=0)
    */
   public static double deltaECMC( double[] lab1, double[] lab2, double lightness, double chroma ) {
-    return deltaECMC(lab1[l], lab1[a], lab1[b], lab2[l], lab2[a], lab2[b], lightness, chroma);
+    return deltaECMC(lab1[L], lab1[A], lab1[B], lab2[L], lab2[A], lab2[B], lightness, chroma);
   }
 
   public static double deltaECMC( double l1, double a1, double b1, double l2, double a2, double b2,
@@ -322,7 +322,7 @@ public class ColorDifferenceUtil {
    * @return color distance (>=0)
    */
   public static double deltaECMC( double[] lab1, double[] lab2 ) {
-    return deltaECMC(lab1[l], lab1[a], lab1[b], lab2[l], lab2[a], lab2[b]);
+    return deltaECMC(lab1[L], lab1[A], lab1[B], lab2[L], lab2[A], lab2[B]);
   }
 
   public static double deltaECMC( double l1, double a1, double b1, double l2, double a2, double b2 ) {

@@ -1,5 +1,8 @@
 package com.duanxr.pgcon.component;
 
+import static com.duanxr.pgcon.config.ConstantConfig.IMG_NO_INPUT_BMP;
+import static com.duanxr.pgcon.config.ConstantConfig.NOTIFY_CANVAS_DELAY;
+
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.component.FrameManager.CachedFrame;
@@ -40,9 +43,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class DisplayService {
-  private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(
-      "/img/no_input.bmp");
-  private static final int NOTIFY_CANVAS_DELAY = 200;
+  private static final StaticImageInput DEFAULT_IMAGE_INPUT = new StaticImageInput(IMG_NO_INPUT_BMP);
   private final Map<String, Drawable> canvasDrawables;
   private final FrameManager frameManager;
   private final AtomicBoolean frozenScreen;
@@ -52,7 +53,6 @@ public class DisplayService {
   @Getter
   private volatile CameraImageInput imageInput;
   private volatile Consumer<BufferedImage> screen;
-
   @Autowired
   public DisplayService(InputConfig inputConfig, GuiConfig guiConfig,
       ExecutorService executorService, AtomicBoolean frozenScreen, FrameManager frameManager) {

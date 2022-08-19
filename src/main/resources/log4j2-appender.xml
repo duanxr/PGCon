@@ -5,7 +5,7 @@
     <ThresholdFilter level="${loggerLogLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
   </Filters>
   <PatternLayout charset="UTF-8"
-    pattern="[%date][%c{1.}][%t][%p] %msg%xEx%n"/>
+    pattern="[%date][%p][%t][%l] %msg%n"/>
   <Policies>
     <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
     <SizeBasedTriggeringPolicy size="512MB"/>

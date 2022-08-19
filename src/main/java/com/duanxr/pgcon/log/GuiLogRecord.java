@@ -1,4 +1,4 @@
-package com.duanxr.pgcon.gui.log;
+package com.duanxr.pgcon.log;
 
 import java.util.Date;
 

@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.gui;
 
 import com.duanxr.pgcon.exception.AlertException;
-import com.duanxr.pgcon.gui.log.GuiLogger;
+import com.duanxr.pgcon.log.GuiLogger;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import javafx.scene.control.Alert;

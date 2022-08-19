@@ -58,7 +58,7 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
   @SneakyThrows
   private TessBaseAPI createTessBaseAPI(ApiConfig apiConfig) {
     TessBaseAPI tessBaseAPI = new TessBaseAPI();
-    String path = TesseractDataLoadUtil.getDataPath(apiConfig.getMethod().name().toLowerCase());
+    String path = TesseractDataLoadUtil.loadResourceTesseractData(apiConfig.getMethod().name().toLowerCase());
     String method = apiConfig.getMethod().name().toLowerCase();
     Integer pageSegMode = ObjectUtils.firstNonNull(apiConfig.getPageSegMode(),
         DEFAULT_PAGE_SEG_MODE);

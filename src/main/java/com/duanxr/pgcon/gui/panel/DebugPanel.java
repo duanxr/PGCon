@@ -187,7 +187,7 @@ public class DebugPanel {
               .preProcessors(preProcessorConfigs)
               .build();
           ImageCompare.Result detect = imageCompare.detect(param);
-          String similarity = LogUtil.format("%.02f", detect.getSimilarity()).toString();
+          String similarity = LogUtil.formatToString("%.02f", detect.getSimilarity()).toString();
           result.append("Similarity:").append(similarity).append("\n");
         } else if (detectType == DetectType.OCR) {
           Param param = Param.builder()
