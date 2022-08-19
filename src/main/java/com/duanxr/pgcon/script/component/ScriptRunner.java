@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.script.component;
 
-import com.duanxr.pgcon.output.Controller;
-import com.duanxr.pgcon.script.api.MainScript;
+import com.duanxr.pgcon.script.api.Script;
+import com.duanxr.pgcon.service.Controller;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -15,20 +15,25 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ScriptRunner {
-
   private final ListeningExecutorService listeningExecutorService;
   private ListenableFuture<?> currentScriptListenable;
   private ScriptTask currentScriptTask;
   private final Controller controller;
   public ScriptRunner(Controller controller) {
     this.controller = controller;
-    listeningExecutorService = MoreExecutors.listeningDecorator(
+    this.listeningExecutorService = MoreExecutors.listeningDecorator(
         Executors.newSingleThreadExecutor());
   }
 
-  public synchronized void run(MainScript mainScript,Runnable callback) {
+  public synchronized void run(Script script) {
     stop();
-    currentScriptTask = new ScriptTask(mainScript,callback);
+    currentScriptTask = new ScriptTask(script);
+    currentScriptListenable = listeningExecutorService.submit(currentScriptTask);
+  }
+  public synchronized void run(Script script,Runnable callback) {
+    stop();
+    script.load();
+    currentScriptTask = new ScriptTask(script,callback);
     currentScriptListenable = listeningExecutorService.submit(currentScriptTask);
   }
 

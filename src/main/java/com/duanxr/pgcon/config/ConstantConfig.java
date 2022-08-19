@@ -9,5 +9,8 @@ import org.opencv.imgproc.Imgproc;
  */
 public class ConstantConfig {
   public static final String MAIN_PANEL_TITLE = "PGCon - by DuanXR";
+  public static final String CACHE_CONFIG_NAME = "PGConCache.ini";
+  public static final String IMAGES_PATH = "images/";
+  public static final String SCRIPTS_PATH = "scripts/";
 
 }

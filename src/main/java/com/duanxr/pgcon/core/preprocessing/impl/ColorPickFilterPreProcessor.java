@@ -60,7 +60,7 @@ public class ColorPickFilterPreProcessor implements PreProcessor {
   }
 
   private Mat getCover(Mat mat) {
-    return filterConfig.getMaskType() == MaskType.GARY ? get3ChannelsGary(MatUtil.toGrayMat(mat))
+    return filterConfig.getMaskType() == MaskType.GARY ? get3ChannelsGary(MatUtil.toGray(mat))
         : filterConfig.getMaskType() == MaskType.BLACK ? new Mat(mat.size(), mat.type(),
             new Scalar(0)) : new Mat(mat.size(), mat.type(), new Scalar(255, 255, 255, 255));
   }

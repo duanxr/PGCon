@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
  * @author 段然 2022/8/9
  */
 @Slf4j
-@Component
 public class TgChanNotifyService extends HttpNotifyService {
 
   private static final String URL = "https://dianbao.vercel.app/send/%s/%s";

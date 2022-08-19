@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
  * @author 段然 2022/8/9
  */
 @Slf4j
-@Component
 public class QmsgChanNotifyService extends HttpNotifyService {
 
   private static final String URL = "https://qmsg.zendee.cn:443/send/";

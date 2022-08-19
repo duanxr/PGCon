@@ -23,7 +23,7 @@ public class ThreshPreProcessor implements PreProcessor {
   @Override
   public Mat preProcess(Mat mat) {
     if (threshConfig.isEnable()) {
-      mat = MatUtil.toGrayMat(mat);
+      mat = MatUtil.toGray(mat);
       ThreshType threshType = threshConfig.getThreshType();
       if (!threshType.isAdaptive()) {
         int thresh = (int) Math.round(threshConfig.getBinaryThreshold() * THRESH_MAX_VAL);

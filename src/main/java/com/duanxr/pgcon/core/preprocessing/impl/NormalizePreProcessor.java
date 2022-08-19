@@ -20,7 +20,7 @@ public class NormalizePreProcessor implements PreProcessor {
   @Override
   public Mat preProcess(Mat mat) {
     if (normalizePreProcessorConfig.isEnable()) {
-      mat = MatUtil.toGrayMat(mat);
+      mat = MatUtil.toGray(mat);
       Core.normalize(mat,mat,0,255, Core.NORM_MINMAX, CvType.CV_8U);
     }
     return mat;

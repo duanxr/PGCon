@@ -1,6 +1,7 @@
 package com.duanxr.pgcon.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.duanxr.pgcon.gui.JavaFxUtil;
 import com.google.common.base.Strings;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -19,7 +20,6 @@ import javafx.beans.property.Property;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.control.ComboBox;
-import javafx.scene.paint.Color;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
@@ -39,7 +39,7 @@ public class PropertyCacheUtil {
   public static <T> void loadProperty(String key, Property<T> property,
       Function<String, T> converter) {
     JavaFxUtil.callbackWithExceptionCatch(() -> {
-      String cache = CacheUtil.get(key);
+      String cache = ConfigUtil.get(key);
       T value = deserialize(cache, converter);
       if (value != null) {
         property.setValue(value);
@@ -53,7 +53,7 @@ public class PropertyCacheUtil {
         JavaFxUtil.callbackWithExceptionCatch(() -> {
           String cache = serialize(newValue, converter);
           if (!Strings.isNullOrEmpty(cache)) {
-            CacheUtil.set(key, cache);
+            ConfigUtil.set(key, cache);
           }
         }));
   }
@@ -114,13 +114,25 @@ public class PropertyCacheUtil {
   }
 
   public static void bindPropertyBean(String key, Object bean) {
-    String cache = CacheUtil.get(key);
+    String cache = ConfigUtil.get(key);
     deserialize(bean, cache);
     List<Property<?>> properties = getBeanPropertiesWithGetter(bean);
     ChangeListener<Object> changeListener = (observable, oldValue, newValue) -> JavaFxUtil.callbackWithExceptionCatch(
-        () -> CacheUtil.set(key, serialize(bean)));
+        () -> ConfigUtil.set(key, serialize(bean)));
     for (Property<?> property : properties) {
       property.addListener(changeListener);
+    }
+  }
+
+  private static <T> void deserialize(T bean, String cache) {
+    try {
+      if (!Strings.isNullOrEmpty(cache)) {
+        byte[] decode = Base64.getDecoder().decode(cache);
+        T cachedBean = JSONObject.parseObject(decode, bean.getClass());
+        BeanUtils.copyProperties(bean, cachedBean);
+      }
+    } catch (Exception e) {
+      log.error("Cannot deserialize bean", e);
     }
   }
 
@@ -139,18 +151,6 @@ public class PropertyCacheUtil {
         })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
-  }
-
-  private static <T> void deserialize(T bean, String cache) {
-    try {
-      if (!Strings.isNullOrEmpty(cache)) {
-        byte[] decode = Base64.getDecoder().decode(cache);
-        T cachedBean = JSONObject.parseObject(decode, bean.getClass());
-        BeanUtils.copyProperties(bean, cachedBean);
-      }
-    } catch (Exception e) {
-      log.error("Cannot deserialize bean", e);
-    }
   }
 
   private static String serialize(Object bean) {

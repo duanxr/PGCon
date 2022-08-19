@@ -1,18 +1,7 @@
 package com.duanxr.pgcon.gui;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dooapp.fxform.FXForm;
 import com.dooapp.fxform.view.factory.FactoryProvider;
-import com.duanxr.pgcon.util.CacheUtil;
-import com.google.common.base.Strings;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.function.Function;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.StringProperty;
-import javafx.scene.control.ComboBox;
-import lombok.SneakyThrows;
-import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 

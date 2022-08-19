@@ -1,6 +1,5 @@
 package com.duanxr.pgcon.test;
 
-import com.duanxr.pgcon.util.DebugUtil;
 import com.duanxr.pgcon.util.ImageResizeUtil;
 import com.duanxr.pgcon.util.ImageUtil;
 import com.duanxr.pgcon.util.MatUtil;
@@ -49,7 +48,7 @@ public class ImageUtilTest {
     long start = System.currentTimeMillis();
     Mat mat = ImageUtil.bufferedImageToMat(bufferedImage);
     for (int i = 0; i < 1000; i++) {
-      mat = MatUtil.toGrayMat(mat);
+      mat = MatUtil.toGray(mat);
     }
     long end = System.currentTimeMillis();
     System.out.printf("MatUtil.toGrayMat cost %d ms\n", end - start);

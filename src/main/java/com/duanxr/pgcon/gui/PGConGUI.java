@@ -86,6 +86,7 @@ public class PGConGUI extends Application {
       primaryStage.show();
     } catch (Exception e) {
       log.error("PGCon GUI start error", e);
+      throw e;
     }
   }
 

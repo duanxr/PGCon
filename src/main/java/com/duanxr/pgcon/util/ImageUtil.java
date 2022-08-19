@@ -36,7 +36,7 @@ public class ImageUtil {
 
   public static PIX matToPix(Mat mat) {
     if (mat.channels() != 1) {
-      mat = MatUtil.toGrayMat(mat);
+      mat = MatUtil.toGray(mat);
     }
     MatOfByte bytes = new MatOfByte();
     Imgcodecs.imencode(".tif", mat, bytes);

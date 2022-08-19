@@ -20,9 +20,7 @@ public abstract class HttpNotifyService implements NotifyService {
   protected static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json");
   protected static final MediaType FORM_MEDIA_TYPE = MediaType.parse(
       "application/x-www-form-urlencoded");
-
   protected static final URLCodec URL_CODEC = new URLCodec();
-
   @SneakyThrows
   protected String postRaw(String url, String body) {
     RequestBody requestBody = RequestBody.create(body, JSON_MEDIA_TYPE);

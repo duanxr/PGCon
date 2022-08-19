@@ -1,5 +1,7 @@
 package com.duanxr.pgcon.util;
 
+import static com.duanxr.pgcon.config.ConstantConfig.IMAGES_PATH;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
@@ -14,17 +16,15 @@ import org.opencv.core.Mat;
 @Slf4j
 @UtilityClass
 public class SaveUtil {
-
   @SneakyThrows
   public static File saveTempImage(BufferedImage image) {
     File file = File.createTempFile("PGCon", ".png");
     ImageIO.write(image, "png", file);
     return file;
   }
-
   @SneakyThrows
   public static File saveImage(BufferedImage image) {
-    File file = new File("images/" + System.currentTimeMillis() + ".png");
+    File file = new File(IMAGES_PATH + System.currentTimeMillis() + ".png");
     if (!file.exists()) {
       boolean mkdirs = file.mkdirs();
       if (!mkdirs) {

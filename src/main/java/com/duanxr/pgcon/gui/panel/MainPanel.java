@@ -1,11 +1,11 @@
 package com.duanxr.pgcon.gui.panel;
 
 import com.dooapp.fxform.FXForm;
-import com.duanxr.pgcon.component.DisplayHandler;
+import com.duanxr.pgcon.component.DisplayService;
 import com.duanxr.pgcon.component.FrameManager;
 import com.duanxr.pgcon.component.FrameManager.CachedFrame;
 import com.duanxr.pgcon.component.ProtocolManager;
-import com.duanxr.pgcon.component.ScriptManager;
+import com.duanxr.pgcon.component.ScriptService;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.config.OutputConfig;
@@ -17,17 +17,17 @@ import com.duanxr.pgcon.exception.AlertException;
 import com.duanxr.pgcon.gui.FXFormGenerator;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
-import com.duanxr.pgcon.gui.log.GuiLog;
 import com.duanxr.pgcon.gui.log.GuiLogLevel;
 import com.duanxr.pgcon.gui.log.GuiLogView;
 import com.duanxr.pgcon.gui.log.GuiLogger;
 import com.duanxr.pgcon.input.impl.CameraImageInput;
-import com.duanxr.pgcon.output.Controller;
+import com.duanxr.pgcon.script.api.Script;
+import com.duanxr.pgcon.script.api.Script.ScriptInfo;
+import com.duanxr.pgcon.script.component.CachedScript;
+import com.duanxr.pgcon.service.Controller;
 import com.duanxr.pgcon.output.api.Protocol;
-import com.duanxr.pgcon.script.api.ConfigurableScript;
-import com.duanxr.pgcon.script.api.MainScript;
 import com.duanxr.pgcon.script.component.ScriptRunner;
-import com.duanxr.pgcon.util.JavaFxUtil;
+import com.duanxr.pgcon.gui.JavaFxUtil;
 import com.duanxr.pgcon.util.PropertyCacheUtil;
 import com.duanxr.pgcon.util.SaveUtil;
 import com.duanxr.pgcon.util.SystemUtil;
@@ -90,7 +90,7 @@ public class MainPanel {
   private static final String SCRIPT_CONFIGURATION_WINDOW_TITLE = "Script Configuration";
   private final ObjectProperty<Image> canvasProperty;
   private final Controller controller;
-  private final DisplayHandler displayHandler;
+  private final DisplayService displayService;
   private final Map<String, Node> dynamicConfigurationMap;
   private final AtomicBoolean enableDebug;
   private final FrameManager frameManager;
@@ -99,7 +99,7 @@ public class MainPanel {
   private final ProtocolManager protocolManager;
   private final List<String> protocols;
   private final ObjectProperty<Image> screenProperty;
-  private final ScriptManager scriptManager;
+  private final ScriptService scriptService;
   private final ScriptRunner scriptRunner;
   private final double xScale;
   private final double yScale;
@@ -115,7 +115,8 @@ public class MainPanel {
   private WritableImage convertedImage;
   @FXML
   private ToggleButton debug;
-  private GuiLogger guiLogger;
+  private final GuiLogger guiLogger;
+
   private WritableImage liveImage;
   @FXML
   private ToggleButton logFollow;
@@ -154,20 +155,21 @@ public class MainPanel {
       @Qualifier("enableDebug") AtomicBoolean enableDebug,
       OutputConfig outputConfig, ScriptRunner scriptRunner,
       ProtocolManager protocolManager, GuiConfig guiConfig,
-      DisplayHandler displayHandler, FrameManager frameManager,
-      ScriptManager scriptManager, Controller controller,
+      DisplayService displayService, FrameManager frameManager,
+      ScriptService scriptService, Controller controller,
       InputConfig inputConfig, PreprocessorFactory preprocessorFactory,
-      ImageCompare imageCompare, OCR ocr, DebugPanel debugPanel, FXFormGenerator fxFormGenerator) {
+      ImageCompare imageCompare, OCR ocr, GuiLogger guiLogger, DebugPanel debugPanel, FXFormGenerator fxFormGenerator) {
     this.enableDebug = enableDebug;
     this.scriptRunner = scriptRunner;
-    this.scriptManager = scriptManager;
+    this.scriptService = scriptService;
     this.controller = controller;
     this.protocolManager = protocolManager;
     this.guiConfig = guiConfig;
     this.inputConfig = inputConfig;
     this.protocols = protocolManager.getProtocolList();
-    this.displayHandler = displayHandler;
+    this.displayService = displayService;
     this.frameManager = frameManager;
+    this.guiLogger = guiLogger;
     this.debugPanel = debugPanel;
     this.fxFormGenerator = fxFormGenerator;
     this.screenProperty = new SimpleObjectProperty<>();
@@ -177,12 +179,12 @@ public class MainPanel {
     this.xScale = 1D * inputConfig.getWidth() / guiConfig.getWidth();
     this.yScale = 1D * inputConfig.getHeight() / guiConfig.getHeight();
     this.dynamicConfigurationMap = new HashMap<>();
-    JavaFxUtil.setGuiLogger(guiLogger);
+    JavaFxUtil.setGuiLogger(this.guiLogger);
   }
 
   @FXML
   public void initialize() {
-    initializeScriptConfigurations();
+    initializeScripts();
     initializeDebugWindow();
     initializeGuiLogViewer();
     initializeVideoComponent();
@@ -206,12 +208,12 @@ public class MainPanel {
     canvas.imageProperty().bind(canvasProperty);
     screenProperty.set(screenImage);
     canvasProperty.set(canvasImage);
-    displayHandler.registerScreen(
+    displayService.registerScreen(
         input -> {
           Platform.runLater(() -> SwingFXUtils.toFXImage(input, screenImage));
           debugPanel.processDebug();
         });
-    displayHandler.registerCanvas(
+    displayService.registerCanvas(
         input -> Platform.runLater(() -> SwingFXUtils.toFXImage(input, canvasImage)));
     canvas.addEventHandler(MouseEvent.MOUSE_PRESSED,
         event -> JavaFxUtil.callbackWithExceptionCatch(() -> onCanvasMousePressed(event)));
@@ -258,7 +260,7 @@ public class MainPanel {
   }
 
   private void drawCanvasSelection(Point pointStart, Point pointEnd) {
-    displayHandler.draw(
+    displayService.draw(
         new DrawEvent(DRAW_KEY_MOUSE_DRAGGED, new Rectangle(
             Area.ofPoints(pointStart.x, pointStart.y, pointEnd.x, pointEnd.y),
             new Color(255, 0, 127, 128),
@@ -272,10 +274,12 @@ public class MainPanel {
     debugPanel.close();
   }
 
-  private void initializeScriptConfigurations() {
-    scriptManager.getMainScripts().values().stream()
-        .filter(script -> script instanceof ConfigurableScript)
-        .map(script -> (ConfigurableScript) script).forEach(this::bindScriptConfigurationToGUI);
+  private void initializeScripts() {
+    scriptService.loadScripts();
+    scriptService.getCachedScriptMap().values().stream()
+        .map(CachedScript::getScript).map(Script::getInfo)
+        .filter(ScriptInfo::isConfigurable)
+        .forEach(this::bindScriptConfigurationToGUI);
     initializeConfigurationWindow();
   }
 
@@ -322,10 +326,10 @@ public class MainPanel {
 
   private final FXFormGenerator fxFormGenerator;
 
-  private void bindScriptConfigurationToGUI(ConfigurableScript configurableScript) {
-    String scriptName = configurableScript.getScriptName();
+  private void bindScriptConfigurationToGUI(ScriptInfo scriptInfo) {
+    String scriptName = scriptInfo.getName();
     String cacheKey = getScriptConfigurationCacheKey(scriptName);
-    Object registerConfig = configurableScript.registerConfig();
+    Object registerConfig = scriptInfo.getConfig();
     PropertyCacheUtil.bindPropertyBean(cacheKey, registerConfig);
     Node node = fxFormGenerator.generateNode(registerConfig);
     dynamicConfigurationMap.put(scriptName, node);
@@ -333,9 +337,6 @@ public class MainPanel {
 
 
   private void initializeGuiLogViewer() {
-    GuiLog guiLog = new GuiLog();
-    guiLogger = new GuiLogger(guiLog, "");
-    scriptManager.register(guiLogger);
     GuiLogView logView = new GuiLogView(guiLogger);
     logView.setFixedCellSize(24);
     logView.setPrefWidth(960);
@@ -386,7 +387,7 @@ public class MainPanel {
 
   private void initializeScriptSelection() {
     scriptSelection.setPromptText("Please select a script");
-    Set<String> scripts = scriptManager.getMainScripts().keySet();
+    Set<String> scripts = scriptService.getCachedScriptMap().keySet();
     scriptSelection.getItems().addAll(scripts);
     PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_SCRIPT, scriptSelection, scripts);
     loadScript(getCurrentSelectedScriptName());
@@ -407,7 +408,7 @@ public class MainPanel {
 
   private void openCam(String camera) {
     if (!Strings.isNullOrEmpty(camera)) {
-      displayHandler.setImageInput(new CameraImageInput(camera, inputConfig));
+      displayService.setImageInput(new CameraImageInput(camera, inputConfig));
     }
   }
 
@@ -416,8 +417,8 @@ public class MainPanel {
   private void loadScript(String scriptName) {
     if (!Strings.isNullOrEmpty(scriptName)) {
       scriptConfig.setDisable(true);
-      MainScript script = findScript(scriptName);
-      if (script instanceof ConfigurableScript) {
+      CachedScript script = findScript(scriptName);
+      if (script.getScript().getInfo().isConfigurable()) {
         Node node = dynamicConfigurationMap.get(scriptName);
         if (node != null) {
           scriptConfigurationPane.setContent(node);
@@ -427,8 +428,8 @@ public class MainPanel {
     }
   }
 
-  private MainScript findScript(String scriptName) {
-    MainScript script = scriptManager.getMainScripts().get(scriptName);
+  private CachedScript findScript(String scriptName) {
+    CachedScript script = scriptService.getCachedScriptMap().get(scriptName);
     if (script == null) {
       throw new AlertException("cannot find script: " + scriptName);
     }
@@ -448,10 +449,9 @@ public class MainPanel {
   private void runScript() {
     checkSelections();
     loadProtocol();
-    MainScript script = findScript(getCurrentSelectedScriptName());
+    CachedScript script = findScript(getCurrentSelectedScriptName());
     scriptConfigurationWindow.hide();
-    script.load();
-    scriptRunner.run(script, () -> Platform.runLater(this::enableScripts));
+    scriptRunner.run(script.getScript(), () -> Platform.runLater(this::enableScripts));
     disableSelections();
   }
 

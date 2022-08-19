@@ -13,7 +13,9 @@ import org.opencv.core.Mat;
  */
 @UtilityClass
 public class ImageResizeUtil {
-
+  private final static int[] DEFAULT_OFFSET_1 = {0};
+  private final static int[] DEFAULT_OFFSET_3 = {2, 1, 0};
+  private final static int[] DEFAULT_OFFSET_4 = {3, 2, 1, 0};
   private static final int HEX_255 = 0xff;
 
   /**
@@ -31,7 +33,6 @@ public class ImageResizeUtil {
     int[] rawOutput = resizeRaw(rawInput, image.getWidth(), image.getHeight(), newWidth, newHeight);
     return convertRawToBufferedImage(rawOutput, newWidth, newHeight, image);
   }
-
 
   private static int[] convertBufferedImageToRaw(BufferedImage image) {
     int channels = image.getSampleModel().getNumBands();
@@ -154,6 +155,10 @@ public class ImageResizeUtil {
     }
   }
 
+  private static int[] getDefaultOffset(int channels) {
+    return channels == 3 ? DEFAULT_OFFSET_3 : channels == 4 ? DEFAULT_OFFSET_4 : DEFAULT_OFFSET_1;
+  }
+
   @SneakyThrows
   public static Mat resize(Mat mat, int newWidth, int newHeight) {
     int channels = mat.channels();
@@ -162,14 +167,6 @@ public class ImageResizeUtil {
     int[] rawOutput = resizeRaw(rawInput, mat.cols(), mat.rows(), newWidth, newHeight);
     return convertRawToMat(rawOutput, newWidth, newHeight, channels);
   }
-
-
-  private static int[] getDefaultOffset(int channels) {
-    return channels == 3 ? DEFAULT_OFFSET_3 : channels == 4 ? DEFAULT_OFFSET_4 : DEFAULT_OFFSET_1;
-  }
-  private final static int[] DEFAULT_OFFSET_1 = {0};
-  private final static int[] DEFAULT_OFFSET_3 = {2, 1, 0};
-  private final static int[] DEFAULT_OFFSET_4 = {3, 2, 1, 0};
 
   private static int[] convertMatToRaw(Mat mat, int[] offset) {
     int channels = mat.channels();

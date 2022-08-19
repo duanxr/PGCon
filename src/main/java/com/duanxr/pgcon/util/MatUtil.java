@@ -35,8 +35,7 @@ public class MatUtil {
     ImageUtil.checkChannel(mat);
     return mat.submat(new Rect(0, 0, mat.cols(), mat.rows()));
   }
-
-  public Mat toGrayMat(Mat mat) {
+  public Mat toGray(Mat mat) {
     ImageUtil.checkChannel(mat);
     int channels = mat.channels();
     if (channels == 1) {

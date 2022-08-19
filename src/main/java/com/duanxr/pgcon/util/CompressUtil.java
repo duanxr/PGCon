@@ -10,7 +10,6 @@ import net.jpountz.lz4.LZ4FastDecompressor;
  */
 @UtilityClass
 public class CompressUtil {
-
   private static final LZ4Factory LZ_4_FACTORY = LZ4Factory.fastestJavaInstance();
   private static final LZ4Compressor LZ_4_COMPRESSOR = LZ_4_FACTORY.highCompressor();
   private static final LZ4FastDecompressor LZ_4_DECOMPRESSOR = LZ_4_FACTORY.fastDecompressor();
@@ -20,7 +19,6 @@ public class CompressUtil {
       return LZ_4_COMPRESSOR.compress(bytes);
     }
   }
-
   public byte[] lz4Decompress(byte[] bytes, int length) {
     synchronized (LZ_4_DECOMPRESSOR) {
       return LZ_4_DECOMPRESSOR.decompress(bytes, length);

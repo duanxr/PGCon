@@ -2,17 +2,27 @@
 package com.duanxr.pgcon.gui.log;
 
 import javafx.application.Platform;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.helpers.MessageFormatter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/7/28
  */
-@Slf4j
+@Log4j2
+@Component
 public class GuiLogger {
 
   private final GuiLog guiLog;
   private final String context;
+
+  @Autowired
+  public GuiLogger(GuiLog guiLog) {
+    this.guiLog = guiLog;
+    this.context = "";
+  }
 
   public GuiLogger(GuiLog guiLog, String context) {
     this.guiLog = guiLog;
@@ -20,7 +30,7 @@ public class GuiLogger {
   }
 
   public void log(GuiLogRecord record) {
-    Platform.runLater(()->guiLog.offer(record));
+    Platform.runLater(() -> guiLog.offer(record));
   }
 
   private String format(String msg, Object... args) {
@@ -31,12 +41,11 @@ public class GuiLogger {
     return message;
   }
 
+  //TOOD: 改为PATh
   public void debug(String msg, Object... args) {
     log.debug(msg, args);
     log(new GuiLogRecord(GuiLogLevel.DEBUG, context, format(msg, args)));
   }
-
-
   public void info(String msg, Object... args) {
     log.info(msg, args);
     log(new GuiLogRecord(GuiLogLevel.INFO, context, format(msg, args)));

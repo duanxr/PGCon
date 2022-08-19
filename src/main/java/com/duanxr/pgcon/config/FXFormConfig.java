@@ -13,14 +13,12 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class FXFormConfig {
-
   @Bean
   public FactoryProvider editorFactoryProvider() {
     ConfigEditorFactoryProvider factoryProvider = new ConfigEditorFactoryProvider();
     factoryProvider.addFactory(new PercentageFactory());
     return factoryProvider;
   }
-
   @Bean
   public FactoryProvider labelFactoryProvider() {
     return new ConfigLabelFactoryProvider();
