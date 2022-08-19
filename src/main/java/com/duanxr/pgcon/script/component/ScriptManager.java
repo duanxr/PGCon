@@ -1,0 +1,48 @@
+package com.duanxr.pgcon.script.component;
+
+import com.duanxr.pgcon.script.api.Script;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author 段然 2022/8/19
+ */
+@Component
+public class ScriptManager {
+
+  private final Map<Class<? extends Script<Object>>, ScriptCache<Object>> classMap;
+  private final Map<String, ScriptCache<Object>> nameMap;
+
+  public ScriptManager() {
+    this.nameMap = new ConcurrentHashMap<>();
+    this.classMap = new ConcurrentHashMap<>();
+  }
+
+  public ScriptCache<Object> getScript(String scriptName) {
+    return nameMap.get(scriptName);
+  }
+
+  public Collection<ScriptCache<Object>> getScripts() {
+    return nameMap.values();
+  }
+
+  public ScriptCache<Object> getScript(Class<? extends Script<Object>> scriptClass) {
+    return classMap.get(scriptClass);
+  }
+
+  @SuppressWarnings("unchecked")
+  public void putScript(ScriptCache<Object> scriptCache) {
+    nameMap.put(scriptCache.getScriptName(), scriptCache);
+    classMap.put((Class<? extends Script<Object>>) scriptCache.getScript().getClass(), scriptCache);
+  }
+
+  public Set<String> getScriptNames() {
+    return nameMap.values().stream()
+        .filter(scriptCache -> !scriptCache.getScript().getInfo().isHidden())
+        .map(ScriptCache::getScriptName).collect(Collectors.toSet());
+  }
+}

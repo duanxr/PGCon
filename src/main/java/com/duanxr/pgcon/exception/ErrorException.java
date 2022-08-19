@@ -6,6 +6,6 @@ import lombok.experimental.StandardException;
  * @author 段然 2022/7/28
  */
 @StandardException
-public class ErrorException extends RuntimeException{
+public class ErrorException extends RuntimeException {
 
 }

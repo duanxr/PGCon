@@ -2,7 +2,7 @@ package com.duanxr.pgcon.input.impl;
 
 
 import com.duanxr.pgcon.config.InputConfig;
-import com.duanxr.pgcon.exception.AlertException;
+import com.duanxr.pgcon.exception.AlertErrorException;
 import com.duanxr.pgcon.input.api.ImageInput;
 import com.duanxr.pgcon.util.ImageResizeUtil;
 import com.github.sarxos.webcam.Webcam;
@@ -42,7 +42,7 @@ public class CameraImageInput implements ImageInput<BufferedImage> {
         return webcam;
       }
     }
-    throw new AlertException("Can't open webcam with ID or name at " + device);
+    throw new AlertErrorException("Can't open webcam with ID or name at " + device);
   }
 
   private Webcam findDevice(String device) {

@@ -1,6 +1,6 @@
 package com.duanxr.pgcon.core.detect.api;
 
-import com.duanxr.pgcon.component.FrameManager;
+import com.duanxr.pgcon.input.FrameCacheService;
 import com.duanxr.pgcon.core.detect.api.OCR.Param;
 import com.duanxr.pgcon.core.detect.api.OCR.Result;
 import com.duanxr.pgcon.core.model.Area;
@@ -62,7 +62,7 @@ public interface OCR extends Detector<Result, Param> {
     private Integer confidence;
 
     @NonNull
-    private FrameManager.CachedFrame cachedFrame;
+    private FrameCacheService.CachedFrame cachedFrame;
 
     public String getTextWithoutSpace() {
       return text.trim().replaceAll(" ", "").replaceAll("\n", "");

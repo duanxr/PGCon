@@ -4,6 +4,7 @@ import com.duanxr.pgcon.component.PGConComponents;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.Script;
+import com.duanxr.pgcon.script.api.ScriptInfo;
 
 /**
  * @author 段然 2022/8/16

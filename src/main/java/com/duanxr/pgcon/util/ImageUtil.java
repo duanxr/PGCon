@@ -2,7 +2,7 @@ package com.duanxr.pgcon.util;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.duanxr.pgcon.exception.AbortScriptException;
+import com.duanxr.pgcon.exception.InterruptScriptException;
 import java.awt.image.BufferedImage;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
@@ -176,13 +176,13 @@ public class ImageUtil {
         dataLength = data.length;
         dataString = Base64.encodeBase64String(compress);
       } else {
-        throw new AbortScriptException("unknown type");
+        throw new InterruptScriptException("unknown type");
       }
       obj.put("L", dataLength);
       obj.put("D", dataString);
       return obj.toJSONString();
     } else {
-      throw new AbortScriptException("Mat not continuous.");
+      throw new InterruptScriptException("Mat not continuous.");
     }
   }
 
@@ -213,7 +213,7 @@ public class ImageUtil {
           dataLength);
       mat.put(0, 0, data);
     } else {
-      throw new AbortScriptException("unknown mat type");
+      throw new InterruptScriptException("unknown mat type");
     }
     return mat;
   }

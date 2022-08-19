@@ -1,17 +1,17 @@
+import com.duanxr.pgcon.script.api.ScriptInfo;
 import com.duanxr.pgcon.script.engine.PGConScriptEngineV1;
-import org.springframework.stereotype.Component;
 
 /**
  * @author DuanXR 2021/12/9
  */
-@Component
-public class Test extends PGConScriptEngineV1{
+public class Test extends PGConScriptEngineV1<Object> {
 
   public Test() {
     super(ScriptInfo.builder()
         .name("Test")
         .build());
   }
+
   @Override
   public void execute() {
     press(A);

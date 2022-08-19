@@ -36,6 +36,7 @@ public class GuiLogView extends ListView<GuiLogRecord> {
   private final BooleanProperty tail = new SimpleBooleanProperty(false);
 
   public GuiLogView(GuiLogger guiLogger) {
+    this.setFixedCellSize(24);
     getStyleClass().add("log-view");
     Timeline logTransfer = new Timeline(
         new KeyFrame(

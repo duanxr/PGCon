@@ -2,16 +2,17 @@ package com.duanxr.pgcon.script.engine;
 
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
-import com.duanxr.pgcon.core.model.Area;
-import com.duanxr.pgcon.exception.TimeOutException;
-import com.duanxr.pgcon.gui.display.DrawEvent;
-import com.duanxr.pgcon.gui.display.impl.Rectangle;
-import com.duanxr.pgcon.gui.display.impl.Text;
+import com.duanxr.pgcon.exception.InterruptScriptException;
+import com.duanxr.pgcon.exception.ResetScriptException;
 import com.duanxr.pgcon.log.Logger;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
-import com.duanxr.pgcon.util.LogUtil;
-import java.awt.Color;
+import com.duanxr.pgcon.script.api.Script;
+import com.duanxr.pgcon.script.api.ScriptInfo;
+import com.duanxr.pgcon.script.component.ScriptCache;
+import com.duanxr.pgcon.script.component.ScriptTask;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -51,92 +52,95 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
   }
 
   protected ImageCompare.Result detect(ImageCompare.Param param) {
-    if (components.getEnableDebug().get()) {
-      long start = System.currentTimeMillis();
-      drawImageCompareParam(param);
-      ImageCompare.Result detect = components.getDetectService().detect(param);
-      drawImageCompareResult(param, detect);
-      debug("image compare {} similarity: {} , cost {} ms", param.hashCode(),
-          detect.getSimilarity(), System.currentTimeMillis() - start);
-      return detect;
-    } else {
-      return components.getDetectService().detect(param);
-    }
+    return components.getDetectService().detect(param);
   }
 
-  private void drawImageCompareParam(ImageCompare.Param param) {
-    Area rect = getDebugRectArea(param.getArea());
-    components.getDisplayService().draw(
-        new DrawEvent("RECT_" + param, new Rectangle(
-            rect,
-            new Color(84, 216, 255, 190),
-            3000)));
+  protected OCR.Result detect(OCR.Param param) {
+    return components.getDetectService().detect(param);
   }
 
-  private void drawImageCompareResult(ImageCompare.Param param, ImageCompare.Result detect) {
-    String similarity = LogUtil.formatToString("%.02f", detect.getSimilarity()).toString();
-    Area rect = getDebugRectArea(param.getArea());
-    components.getDisplayService().draw(
-        new DrawEvent("TEXT_" + param, new Text(
-            rect, similarity,
-            new Color(14, 37, 45, 255),
-            14, 3000)));
+  protected Long detectLong(OCR.Param param, Long timeout, Runnable reset) {
+    return until(() -> detect(param),
+        input -> input.getTextAsNumber() != null,
+        () -> sleep(30), timeout, reset).getTextAsNumber();
   }
 
+  protected Long detectLong(OCR.Param param, Long timeout) {
+    return detectLong(param, timeout, null);
+  }
 
-  private Area getDebugRectArea(Area rect) {
-    return Area.ofRect(rect.getX() / 2, rect.getY() / 2, rect.getWidth() / 2, rect.getHeight() / 2);
+  protected Long detectLong(OCR.Param param) {
+    return detectLong(param, null);
+  }
+
+  protected Long detectAccurateLong(OCR.Param param, int count, Long timeout, Runnable reset) {
+    Map<Long, Integer> countMap = new HashMap<>();
+    return until(() -> detect(param),
+        input -> {
+          Long number = input.getTextAsNumber();
+          return number != null
+              && countMap.compute(number, (k, v) -> v == null ? 1 : v + 1) >= count;
+        },
+        () -> sleep(30), timeout, reset).getTextAsNumber();
+  }
+
+  protected Long detectAccurateLong(OCR.Param param, int count, Long timeout) {
+    return detectAccurateLong(param, count, timeout, null);
+  }
+
+  protected Long detectAccurateLong(OCR.Param param, int count) {
+    return detectAccurateLong(param, count, null);
   }
 
   protected void press(ButtonAction action) {
-    components.getController().press(action);
+    components.getControllerService().press(action);
   }
 
   protected void hold(ButtonAction action) {
-    components.getController().hold(action);
+    components.getControllerService().hold(action);
   }
 
   protected void hold(ButtonAction action, int time) {
-    components.getController().hold(action, time);
+    components.getControllerService().hold(action, time);
   }
 
   protected void release(ButtonAction action) {
-    components.getController().release(action);
+    components.getControllerService().release(action);
   }
 
   protected void press(StickAction action) {
-    components.getController().press(action);
+    components.getControllerService().press(action);
   }
 
   protected void hold(StickAction action) {
-    components.getController().hold(action);
+    components.getControllerService().hold(action);
   }
 
   protected void hold(StickAction action, int time) {
-    components.getController().hold(action, time);
+    components.getControllerService().hold(action, time);
   }
 
   protected void release(StickAction action) {
-    components.getController().release(action);
-  }
-
-  protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action,
-      long maxMillis) {
-    D d = supplier.get();
-    long limit = System.currentTimeMillis() + maxMillis;
-    while (!checker.apply(d)) {
-      if (System.currentTimeMillis() > limit) {
-        throw new TimeOutException();
-      }
-      action.run();
-      d = supplier.get();
-    }
-    return d;
+    components.getControllerService().release(action);
   }
 
   protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action) {
+    return until(supplier, checker, action, null, null);
+  }
+
+  protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action,
+      Long maxMillis) {
+    return until(supplier, checker, action, maxMillis, null);
+  }
+
+  protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action,
+      Long maxMillis, Runnable reset) {
     D d = supplier.get();
+    long start = System.currentTimeMillis();
     while (!checker.apply(d)) {
+      if (maxMillis != null && System.currentTimeMillis() - start > maxMillis) {
+        throw new ResetScriptException().setRunnable(reset);
+      }
       action.run();
       d = supplier.get();
     }
@@ -149,63 +153,6 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
     } catch (Exception e) {
       error("push error", e);
     }
-  }
-
-
-  protected Long numberOcr(OCR.Param param, int times) {
-    return until(() -> detect(param),
-        input -> input.getTextAsNumber() != null,
-        () -> sleep(50), times).getTextAsNumber();
-  }
-
-  protected <D> D until(Supplier<D> supplier, Function<D, Boolean> checker, Runnable action,
-      int maxTimes) {
-    D d = supplier.get();
-    int times = 0;
-    while (!checker.apply(d)) {
-      if (times >= maxTimes) {
-        throw new TimeOutException();
-      }
-      action.run();
-      d = supplier.get();
-      times++;
-    }
-    return d;
-  }
-
-  protected OCR.Result detect(OCR.Param param) {
-    if (components.getEnableDebug().get()) {
-      long start = System.currentTimeMillis();
-      drawOcrParam(param);
-      OCR.Result detect = components.getDetectService().detect(param);
-      drawOcrResult(param, detect);
-      debug("ocr {} detected: {} , confidence: {}, cost {} ms", param.hashCode(),
-          detect.getTextWithoutSpace(), detect.getConfidence(), System.currentTimeMillis() - start);
-      return detect;
-    } else {
-      return components.getDetectService().detect(param);
-    }
-  }
-
-
-  private void drawOcrParam(OCR.Param param) {
-
-    Area rect = getDebugRectArea(param.getArea());
-    components.getDisplayService().draw(
-        new DrawEvent("RECT_" + param, new Rectangle(
-            rect,
-            new Color(237, 224, 77, 190),
-            3000)));
-  }
-
-  private void drawOcrResult(OCR.Param param, OCR.Result detect) {
-    String result = detect.getTextWithoutSpace();
-    Area rect = getDebugRectArea(param.getArea());
-    components.getDisplayService().draw(
-        new DrawEvent("TEXT_" + param, new Text(
-            rect, result,
-            new Color(66, 60, 19, 255),
-            14, 3000)));
   }
 
   protected void async(Runnable runnable) {
@@ -221,11 +168,16 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
     Thread.sleep(millis);
   }
 
-  protected void script(String name) {
-
-  }
   private Logger getLoggerEndPoint() {
     return components.getGuiLogger().getEndPoint(PGConScriptEngineV1.class);
+  }
+
+  protected void script(String script) {
+    ScriptCache<Object> scriptCache = components.getScriptManager().getScript(script);
+    if (scriptCache == null) {
+      throw new InterruptScriptException("script " + script + " not found");
+    }
+    new ScriptTask(scriptCache.getScript()).run();
   }
 
 }

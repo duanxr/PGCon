@@ -1,7 +1,6 @@
 package com.duanxr.pgcon.util;
 
 import com.alibaba.fastjson.JSONObject;
-import com.duanxr.pgcon.gui.JavaFxUtil;
 import com.google.common.base.Strings;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -38,7 +37,7 @@ public class PropertyCacheUtil {
 
   public static <T> void loadProperty(String key, Property<T> property,
       Function<String, T> converter) {
-    JavaFxUtil.callbackWithExceptionCatch(() -> {
+    CallBackUtil.callbackWithExceptionCatch(() -> {
       String cache = ConfigUtil.get(key);
       T value = deserialize(cache, converter);
       if (value != null) {
@@ -50,7 +49,7 @@ public class PropertyCacheUtil {
   public static <T> void bindProperty(String key, Property<T> property,
       Function<T, String> converter) {
     property.addListener((observable, oldValue, newValue) ->
-        JavaFxUtil.callbackWithExceptionCatch(() -> {
+        CallBackUtil.callbackWithExceptionCatch(() -> {
           String cache = serialize(newValue, converter);
           if (!Strings.isNullOrEmpty(cache)) {
             ConfigUtil.set(key, cache);
@@ -117,7 +116,7 @@ public class PropertyCacheUtil {
     String cache = ConfigUtil.get(key);
     deserialize(bean, cache);
     List<Property<?>> properties = getBeanPropertiesWithGetter(bean);
-    ChangeListener<Object> changeListener = (observable, oldValue, newValue) -> JavaFxUtil.callbackWithExceptionCatch(
+    ChangeListener<Object> changeListener = (observable, oldValue, newValue) -> CallBackUtil.callbackWithExceptionCatch(
         () -> ConfigUtil.set(key, serialize(bean)));
     for (Property<?> property : properties) {
       property.addListener(changeListener);

@@ -1,11 +1,11 @@
 package com.duanxr.pgcon.gui.panel;
 
 import com.dooapp.fxform.FXForm;
-import com.duanxr.pgcon.component.DisplayService;
-import com.duanxr.pgcon.component.FrameManager;
-import com.duanxr.pgcon.component.FrameManager.CachedFrame;
-import com.duanxr.pgcon.component.ProtocolManager;
-import com.duanxr.pgcon.component.ScriptService;
+import com.duanxr.pgcon.gui.display.DisplayService;
+import com.duanxr.pgcon.input.FrameCacheService;
+import com.duanxr.pgcon.input.FrameCacheService.CachedFrame;
+import com.duanxr.pgcon.output.ProtocolService;
+import com.duanxr.pgcon.script.component.ScriptService;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.config.OutputConfig;
@@ -13,21 +13,22 @@ import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
-import com.duanxr.pgcon.exception.AlertException;
+import com.duanxr.pgcon.exception.AlertErrorException;
 import com.duanxr.pgcon.gui.FXFormGenerator;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
+import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.log.GuiLogLevel;
 import com.duanxr.pgcon.log.GuiLogView;
 import com.duanxr.pgcon.log.GuiLogger;
-import com.duanxr.pgcon.input.impl.CameraImageInput;
-import com.duanxr.pgcon.script.api.Script;
-import com.duanxr.pgcon.script.api.Script.ScriptInfo;
-import com.duanxr.pgcon.script.component.ScriptCache;
-import com.duanxr.pgcon.service.Controller;
 import com.duanxr.pgcon.output.api.Protocol;
+import com.duanxr.pgcon.script.api.Script;
+import com.duanxr.pgcon.script.api.ScriptInfo;
+import com.duanxr.pgcon.script.component.ScriptCache;
+import com.duanxr.pgcon.script.component.ScriptManager;
 import com.duanxr.pgcon.script.component.ScriptRunner;
-import com.duanxr.pgcon.gui.JavaFxUtil;
+import com.duanxr.pgcon.output.ControllerService;
+import com.duanxr.pgcon.util.CallBackUtil;
 import com.duanxr.pgcon.util.PropertyCacheUtil;
 import com.duanxr.pgcon.util.SaveUtil;
 import com.duanxr.pgcon.util.SystemUtil;
@@ -42,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -89,20 +91,23 @@ public class MainPanel {
   private static final String DRAW_KEY_MOUSE_DRAGGED = "MOUSE_DRAGGED";
   private static final String SCRIPT_CONFIGURATION_WINDOW_TITLE = "Script Configuration";
   private final ObjectProperty<Image> canvasProperty;
-  private final Controller controller;
+  private final ControllerService controllerService;
+  private final DebugPanel debugPanel;
   private final DisplayService displayService;
   private final Map<String, Node> dynamicConfigurationMap;
   private final AtomicBoolean enableDebug;
-  private final FrameManager frameManager;
+  private final ExecutorService executorService;
+  private final FrameCacheService frameCacheService;
+  private final FXFormGenerator fxFormGenerator;
   private final GuiConfig guiConfig;
+  private final GuiLogger guiLogger;
   private final InputConfig inputConfig;
-  private final ProtocolManager protocolManager;
+  private final ProtocolService protocolService;
   private final List<String> protocols;
   private final ObjectProperty<Image> screenProperty;
-  private final ScriptService scriptService;
+  private final ScriptManager scriptManager;
   private final ScriptRunner scriptRunner;
-  private final double xScale;
-  private final double yScale;
+  private final ScriptService scriptService;
   @FXML
   private ImageView canvas;
   @FXML
@@ -115,8 +120,6 @@ public class MainPanel {
   private WritableImage convertedImage;
   @FXML
   private ToggleButton debug;
-  private final GuiLogger guiLogger;
-
   private WritableImage liveImage;
   @FXML
   private ToggleButton logFollow;
@@ -149,42 +152,41 @@ public class MainPanel {
   @FXML
   private ComboBox<String> videoSelection;
 
-  private final DebugPanel debugPanel;
-
   public MainPanel(
       @Qualifier("enableDebug") AtomicBoolean enableDebug,
       OutputConfig outputConfig, ScriptRunner scriptRunner,
-      ProtocolManager protocolManager, GuiConfig guiConfig,
-      DisplayService displayService, FrameManager frameManager,
-      ScriptService scriptService, Controller controller,
+      ProtocolService protocolService, GuiConfig guiConfig,
+      DisplayService displayService, FrameCacheService frameCacheService,
+      ScriptService scriptService, ControllerService controllerService,
       InputConfig inputConfig, PreprocessorFactory preprocessorFactory,
-      ImageCompare imageCompare, OCR ocr, GuiLogger guiLogger, DebugPanel debugPanel, FXFormGenerator fxFormGenerator) {
+      ImageCompare imageCompare, OCR ocr, ScriptManager scriptManager, GuiLogger guiLogger,
+      DebugPanel debugPanel,
+      ExecutorService executorService, FXFormGenerator fxFormGenerator) {
     this.enableDebug = enableDebug;
     this.scriptRunner = scriptRunner;
     this.scriptService = scriptService;
-    this.controller = controller;
-    this.protocolManager = protocolManager;
+    this.controllerService = controllerService;
+    this.protocolService = protocolService;
     this.guiConfig = guiConfig;
     this.inputConfig = inputConfig;
-    this.protocols = protocolManager.getProtocolList();
+    this.protocols = protocolService.getProtocolList();
     this.displayService = displayService;
-    this.frameManager = frameManager;
+    this.frameCacheService = frameCacheService;
+    this.scriptManager = scriptManager;
     this.guiLogger = guiLogger;
     this.debugPanel = debugPanel;
+    this.executorService = executorService;
     this.fxFormGenerator = fxFormGenerator;
     this.screenProperty = new SimpleObjectProperty<>();
     this.canvasProperty = new SimpleObjectProperty<>();
     this.pointStart = null;
     this.pointEnd = null;
-    this.xScale = 1D * inputConfig.getWidth() / guiConfig.getWidth();
-    this.yScale = 1D * inputConfig.getHeight() / guiConfig.getHeight();
     this.dynamicConfigurationMap = new HashMap<>();
-    JavaFxUtil.setGuiLogger(this.guiLogger);
+    CallBackUtil.setGuiLogger(this.guiLogger);
   }
 
   @FXML
   public void initialize() {
-    initializeScripts();
     initializeDebugWindow();
     initializeGuiLogViewer();
     initializeVideoComponent();
@@ -199,7 +201,6 @@ public class MainPanel {
   private void initializeDebugWindow() {
 
   }
-
 
   private void initializeScreenAndCanvas() {
     WritableImage screenImage = new WritableImage(guiConfig.getWidth(), guiConfig.getHeight());
@@ -216,35 +217,33 @@ public class MainPanel {
     displayService.registerCanvas(
         input -> Platform.runLater(() -> SwingFXUtils.toFXImage(input, canvasImage)));
     canvas.addEventHandler(MouseEvent.MOUSE_PRESSED,
-        event -> JavaFxUtil.callbackWithExceptionCatch(() -> onCanvasMousePressed(event)));
+        event -> CallBackUtil.callbackWithExceptionCatch(() -> onCanvasMousePressed(event)));
     canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED,
-        event -> JavaFxUtil.callbackWithExceptionCatch(() -> onCanvasMouseDragged(event)));
+        event -> CallBackUtil.callbackWithExceptionCatch(() -> onCanvasMouseDragged(event)));
     canvas.addEventHandler(MouseEvent.MOUSE_RELEASED,
-        event -> JavaFxUtil.callbackWithExceptionCatch(() -> onCanvasMouseReleased(event)));
+        event -> CallBackUtil.callbackWithExceptionCatch(() -> onCanvasMouseReleased(event)));
   }
-
 
   private void onCanvasMouseReleased(MouseEvent event) {
     if (enableDebug.get()) {
       if (pointStart != null && pointEnd != null) {
-        Area area = Area.ofPoints((pointStart.x * xScale), (pointStart.y * yScale),
-            (pointEnd.x * xScale), (pointEnd.y * yScale));
-        captureCanvasSelection(area);
+        captureCanvasSelection();
       }
       pointStart = null;
       pointEnd = null;
     }
   }
 
-  private void captureCanvasSelection(Area area) {
+  private void captureCanvasSelection() {
     try {
-      BufferedImage selectedImage = frameManager.getFrame().getImage()
+      Area selectedArea = Area.ofPoints(
+          (pointStart.x), (pointStart.y), (pointEnd.x), (pointEnd.y));
+      Area area = displayService.screenToInput(selectedArea);
+      BufferedImage selectedImage = frameCacheService.getFrame().getImage()
           .getSubimage(area.getX(), area.getY(), area.getWidth(), area.getHeight());
       File file = SaveUtil.saveTempImage(selectedImage);
-      guiLogger.info("area of points: {},{},{},{}, saved to: {}",
-          (int) (pointStart.x * xScale), (int) (pointStart.y * yScale),
-          (int) (pointEnd.x * xScale), (int) (pointEnd.y * yScale),
-          file.getAbsolutePath());
+      guiLogger.info("Area.ofRect({},{},{},{}) , saved to: {}",
+          area.getX(), area.getY(), area.getWidth(), area.getHeight(), file.getAbsolutePath());
       debugPanel.openPanel(area, selectedImage);
     } catch (RasterFormatException ignored) {
     }
@@ -276,11 +275,11 @@ public class MainPanel {
 
   private void initializeScripts() {
     scriptService.loadScripts();
-    scriptService.getCachedScriptMap().values().stream()
+    scriptManager.getScripts().stream()
         .map(ScriptCache::getScript).map(Script::getInfo)
         .filter(ScriptInfo::isConfigurable)
         .forEach(this::bindScriptConfigurationToGUI);
-    initializeConfigurationWindow();
+    Platform.runLater(this::initializeConfigurationWindow);
   }
 
   private void initializeConfigurationWindow() {
@@ -289,18 +288,13 @@ public class MainPanel {
     scriptConfigurationWindow.setResizable(false);
     scriptConfigurationPane = new ScrollPane();
     scriptConfigurationPane.setPrefHeight(640);
-    scriptConfigurationPane.setMinWidth(350);
-    scriptConfigurationPane.setMaxWidth(640);
+    scriptConfigurationPane.setMinWidth(650);
+    scriptConfigurationPane.setMaxWidth(350);
     Scene scriptConfigurationScene = new Scene(scriptConfigurationPane);
     scriptConfigurationWindow.setScene(scriptConfigurationScene);
-    scriptConfigurationWindow.setOnCloseRequest(
-        event -> JavaFxUtil.callbackWithExceptionAlert(this::saveScriptConfigurationToCache));
+    //scriptConfigurationWindow.setOnCloseRequest(event -> JavaFxUtil.callbackWithExceptionAlert(this::saveScriptConfigurationToCache));
     scriptConfig.addEventHandler(MouseEvent.MOUSE_CLICKED,
-        event -> JavaFxUtil.callbackWithExceptionAlert(this::onScriptConfigurationButtonClick));
-  }
-
-  private String getCurrentSelectedScriptName() {
-    return Strings.nullToEmpty(scriptSelection.getSelectionModel().getSelectedItem());
+        event -> CallBackUtil.callbackWithExceptionAlert(this::onScriptConfigurationButtonClick));
   }
 
   private void saveScriptConfigurationToCache() {
@@ -312,6 +306,14 @@ public class MainPanel {
     }
   }
 
+  private String getScriptConfigurationCacheKey(String scriptName) {
+    return CACHE_KEY_SCRIPT_CONFIG_CACHE_PREFIX + DigestUtils.sha1Hex(scriptName).toUpperCase();
+  }
+
+  private String getCurrentSelectedScriptName() {
+    return Strings.nullToEmpty(scriptSelection.getSelectionModel().getSelectedItem());
+  }
+
   private void onScriptConfigurationButtonClick() {
     if (scriptConfigurationWindow.isShowing()) {
       scriptConfigurationWindow.close();
@@ -320,25 +322,18 @@ public class MainPanel {
     }
   }
 
-  private String getScriptConfigurationCacheKey(String scriptName) {
-    return CACHE_KEY_SCRIPT_CONFIG_CACHE_PREFIX + DigestUtils.sha1Hex(scriptName).toUpperCase();
-  }
-
-  private final FXFormGenerator fxFormGenerator;
-
-  private void bindScriptConfigurationToGUI(ScriptInfo scriptInfo) {
+  private void bindScriptConfigurationToGUI(ScriptInfo<Object> scriptInfo) {
     String scriptName = scriptInfo.getName();
     String cacheKey = getScriptConfigurationCacheKey(scriptName);
     Object registerConfig = scriptInfo.getConfig();
     PropertyCacheUtil.bindPropertyBean(cacheKey, registerConfig);
-    Node node = fxFormGenerator.generateNode(registerConfig);
+    FXForm<?> node = fxFormGenerator.generateNode(registerConfig);
     dynamicConfigurationMap.put(scriptName, node);
   }
 
 
   private void initializeGuiLogViewer() {
     GuiLogView logView = new GuiLogView(guiLogger);
-    logView.setFixedCellSize(24);
     logView.setPrefWidth(960);
     logView.setPrefHeight(190);
     logLevel.setItems(FXCollections.observableArrayList(GuiLogLevel.values()));
@@ -348,7 +343,7 @@ public class MainPanel {
     logView.pausedProperty().bind(logPause.selectedProperty());
     console.getChildren().add(logView);
     clearLog.addEventHandler(MouseEvent.MOUSE_CLICKED,
-        event -> JavaFxUtil.callbackWithExceptionAlert(logView::clearLogs));
+        event -> CallBackUtil.callbackWithExceptionAlert(logView::clearLogs));
     Map<String, GuiLogLevel> logLevelMap = Arrays.stream(GuiLogLevel.values())
         .collect(Collectors.toMap(Enum::name, Function.identity()));
     PropertyCacheUtil.bindBooleanProperty(CACHE_KEY_LOG_SHOWTIME, logShowTime.selectedProperty());
@@ -361,48 +356,66 @@ public class MainPanel {
     videoSelection.setPromptText("Please select a video input");
     List<String> cameraList = SystemUtil.getCameraList();
     videoSelection.getItems().addAll(cameraList);
-    PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_VIDEO, videoSelection, cameraList);
-    try {
-      openCam(videoSelection.getSelectionModel().getSelectedItem());
-    } catch (Exception e) {
-      guiLogger.error("initialize video component failed", e);
-      videoSelection.getSelectionModel().select(null);
-    }
+    PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_VIDEO, videoSelection,
+        cameraList);
     videoSelection.getSelectionModel().selectedItemProperty().addListener(
-        (observable, oldValue, newValue) -> JavaFxUtil.callbackWithExceptionAlert(() -> openCam(newValue)));
+        (observable, oldValue, newValue) -> CallBackUtil.callbackWithExceptionAlert(
+            () -> openCam(newValue)));
+    executorService.execute(() -> {
+      try {
+        openCam(videoSelection.getSelectionModel().getSelectedItem());
+      } catch (Exception e) {
+        guiLogger.error("initialize video component failed", e);
+        videoSelection.getSelectionModel().select(null);
+      }
+    });
   }
 
   private void initializeProtocolSelection() {
     protocolSelection.setPromptText("Please select a protocol");
     protocolSelection.getItems().addAll(protocols);
-    PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_PROTOCOL, protocolSelection, protocols);
+    PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_PROTOCOL, protocolSelection,
+        protocols);
   }
 
   private void initializePortSelection() {
     portSelection.setPromptText("Please select a port");
     List<String> serialList = SystemUtil.getSerialList();
     portSelection.getItems().addAll(serialList);
-    PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_PORT, portSelection, serialList);
+    PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_PORT, portSelection,
+        serialList);
   }
 
   private void initializeScriptSelection() {
-    scriptSelection.setPromptText("Please select a script");
-    Set<String> scripts = scriptService.getCachedScriptMap().keySet();
-    scriptSelection.getItems().addAll(scripts);
-    PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_SCRIPT, scriptSelection, scripts);
-    loadScript(getCurrentSelectedScriptName());
-    scriptSelection.getSelectionModel().selectedItemProperty().addListener(
-        (observable, oldValue, newValue) -> JavaFxUtil.callbackWithExceptionAlert(() -> loadScript(newValue)));
+    scriptSelection.setDisable(true);
+    run.setDisable(true);
+    executorService.execute(() -> {
+      initializeScripts();
+      Platform.runLater(() -> {
+        scriptSelection.setPromptText("Please select a script");
+        Set<String> scripts = scriptManager.getScriptNames();
+        scriptSelection.getItems().addAll(scripts);
+        PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_SCRIPT, scriptSelection,
+            scripts);
+        loadScript(getCurrentSelectedScriptName());
+        scriptSelection.getSelectionModel().selectedItemProperty().addListener(
+            (observable, oldValue, newValue) -> CallBackUtil.callbackWithExceptionAlert(
+                () -> loadScript(newValue)));
+        scriptSelection.setDisable(false);
+        run.setDisable(false);
+      });
+    });
   }
 
   private void initializeButtons() {
-    run.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> JavaFxUtil.callbackWithExceptionAlert(this::run));
+    run.addEventHandler(MouseEvent.MOUSE_CLICKED,
+        event -> CallBackUtil.callbackWithExceptionAlert(this::run));
     capture.addEventHandler(MouseEvent.MOUSE_CLICKED,
-        event -> JavaFxUtil.callbackWithExceptionAlert(this::captureScreen));
+        event -> CallBackUtil.callbackWithExceptionAlert(this::captureScreen));
     PropertyCacheUtil.bindBooleanProperty(CACHE_KEY_ENABLE_DEBUG, debug.selectedProperty());
     enableDebug.set(debug.selectedProperty().getValue());
     debug.selectedProperty()
-        .addListener((observable, oldValue, newValue) -> JavaFxUtil.callbackWithExceptionAlert(
+        .addListener((observable, oldValue, newValue) -> CallBackUtil.callbackWithExceptionAlert(
             () -> enableDebug.set(newValue)));
   }
 
@@ -413,11 +426,10 @@ public class MainPanel {
   }
 
 
-
   private void loadScript(String scriptName) {
     if (!Strings.isNullOrEmpty(scriptName)) {
       scriptConfig.setDisable(true);
-      ScriptCache script = findScript(scriptName);
+      ScriptCache<Object> script = findScript(scriptName);
       if (script.getScript().getInfo().isConfigurable()) {
         Node node = dynamicConfigurationMap.get(scriptName);
         if (node != null) {
@@ -428,10 +440,10 @@ public class MainPanel {
     }
   }
 
-  private ScriptCache findScript(String scriptName) {
-    ScriptCache script = scriptService.getCachedScriptMap().get(scriptName);
+  private ScriptCache<Object> findScript(String scriptName) {
+    ScriptCache<Object> script = scriptManager.getScript(scriptName);
     if (script == null) {
-      throw new AlertException("cannot find script: " + scriptName);
+      throw new AlertErrorException("cannot find script: " + scriptName);
     }
     return script;
 
@@ -449,7 +461,7 @@ public class MainPanel {
   private void runScript() {
     checkSelections();
     loadProtocol();
-    ScriptCache script = findScript(getCurrentSelectedScriptName());
+    ScriptCache<Object> script = findScript(getCurrentSelectedScriptName());
     scriptConfigurationWindow.hide();
     scriptRunner.run(script.getScript(), () -> Platform.runLater(this::enableScripts));
     disableSelections();
@@ -465,34 +477,34 @@ public class MainPanel {
   }
 
   private void loadProtocol() {
-    controller.clear();
+    controllerService.clear();
     String protocolName = protocolSelection.getSelectionModel().getSelectedItem();
     String port = portSelection.getSelectionModel().getSelectedItem();
-    Protocol protocol = protocolManager.loadProtocol(protocolName, port);
+    Protocol protocol = protocolService.loadProtocol(protocolName, port);
     if (!protocol.isConnected()) {
       protocol.clear();
-      throw new AlertException("protocol not connected");
+      throw new AlertErrorException("protocol not connected");
     }
-    controller.setProtocol(protocol);
+    controllerService.setProtocol(protocol);
   }
 
   private void checkSelections() {
     if (Strings.isNullOrEmpty(videoSelection.getSelectionModel().getSelectedItem())) {
-      throw new AlertException("please select a video");
+      throw new AlertErrorException("please select a video");
     }
     if (Strings.isNullOrEmpty(protocolSelection.getSelectionModel().getSelectedItem())) {
-      throw new AlertException("please select a protocol");
+      throw new AlertErrorException("please select a protocol");
     }
     if (Strings.isNullOrEmpty(portSelection.getSelectionModel().getSelectedItem())) {
-      throw new AlertException("please select a port");
+      throw new AlertErrorException("please select a port");
     }
     if (Strings.isNullOrEmpty(scriptSelection.getSelectionModel().getSelectedItem())) {
-      throw new AlertException("please select a script");
+      throw new AlertErrorException("please select a script");
     }
   }
 
   private void captureScreen() {
-    CachedFrame frame = frameManager.getFrame();
+    CachedFrame frame = frameCacheService.getFrame();
     if (frame != null) {
       BufferedImage image = frame.getImage();
       File file = SaveUtil.saveImage(image);

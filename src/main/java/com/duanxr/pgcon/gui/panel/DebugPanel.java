@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.gui.panel;
 
 import com.dooapp.fxform.FXForm;
-import com.duanxr.pgcon.component.FrameManager;
+import com.duanxr.pgcon.input.FrameCacheService;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
@@ -25,22 +25,19 @@ import com.duanxr.pgcon.gui.debug.DebugOcrConfig;
 import com.duanxr.pgcon.gui.debug.DebugResizeConfig;
 import com.duanxr.pgcon.gui.debug.DebugResultConfig;
 import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
+import com.duanxr.pgcon.util.GuiUtil;
 import com.duanxr.pgcon.util.ImageUtil;
 import com.duanxr.pgcon.util.LogUtil;
 import com.duanxr.pgcon.util.PropertyCacheUtil;
 import com.google.common.base.Strings;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -60,7 +57,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class DebugPanel {
-
   private static final String DEBUG_WINDOW_TITLE = "Debug";
   private final DebugBlurConfig debugBlurConfig;
   private final DebugColorPickConfig debugColorPickConfig;
@@ -73,7 +69,7 @@ public class DebugPanel {
   private final DebugResizeConfig debugResizeConfig;
   private final DebugResultConfig debugResultConfig;
   private final DebugThreshConfig debugThreshConfig;
-  private final FrameManager frameManager;
+  private final FrameCacheService frameCacheService;
   private final FXFormGenerator fxFormGenerator;
   private final ImageCompare imageCompare;
   private final OCR ocr;
@@ -94,7 +90,7 @@ public class DebugPanel {
       DebugThreshConfig debugThreshConfig, FXFormGenerator fxFormGenerator,
       DebugBlurConfig debugBlurConfig, DebugResizeConfig debugResizeConfig,
       PreprocessorFactory preprocessorFactory, ImageCompare imageCompare, OCR ocr,
-      FrameManager frameManager) {
+      FrameCacheService frameCacheService) {
     this.debugColorPickConfig = debugColorPickConfig;
     this.debugConfig = debugConfig;
     this.debugDetectConfig = debugDetectConfig;
@@ -110,7 +106,7 @@ public class DebugPanel {
     this.preprocessorFactory = preprocessorFactory;
     this.imageCompare = imageCompare;
     this.ocr = ocr;
-    this.frameManager = frameManager;
+    this.frameCacheService = frameCacheService;
   }
 
   public void openPanel(Area selectedArea, BufferedImage selectedBufferedImage) {
@@ -132,7 +128,7 @@ public class DebugPanel {
   public void processDebug() {
     if (debugStage != null && debugStage.isShowing()) {
       try {
-        BufferedImage input = frameManager.getFrame().getImage();
+        BufferedImage input = frameCacheService.getFrame().getImage();
         BufferedImage selectedImage = input.getSubimage(selectedArea.getX(), selectedArea.getY(),
             selectedArea.getWidth(), selectedArea.getHeight());
         Mat liveMat = ImageUtil.bufferedImageToMat(selectedImage);
@@ -401,17 +397,17 @@ public class DebugPanel {
     FXForm<?> resultDebugNode = fxFormGenerator.generateNode(debugResultConfig);
     FXForm<?> resizeDebugNode = fxFormGenerator.generateNode(debugResizeConfig);
     FXForm<?> blurDebugNode = fxFormGenerator.generateNode(debugBlurConfig);
-    setDebugWindowSize(debugNode);
-    setDebugConfigSize(resizeDebugNode);
-    setDebugConfigSize(blurDebugNode);
-    setDebugConfigSize(filterDebugNode);
-    setDebugConfigSize(colorPickDebugNode);
-    setDebugConfigSize(normalizeDebugNode);
-    setDebugConfigSize(binaryDebugNode);
-    setDebugConfigSize(detectDebugNode);
-    setDebugConfigSize(ocrDebugNode);
-    setDebugConfigSize(imageCompareDebugNode);
-    setDebugConfigSize(resultDebugNode);
+    GuiUtil.setNodeWithImageSize(debugNode);
+    GuiUtil.setNodeSize(resizeDebugNode);
+    GuiUtil.setNodeSize(blurDebugNode);
+    GuiUtil.setNodeSize(filterDebugNode);
+    GuiUtil.setNodeSize(colorPickDebugNode);
+    GuiUtil.setNodeSize(normalizeDebugNode);
+    GuiUtil.setNodeSize(binaryDebugNode);
+    GuiUtil.setNodeSize(detectDebugNode);
+    GuiUtil.setNodeSize(ocrDebugNode);
+    GuiUtil.setNodeSize(imageCompareDebugNode);
+    GuiUtil.setNodeSize(resultDebugNode);
     Button generateCodeButton = new Button("Generate Code");
     VBox detectBox = new VBox(imageCompareDebugNode);
     pane.getChildren().add(new HBox(debugNode,
@@ -437,40 +433,7 @@ public class DebugPanel {
     clipboard.setContent(content);
   }
 
-  private void setDebugWindowSize(FXForm<?> debugNode) {
-    double width = 280;
-    ArrayList<Node> nodes = getAllNodes(debugNode, null);
-    for (Node node : nodes) {
-      if (node instanceof ImageView imageView) {
-        imageView.setFitWidth(240);
-        imageView.setFitHeight(180);
-        imageView.setPreserveRatio(true);
-      }
-    }
-    debugNode.setMinWidth(width);
-    debugNode.setPrefWidth(width);
-    debugNode.setMaxWidth(width);
-  }
 
-  private void setDebugConfigSize(FXForm<?> debugNode) {
-    double width = 180;
-    debugNode.setMinWidth(width);
-    debugNode.setPrefWidth(width);
-    debugNode.setMaxWidth(width);
-  }
-
-  private ArrayList<Node> getAllNodes(Parent parent, ArrayList<Node> nodes) {
-    if (nodes == null) {
-      nodes = new ArrayList<>();
-    }
-    for (Node node : parent.getChildrenUnmodifiable()) {
-      nodes.add(node);
-      if (node instanceof Parent) {
-        getAllNodes((Parent) node, nodes);
-      }
-    }
-    return nodes;
-  }
 
   public void close() {
     if (debugStage != null && debugStage.isShowing()) {

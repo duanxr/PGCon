@@ -7,7 +7,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 import lombok.SneakyThrows;
-import nu.pattern.OpenCV;
 import org.opencv.core.Mat;
 
 /**
@@ -35,7 +34,6 @@ public class ImageUtilTest {
    */
   @SneakyThrows
   public static void main(String[] args) {
-    OpenCV.loadLocally();
     BufferedImage image3 = ImageIO.read(new File("src\\test\\java\\resources\\game.png"));
     testC3(image3);
     //testC1(image3);

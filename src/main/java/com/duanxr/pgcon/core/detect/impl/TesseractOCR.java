@@ -1,8 +1,8 @@
 package com.duanxr.pgcon.core.detect.impl;
 
 
-import com.duanxr.pgcon.component.FrameManager;
-import com.duanxr.pgcon.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.input.FrameCacheService;
+import com.duanxr.pgcon.input.FrameCacheService.CachedFrame;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
@@ -45,8 +45,8 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
   private final LoadingCache<ApiConfig, TessBaseAPI> specialApiMap;
 
   @Autowired
-  public TesseractOCR(PreprocessorFactory preprocessorFactory, FrameManager frameManager) {
-    super(frameManager, preprocessorFactory);
+  public TesseractOCR(PreprocessorFactory preprocessorFactory, FrameCacheService frameCacheService) {
+    super(frameCacheService, preprocessorFactory);
     this.defaultApiMap = new HashMap<>();
     this.specialApiMap = Caffeine.newBuilder().build(this::createTessBaseAPI);
     for (Method method : Method.values()) {
@@ -94,7 +94,7 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
   }
 
   private CachedFrame getFrame() {
-    return frameManager.getFrame();
+    return frameCacheService.getFrame();
   }
 
   private Mat getTarget(CachedFrame cachedFrame, Area area, boolean deepCopy) {

@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.core.detect.impl;
 
-import com.duanxr.pgcon.component.FrameManager;
-import com.duanxr.pgcon.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.input.FrameCacheService;
+import com.duanxr.pgcon.input.FrameCacheService.CachedFrame;
 import com.duanxr.pgcon.core.detect.api.Detector;
 import com.duanxr.pgcon.core.preprocessing.PreProcessor;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
@@ -13,20 +13,20 @@ import org.opencv.core.Mat;
  * @author 段然 2022/8/4
  */
 public abstract class ImageDetector<R, P> implements Detector<R, P> {
-  protected final FrameManager frameManager;
+  protected final FrameCacheService frameCacheService;
   protected final PreprocessorFactory preprocessorFactory;
 
-  protected ImageDetector(FrameManager frameManager, PreprocessorFactory preprocessorFactory) {
-    this.frameManager = frameManager;
+  protected ImageDetector(FrameCacheService frameCacheService, PreprocessorFactory preprocessorFactory) {
+    this.frameCacheService = frameCacheService;
     this.preprocessorFactory = preprocessorFactory;
   }
 
   protected CachedFrame getImage() {
-    return frameManager.getFrame();
+    return frameCacheService.getFrame();
   }
 
   protected CachedFrame getNewImage() {
-    return frameManager.getNewFrame();
+    return frameCacheService.getNewFrame();
   }
 
   protected Mat tryPreProcess(Mat mat, List<PreProcessorConfig> preProcessorConfigs) {

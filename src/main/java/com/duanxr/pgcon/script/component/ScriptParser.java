@@ -1,6 +1,7 @@
 package com.duanxr.pgcon.script.component;
 
 import com.duanxr.pgcon.component.PGConComponents;
+import com.duanxr.pgcon.log.GuiLogger;
 import com.duanxr.pgcon.script.engine.BasicScriptEngine;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -17,9 +18,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScriptParser {
 
+  private final GuiLogger guiLogger;
+
   private final PGConComponents component;
 
-  public ScriptParser(PGConComponents component) {
+  public ScriptParser(GuiLogger guiLogger, PGConComponents component) {
+    this.guiLogger = guiLogger;
     this.component = component;
   }
 
@@ -31,13 +35,15 @@ public class ScriptParser {
       if (checkEngine(scriptInstance)) {
         BasicScriptEngine<Object> script = (BasicScriptEngine<Object>) scriptInstance;
         script.setComponents(component);
-        return ScriptCache.builder()
+        ScriptCache<Object> scriptCache = ScriptCache.builder()
             .scriptName(script.getInfo().getName())
             .script(script)
             .scriptFile(scriptFile)
             .build();
+        guiLogger.info("compile script {} success", name);
+        return scriptCache;
       } else {
-        log.error("script {} didn't implement any ScriptEngine", name);
+        guiLogger.error("script {} didn't implement any ScriptEngine", name);
       }
     }
     return null;

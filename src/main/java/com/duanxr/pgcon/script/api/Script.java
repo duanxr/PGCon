@@ -19,24 +19,8 @@ public interface Script<T> {
     // do nothing
   }
 
-  default void reset() {
-    // do nothing
-  }
-
   ScriptInfo<T> getInfo();
 
   void setComponents(PGConComponents components);
 
-  @Data
-  @Builder
-  class ScriptInfo<T> {
-    private T config;
-    private boolean isLoop;
-    @NonNull
-    private String name;
-
-    public boolean isConfigurable() {
-      return config != null;
-    }
-  }
 }

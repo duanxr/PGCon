@@ -5,11 +5,12 @@ import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
 import com.duanxr.pgcon.core.detect.api.OCR.Param;
 import com.duanxr.pgcon.core.model.Area;
-import com.duanxr.pgcon.exception.AbortScriptException;
-import com.duanxr.pgcon.exception.AlertException;
+import com.duanxr.pgcon.exception.AlertErrorException;
+import com.duanxr.pgcon.exception.InterruptScriptException;
 import com.duanxr.pgcon.exception.ResetScriptException;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
-import com.duanxr.pgcon.output.action.StickAction;
+import com.duanxr.pgcon.gui.fxform.factory.ReadOnlyLabelFactory;
+import com.duanxr.pgcon.script.api.ScriptInfo;
 import com.duanxr.pgcon.script.engine.PGConScriptEngineV1;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -23,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -32,17 +32,12 @@ import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import org.apache.commons.math3.util.Pair;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.springframework.stereotype.Component;
 
 /**
  * @author 段然 2022/7/25
  */
-@Component
 public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchENG.Config> {
 
-  private static final Set<String> RAW_SKILLS = getRawSkills();
-
-  private static final Map<String, String> AVAILABLE_SKILLS = getAvailableSkills();
   private static final String CHARM_DECORATION_LEVEL_0 = "{\"D\":\"HwABAP//Zx//AQAPDyoAbA8BAP//t1AAAAAAAA==\",\"L\":1512,\"R\":36,\"T\":0,\"C\":42}";
   private static final String CHARM_DECORATION_LEVEL_1 = "{\"D\":\"HwABALhf////AP8BAAEPLwAEDwEABw8vABwv//8vABwv//8vAAwOEgAOXgAPMAALH/8vAAwPMQAKDxoAAw8wAE0fAGAANh8AMAArDiABDoEBDjAAD+EBGQwRAA9wAgAPMAAdHwAwAAcfAAEDDww+AA8xAw4PMAAUD5ADdgyBAR//wAMaDg4CD+ABCw8PAgAPQAIqH/+gAhwPHQEBDzAAOQ4xAA/hBA8PsQELDwEA31AAAAAAAA==\",\"L\":1920,\"R\":40,\"T\":0,\"C\":48}";
   private static final String CHARM_DECORATION_LEVEL_2 = "{\"D\":\"HwABAP9pH/8BAAEPKwAYDzEABS///y8AGAcaAA8KAAAMLwAPFwAMH/8VAAcJBgAOLwAOLQAPLwAAD4cADg8dAAMOWwAPLgAVH/8uABYe/1wADucADkABD1sBDA5dAA+IAQkItgEu//+eAQ+2ARoPoQASD7UCBA8rAQQPLgARAh8AL/8AEAMODz0DMQ8tABoPagMeD5gDLw8zAAIvAADLAQMPYgACBxwADFsALwAAgwACD1YCAQ+/AAIfAC8AAQOhAA+KAAMPPwIEDxcBBA8uACAPcAECDywCBg8BANVQAAAAAAA=\",\"L\":2024,\"R\":44,\"T\":0,\"C\":46}";
@@ -147,7 +142,42 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
           .build())
       .apiConfig(ApiConfig.builder()
           .method(OCR.Method.ENG)
-          .whitelist("0123456789RAE")
+          .whitelist("0123456789Rarity")
+          .build())
+      .build();
+  private static final Param CHARM_SKILL_1ST = Param.builder()
+      .area(Area.ofRect(1154, 412, 272, 42))
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .apiConfig(ApiConfig.builder()
+          .method(OCR.Method.ENG)
+          .build())
+      .build();
+  private static final Param CHARM_SKILL_2ND = Param.builder()
+      .area(Area.ofRect(1158, 490, 318, 38))
+      .preProcessor(
+          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
+              .enable(true)
+              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
+              .range(0.5620704867127992)
+              .pickType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
+              .maskType(
+                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
+              .inverse(true)
+              .build())
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
+          .enable(true)
+          .inverse(true)
+          .threshType(
+              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
+          .build())
+      .apiConfig(ApiConfig.builder()
+          .method(OCR.Method.ENG)
           .build())
       .build();
   private static final Area CHARM_SLOT_1ST = Area.ofRect(1346, 314, 62, 48);
@@ -289,18 +319,7 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
               .build())
       .area(CHARM_SLOT_3TH).build();
   private static final Param EMPTY_POTS = Param.builder()
-      .area(Area.ofRect(1558, 416, 88, 50))
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
-              .enable(true)
-              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
-              .range(0.2649484612513914)
-              .pickType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
-              .maskType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
-              .inverse(true)
-              .build())
+      .area(Area.ofRect(1584, 420, 76, 40))
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
           .inverse(true)
@@ -313,19 +332,8 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
           .build())
       .build();
   private static final ImageCompare.Param IS_2ND_SKILL_EXITS = ImageCompare.Param.builder()
-      .area(Area.ofRect(1408, 524, 52, 44))
+      .area(Area.ofRect(1398, 528, 54, 36))
       .method(ImageCompare.Method.TM_CCOEFF)
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
-              .enable(true)
-              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
-              .range(0.18762888793975818)
-              .pickType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
-              .maskType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
-              .inverse(true)
-              .build())
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
           .inverse(true)
@@ -333,22 +341,11 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .template(
-          "{\"R\":44,\"C\":52,\"T\":0,\"D\":\"H/8BAP///wgvAAAzACAPNADILgAAGAEPNABIHwA0ABkDNQAOswEPNAA9Ai8ADzQAIA5+AQ80AEEO5QEPCAIODzQAFAUBAA40AA81AA8HbwEPAQD//2tQ//////8=\",\"L\":2288}")
+          "{\"R\":36,\"C\":54,\"T\":0,\"D\":\"H/8BAP//Gi8AADUAIg82ACQfADYAmC4AACMBDzYADgUMAA4jAQ9sAAsPNgAkHgDsAA8OAQ4FNgAf/zYAUj8A/wA2AB0BZwAOZQIPNgAQHwA2AFUf/zUAEij/AAEADzYAKg41AA/MAwEPAQD/hlD//////w==\",\"L\":1944}")
       .build();
   private static final ImageCompare.Param MELDING_POT_FINISHED = ImageCompare.Param.builder()
-      .area(Area.ofRect(1134, 150, 354, 80))
+      .area(Area.ofRect(1224, 158, 170, 28))
       .method(ImageCompare.Method.TM_CCOEFF)
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
-              .enable(true)
-              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
-              .range(0.18762888793975818)
-              .pickType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
-              .maskType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
-              .inverse(true)
-              .build())
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
           .inverse(true)
@@ -356,10 +353,10 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .template(
-          "{\"R\":80,\"C\":354,\"T\":0,\"D\":\"H/8BAP//////////////////TDYAAAALAA8xABMOCAAPSwABD2IB/wQZABgADQEACSYAAwgADlcBBxwAL///YgH7CHoCLwAAYwEFGgC9Agw/AA6UAQ9iAfQOFgENgAEMFAAtAAChAQxjAQ9gAfEOFwEJeQIPUAUCDzIABQILAAAOAAUJAA/BAvEEFwEfAI0FBA86AAwHPgQFYgEPxAL6B9sDDwcIAS8AAMQFFgW4Ag9iAf8bDyQBAC8AABsHBAJiAQDKAg78Ag9iAf8HDucGD2IBCAeCBQ5NCA9iAf8JBbsGAZsCD30IBAS2CQ+uCf8IA+oGBYICDxMLBQUYAA9iAQkPiAX/Ay8AAHwJBx7/ZAgK5QIN2wkPYgH7BQgBBucOBxUPDxsLBA/qBgQHYgEEBAAPYgH/ARz/igIOGwsPYgEKAksADloLD+oG+wQXAC///2IBCQa1BQytDA82D/wNeQIFFwAPBAQED+ERAwepEA9iAf8XHP8VAAnEAiUAAMYCBz0ABlUICzIAD2IB/wkP6gYED5MFAQ/EAv8NHwDEAhAPYgH/Lg8bAAUtAABrEA4tGguuCQ9MCPoFuwoPohQPD64JHA5WAA8RC+cOpRQPwxsACMQCH/9iARAPJgT5DxsACB8APQAbCf8cDm4eDwEA/////////////////////////////9QO5SgP3AD/PA4ZKQ8BAEIP3QDnLwAAhgA8DkMAD3caIARKAA/dAH0PgwAhD4UAPQ5DAA+9GyMOjQAP3wBmD2IBzB8AYgGrDoIADycENA4nAA8EBB0Gyx8P4AApD2MBYQ9yPAMf/4MAOQ9iARUPTAA3H/9CAh0PmD5HD2AABw7kAQ9iAbIP4QAIDiQDDxQENQ9fAAMIYDUPxAJRHwDEAlQe/24oDjhAD3QFPA4SAA9iAWMPTQAVD/MAMw/xKQEP8wA3CnMFD4EAAw9iAVwONAsPxAJACUICD/1CBQ8XCj8PgQACHwBiAYQfAGIBNQrnAA9fRAQPmw89CoAAD2IBXg9LADYf/3kGEAgrBAzuBw65EA+yCCsPgAACD2IBPg/DAnIH/gwIWAsPYgEJHwDEAkAf/2IBiA6MAA8jESQI1gAOTggPKAQ9Hv9lOA9iAWEPYQFQBUEABuoAD8MCAA/sBj8c/+IBHwBiAYgf/2IBMR0AYgEOsgoO9gAPEAswC80BD9cANQ5DAA+UDEsPQgAVDuoGDxALOwdPAA9iAQsPxAJSD2EBEg9iAVgv//+YEEIZAFdDA401DyYEUg4xCw9hAUIFz0YH6T8L6z8PmBA8A1QADSIDDQEAD2IBdR8AGgU2DuIAD4YzSQ9iAXEPnQAaD2EBQA4BAA9iAf89D2MBGw/iAaMP4wDbBCoKDv0dDwEAuQ//OP//////////gVD//////w==\",\"L\":28320}")
+          "{\"R\":28,\"C\":170,\"T\":0,\"D\":\"H/8BAP//nRkAAQAOHgACIwAPbAA2D4MABQ+pAB0fAEQAAA+qADsfAIMABQ9UAS0PqgBWD0MAKwWkAC8A//4BSQ8JARofAEICDQ9UAUwP7QAkBwkCCKgCGwAYAAQOAAe9AQ8jAAIOqgAJbQILbgAOsgIP7QAHDIYABq0CDV8ACAEAH/8jAAcPqgAHBlgAC2EAD6oAER8AqgAJGf9WAAVmAAeCAAc0AA+qAAwLDgAHqgAfAKoAFgYIAAqqAAwYAAb5AQ4iAAVTAA+qAAQHGwAKMAAf/6oAGB//qgAFCXMADwgAAAg6AA0jAAqqAA4qAAntAg+VAxcO/gEFUgMPqgAIDjoAD6oAIQ5VAQ9SAxwJzQMPVAEEDToAD6oAER8AqgAAD1IDKgccAA+qAAQHYAMO/gEPVAE/HwBSAwUJKgAPqgAGDQ0AD6oATx8A/AMND6oAAg9SAysfAFIDEx//qgA1HwCqACsOUAUP+gUQHgCkBg+oAhAJ1wUKIwEPqgAJDvoFD6oAJR//qgAaHwCoAh4v//+pABEv//9ICAMECAYsAABJCi8A/wgAAQnIAB8AWwABCr0ACV4AA3QBLwD/AQD///9OUP//////\",\"L\":4760}")
       .build();
   private static final ImageCompare.Param MELDING_POT_SELECTION = ImageCompare.Param.builder()
-      .area(Area.ofRect(44, 950, 296, 76))
+      .area(Area.ofRect(50, 952, 456, 72))
       .method(ImageCompare.Method.TM_CCOEFF)
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
@@ -368,7 +365,7 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .template(
-          "{\"R\":76,\"C\":296,\"T\":0,\"D\":\"H/8BAP///////+8ZAA0APgAA/xAADz8ACi8AABQADQgPAA4LAA9UAAILRAAJNgAfACcBYwJ5AAN/AAUHAA6WABMAAQAPKAEqB0EAHwAoAQk/AP8ANgADDEABDwEAAg8oAUUbACgBDc0ADYUAD6EABA9QAhUP1gAMBCgBHwBBAAILDQAPKQFbCFcCHAAeAQ8oATcFZgAP1gAJBboBHwCGAgAPKAFmCZcACcoBDSgBH//yAgsOGQEPDwICDTwAD/QACAkoAQ8bAAIAYAUPJQFQBcgACigBCjUCDv0ADikBD2oCDARjAAl6AQHmAA8nAQkJNgAPDwEHDx4BAQ8uAU4IngQI5wIPKAE5D9sAAQ9eARAOKAEPBAdXD98ABAkUAAoBAQ4nAw5AAw8oAQ0PFQIFBiYABrEIBWkHBsEBChoBDk8CDxcIRg8oAQwOGwAP5QEJCrgADmsCDxUCDgRlAA68CA4oAQ92A1QErgAfAEQDCA4YCB8AKAEXD5ICAB//KAETDfAGDygBaQdACQ6wBgxACQ+QBxQJLQAPdwEBA2QDDncCCc0JDygBFA6lAg/BBU0f/4cHBQvfBSv///cAD/0JAw8oAQ0f/2oIBAvGCQZsAQ/wBgIfACgBVh//oAQEDmwDD/AGCg8oAQMIYgEGMwEM9wsJDAEIugEOCwEOvAIPKAF3CPIADG0EHwCUAwcHYQMf/wgNBwp4CA7GCQ9ACQofACQIXQlfAwoBAgVaAy8AACgBEAirAwe9Ch//WgsNCGoCCcYJDHQJDloND0wJVA4sBA40Cg8ZBBAHPAAL0AAPKAEhDVoDD1APAR8AKAFiHwA0Ag4P4g0EH/+RBAMKXQ8a/00JDjcCDSgBL///QAkHBxgADygBbwgPAAXSAC8AALYOCwqlEQsCBgrKBQ8oAQ4OHAAP0RMNC5UBDy8QQw8oAQMHGgEHrQAPZgoICD4RC0IPB5UDDygBAQgeAAhpAwaOES///xUUFg0BAw9PAjEG2wIJpgAPKAEUL///1gYAHwAoAQcfANcGCQ8oAQMfACgBCR8AKAFQHwDMCAML+wgE/QAOJgsOUQQNeAwJuwAFuwIKJwkP+QcCDSgBH/8oARcGjwEPTwI5D/AGAg6rBg28BA+hBgEPCwMKDzsAAgfzBw9QBgIPTwIJDm0GCjQADygBRQgMAQ8oAQAPdwMFCSkBDLkFDCAPBiYHDgUBClIABbsJDNcGDygBXR8AKAEIH/8oAQYFugQKBQEPKAEGDhcABqsDD/QOAx//KAEtDqsLD6gTNQhfAA5CAwpgFQt9AwuIBw8oAQQJKxwIWAEIPAAFJQAMhwIO5gcPoAQKDWIADwEAbB8AOQBeDUkAHgBYAA5ACQ8BAP///////////4MPmgkRD8cJRi8AAFsAEAMqFQ83AAIuAAChAA/WCj4CWQAMSA0fAH8aCw4SDwjOGh8AjA0QDtcdD7wVBQ8uEQQPNgAHD4ANCw6JAA8oAR8ObB0PKAEUD18iBw+gAA8DPwAIRxUfAKMAEw4XAQ0cAQ6JHQ8qASkN6BEP1wAMLwAAKAEWHwDAGQ4PqBcCDygBLAsTDx8AKAEnHwC9AAQPKAEUCQICG/8HEQ8oATcvAP+hAg0K9hgPBBsLDycBIA5cAQ8oARQNKAAPSRYCD4YADgfyAB//hwAaDAQBDEMqD0YeCg+BAgMPKAEiHwAoARALqxkHlRIHKAEKShgvAAAnFAYJGQIKMBgPKAFGDicBD1ACPB8AhQQRCAcBDngCDygBBR8AKAEUB1AADzYVAQhQAA72Bg5PAg8rARgOxwAPaAIYDygBAA56GQ8oAQkv/wD6AREGuxcNFAEMqxYOShoOAgcPJwEhDPMdDygBCx//KAE1CVEAD2snHA8oAQ0f/ygBRg7VFw/NGAsH1h0Iihsv//8oAQIPhQIOC9cZDaIADygBCB//UAIaLgAA6wMPKAEWDUEJDygBBwqIAA8oATUP1BwEDygBEA4SGQ+GJz0IbAAK9RofAGgGEA9QAgMJAQEOoAIPWQcFH/8oARQLNwAJ5AMPKAESHwAoATAOhQAKJwEvAAAoAUAOqAYLRQEPygENDSgBLwAAKAE/Ca4BDckmD1ECAQ8oARkfAOEOEQ8/CwQfAMoBCh//KAABD0AJDx8ATAkiDygCAAUaAA9pCgkIvg8PKAENH/8oASUO8gIPeAEBD7MDAA1nAg6zAg8oAS4PlQMECzYACJgAD8gFBi///ygBDgkcAhn/aycf/2snDQufAAmHAA7OJw5LDA+cCxsvAP8oARAOMwQfACgBNQspAA9rJwoFJwAvAP+7BQIPGAgKB08ADygBIgrMAwvlAA8oAQILoQYvAAAQAAMPKAEQDskEDigBDFAAC3cICu8CC0AJDzYlGwuwAA4lAQ2nBQkNAg8oAQkf/ycBBw4oAw8oAQoG8AQPKAEHHwAoAUwNUgMOJwEPYwcCD20ABg8oARENXQsPKAEFDuwEDxkGAA8RDQMNlAUIKAEf/ygBJB8AdAMNBgwADHsGH/8xAwoMewIHEQoOhgIfAPwHBh8ATwoBDLIJBKgCDygBAwuVAQuIBA9HAwsv//+DAgcMmAMLGwIPUQAFBDEABsoxCWUNBokACRsAD5AJCgKOAAiDAgvqAAiSAQ8oAQAOagYOdwMPKAEnDUgDDrwAD0ILCQstAg0oAQi0AA/kCwQf/2snCA0QNAbzBQrKAQ4oAQ+GJ0QP8gUADy4DAQ88PgAHEAANiQAODgQPoAAGBuACD0kDBQmRAA8yCAQOfQIPUAIKDhoEDycBDC//APImIAXICA+gAgUPTAAYDjsADzUpGQ44AARgAR8Aph0SDtMBDwEA//////////////+HUP//////\",\"L\":22496}")
+          "{\"R\":72,\"C\":456,\"T\":0,\"D\":\"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\",\"L\":32832}")
       .build();
   private static final ImageCompare.Param MHR_IN_GAME = ImageCompare.Param.builder()
       .area(Area.ofRect(896, 972, 68, 70))
@@ -479,69 +476,9 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
           .whitelist("0123456789")
           .build())
       .build();
+  private static final Set<String> RAW_SKILLS = getRawSkills();
+  private static final Map<String, String> AVAILABLE_SKILLS = getAvailableSkills();
   private static final String SKILLS_OCR_WHITELIST = getSkillsOcrWhitelist();
-  private static final Param CHARM_SKILL_1ST = Param.builder()
-      .area(Area.ofRect(1158, 414, 310, 38))
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ChannelsFilterPreProcessorConfig.builder()
-              .enable(true)
-              .redWeight(1.0)
-              .greenWeight(1.0)
-              .blueWeight(1.0)
-              .build())
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
-              .enable(true)
-              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
-              .range(0.6239261551118693)
-              .pickType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
-              .maskType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
-              .inverse(true)
-              .build())
-      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
-          .enable(true)
-          .inverse(true)
-          .threshType(
-              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-          .build())
-      .apiConfig(ApiConfig.builder()
-          .method(OCR.Method.CHS)
-          .whitelist(SKILLS_OCR_WHITELIST)
-          .build())
-      .build();
-  private static final Param CHARM_SKILL_2ND = Param.builder()
-      .area(Area.ofRect(1160, 488, 312, 42))
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ChannelsFilterPreProcessorConfig.builder()
-              .enable(true)
-              .redWeight(1.0)
-              .greenWeight(1.0)
-              .blueWeight(1.0)
-              .build())
-      .preProcessor(
-          com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
-              .enable(true)
-              .targetColor(javafx.scene.paint.Color.color(1.0, 1.0, 1.0))
-              .range(0.6239261551118693)
-              .pickType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.PickType.CIEDE2000)
-              .maskType(
-                  com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.MaskType.BLACK)
-              .inverse(true)
-              .build())
-      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
-          .enable(true)
-          .inverse(true)
-          .threshType(
-              com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
-          .build())
-      .apiConfig(ApiConfig.builder()
-          .method(OCR.Method.CHS)
-          .whitelist(SKILLS_OCR_WHITELIST)
-          .build())
-      .build();
   private final AtomicBoolean findTarget;
   private final Set<String> hashSet = new HashSet<>();
   private final Map<String, Integer> skillTargets;
@@ -605,6 +542,8 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
       String lowerCase = convertEnglishSkill(skill);
       skills.put(lowerCase, skill);
     });
+    skills.put("temprolonger", "Item Prolonger"); //distance:3 confidence:87
+    skills.put("hommaestro", "Horn Maestro"); //distance:5 confidence:95
     return skills;
   }
 
@@ -638,10 +577,10 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
     slotTargets.clear();
     slotTargets.addAll(parseSlotTargets(targetSlots));
     if (slotTargets.isEmpty()) {
-      throw new AlertException("Slot targets is empty!");
+      throw new AlertErrorException("Slot targets is empty!");
     }
     info("Target Slots: {}", slotTargets);
-    Set<String> collect = new HashSet<>(AVAILABLE_SKILLS.values());
+    Set<String> collect = new HashSet<>(AVAILABLE_SKILLS.keySet());
     String targetSkills = config.getTargetSkills().getValue();
     skillTargets.clear();
     skillTargets.putAll(parseSkillTargets(targetSkills, collect));
@@ -657,13 +596,13 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
         continue;
       }
       if (trim.length() != 3) {
-        throw new AlertException("Invalid slot target: " + trim);
+        throw new AlertErrorException("Invalid slot target: " + trim);
       }
       List<Integer> list = new ArrayList<>();
       for (int i = 0; i < trim.length(); i++) {
         char c = trim.charAt(i);
         if (c < 48 || c > 52) {
-          throw new AlertException("Invalid slot target: " + trim);
+          throw new AlertErrorException("Invalid slot target: " + trim);
         }
         list.add(c - 48);
       }
@@ -684,14 +623,14 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
       }
       char level = trim.charAt(trim.length() - 1);
       if (level < 48 || level > 57) {
-        throw new AlertException("Invalid skill level: " + trim);
+        throw new AlertErrorException("Invalid skill level: " + trim);
       }
       String skill = trim.substring(0, trim.length() - 1);
       skill = convertEnglishSkill(skill);
       if (!validator.contains(skill)) {
-        throw new AlertException("Invalid skill: " + trim);
+        throw new AlertErrorException("Invalid skill: " + trim);
       }
-      target.put(skill, level - 48);
+      target.put(AVAILABLE_SKILLS.get(skill), level - 48);
     }
     return target;
   }
@@ -704,7 +643,7 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
   private void gazeStars() {
     while (!Thread.interrupted()) {
       sleep(1000);
-      long potSlot = numberOcr(EMPTY_POTS, 10000);
+      long potSlot = detectAccurateLong(EMPTY_POTS, 7, 10000L);
       if (potSlot == 0) {
         info("All pots are full, reset script.");
         throw new ResetScriptException();
@@ -725,10 +664,16 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
     }
   }
 
+  @SneakyThrows
   private void checkMaterial(long need) {
-    long mp = numberOcr(MP_COUNT, 10000);
-    long mpa = numberOcr(MPA_COUNT, 10000);
-    long point = numberOcr(POINTS_COUNT, 10000);
+    Future<Long> mpF = async(() -> detectAccurateLong(MP_COUNT, 7, 10000L));
+    Future<Long> mpaF = async(() -> detectAccurateLong(MPA_COUNT, 7, 10000L));
+    Future<Long> pointF = async(() -> detectAccurateLong(POINTS_COUNT, 7, 10000L));
+
+    long mp = mpF.get();
+    long mpa = mpaF.get();
+    long point = pointF.get();
+
     info("You have {} Melding Puddings and {} MP Accelerants and {} Points", mp, mpa, point);
     if (mpa < need) {
       throw new ResetScriptException(
@@ -755,7 +700,7 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
       fillPot(1);
     } catch (ResetScriptException e) {
       error("There are not enough materials, abort script!");
-      throw new AbortScriptException(e);
+      throw new InterruptScriptException(e);
     }
     getAllCharms();
     backToGameMenu();
@@ -786,11 +731,11 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
 
   private void walkToShop() {
     sleep(1000);
-    hold(StickAction.L_TOP);
+    hold(L_TOP);
     sleep(5350);
-    hold(StickAction.L_LEFT);
+    hold(L_LEFT);
     sleep(1300);
-    release(StickAction.L_LEFT);
+    release(L_LEFT);
   }
 
   private void toMeldingPot() {
@@ -801,9 +746,17 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
         () -> {
           press(D_TOP);
           sleep(250);
-        });
+        }, 10000L, this::reset);
     press(A);
     sleep(300);
+  }
+
+  private void reset() {
+    press(HOME);
+    sleep(300);
+    press(X);
+    sleep(300);
+    press(A);
   }
 
   private void fillPotOnce() {
@@ -927,7 +880,7 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
     Long level2 = hasSkill2 ? level2F.get().getTextAsNumber() : null;
 
     String rare = rareF.get().getTextWithoutSpace().toUpperCase();
-    rare = rare.startsWith("RARE") ? rare.substring(4) : "?";
+    rare = rare.startsWith("RARITY") ? rare.substring(6) : "?";
 
     List<ImageCompare.Result> o1L = Arrays.asList(s0o1F.get(), s1o1F.get(), s2o1F.get(),
         s3o1F.get(), s4o1F.get());
@@ -958,8 +911,7 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
         push("find a target charm:" + result);
       }
     }
-    ((SimpleIntegerProperty) config.getCheckedCharms()).set(
-        config.getCheckedCharms().getValue() + 1);
+    config.getCheckedCharms().set(config.getCheckedCharms().getValue() + 1);
     return isTarget;
   }
 
@@ -976,9 +928,6 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
     try {
       OCR.Result until = until(() -> detect(param),
           input -> {
-            if (input.getConfidence() < 10) {
-              return false;
-            }
             String text = convertEnglishSkill(input.getText());
             boolean containsKey = AVAILABLE_SKILLS.containsKey(text);
             if (!Strings.isNullOrEmpty(text) && !containsKey) {
@@ -987,8 +936,8 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
             }
             return containsKey;
           },
-          () -> sleep(50), 30);
-      return until == null ? "" : AVAILABLE_SKILLS.get(until.getTextWithoutSpace());
+          () -> sleep(50), 10000L);
+      return until == null ? "" : AVAILABLE_SKILLS.get(convertEnglishSkill(until.getText()));
     } catch (Exception e) {
       return "";
     }
@@ -1034,8 +983,8 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
   }
 
   private boolean checkSkill(String skill1, Long level1, String skill2, Long level2) {
-    Integer l1 = skillTargets.get(skill1);
-    Integer l2 = skillTargets.get(skill2);
+    Integer l1 = skill1 == null ? null : skillTargets.get(skill1);
+    Integer l2 = skill2 == null ? null : skillTargets.get(skill2);
     return l1 != null && l2 != null && l1 <= (level1 == null ? 0 : level1) && l2 <= (level2 == null
         ? 0 : level2);
   }
@@ -1052,25 +1001,37 @@ public class MHRiseCharmSearchENG extends PGConScriptEngineV1<MHRiseCharmSearchE
   @Data
   public static class Config {
 
-    @ConfigLabel("Checked Charms Count")
-    private ReadOnlyIntegerProperty checkedCharms = new SimpleIntegerProperty(0);
     @ConfigLabel("Target Skills")
     @FormFactory(TextAreaFactory.class)
-    private SimpleStringProperty targetSkills = new SimpleStringProperty();
+    private SimpleStringProperty targetSkills = new SimpleStringProperty("""
+        Attack Boost2
+        Critical Eye2
+        Critical Boost2
+        Weakness Exploit2""");
     @ConfigLabel("Target Slots")
     @FormFactory(TextAreaFactory.class)
-    private SimpleStringProperty targetSlots = new SimpleStringProperty();
-    @ConfigLabel("Enable automatic Skill Matching")
+    private SimpleStringProperty targetSlots = new SimpleStringProperty("""
+        220
+        310
+        400""");
+
+    @ConfigLabel("Record Video When Find")
+    private SimpleBooleanProperty recordVideoWhenFind = new SimpleBooleanProperty(true);
+
+    @ConfigLabel("Notify Me When Find")
+    private SimpleBooleanProperty notifyWhenFind = new SimpleBooleanProperty(true);
+    @ConfigLabel("Enable Automatic Skill Matching")
     private SimpleBooleanProperty enableAutomaticSkillMatching = new SimpleBooleanProperty(false);
     @ConfigLabel("Capture Screen When Unknown Skill Detected")
     private SimpleBooleanProperty captureScreenWhenUnknownSkillDetected = new SimpleBooleanProperty(
         false);
-    @ConfigLabel("Record Video When Find")
-    private SimpleBooleanProperty recordVideoWhenFind = new SimpleBooleanProperty(true);
-    @ConfigLabel("Notify Me When Find")
-    private SimpleBooleanProperty notifyWhenFind = new SimpleBooleanProperty(true);
     @ConfigLabel("Charm Analysis Debug Mode")
     private SimpleBooleanProperty charmAnalysisDebugMode = new SimpleBooleanProperty(false);
+
+    @ConfigLabel("Checked Charms Count")
+    @FormFactory(ReadOnlyLabelFactory.class)
+    private SimpleIntegerProperty checkedCharms = new SimpleIntegerProperty(0);
+
   }
 
   @EqualsAndHashCode

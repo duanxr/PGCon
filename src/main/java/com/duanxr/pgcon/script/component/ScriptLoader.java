@@ -28,14 +28,11 @@ public class ScriptLoader {
 
   public List<File> loadScripts() {
     File scriptFolder = new File(SCRIPTS_PATH);
-    log.info(scriptFolder.getAbsolutePath());
     Iterator<File> iterator = FileUtils.iterateFiles(scriptFolder, scriptFilter,
         TrueFileFilter.INSTANCE);
     Iterable<File> iterable = () -> iterator;
     Stream<File> stream = StreamSupport.stream(iterable.spliterator(), false);
-    List<File> files = stream.collect(Collectors.toList());
-    files.forEach(file -> log.info("find script file: {}", file.getName()));
-    return files;
+    return stream.collect(Collectors.toList());
   }
 
 }

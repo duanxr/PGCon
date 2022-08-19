@@ -12,7 +12,7 @@ import com.duanxr.pgcon.core.preprocessing.impl.NormalizePreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.ResizePreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.SmoothingPreProcessor;
 import com.duanxr.pgcon.core.preprocessing.impl.ThreshPreProcessor;
-import com.duanxr.pgcon.exception.AbortScriptException;
+import com.duanxr.pgcon.exception.InterruptScriptException;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.util.List;
@@ -50,7 +50,7 @@ public class PreprocessorFactory {
     } else if (config instanceof SmoothingPreProcessorConfig) {
       return new SmoothingPreProcessor((SmoothingPreProcessorConfig) config);
     } else {
-      throw new AbortScriptException("unknown preprocessor config: " + config.getClass());
+      throw new InterruptScriptException("unknown preprocessor config: " + config.getClass());
     }
   }
 

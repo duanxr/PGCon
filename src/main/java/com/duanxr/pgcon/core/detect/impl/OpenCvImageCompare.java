@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.core.detect.impl;
 
-import com.duanxr.pgcon.component.FrameManager;
-import com.duanxr.pgcon.component.FrameManager.CachedFrame;
+import com.duanxr.pgcon.input.FrameCacheService;
+import com.duanxr.pgcon.input.FrameCacheService.CachedFrame;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
@@ -40,8 +40,8 @@ public class OpenCvImageCompare extends
   private final LoadingCache<String, Mat> cache;
 
   @Autowired
-  public OpenCvImageCompare(PreprocessorFactory preprocessorFactory, FrameManager frameManager) {
-    super(frameManager, preprocessorFactory);
+  public OpenCvImageCompare(PreprocessorFactory preprocessorFactory, FrameCacheService frameCacheService) {
+    super(frameCacheService, preprocessorFactory);
     this.cache = Caffeine.newBuilder().build(this::loadTemplate);
     this.methods = new HashMap<>();
     methods.put(Method.ORB, this::orb);

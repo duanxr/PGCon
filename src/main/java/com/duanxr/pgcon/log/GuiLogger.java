@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class GuiLogger implements Logger {
-
   private static final String FQCN = GuiLogger.class.getName();
   private static final ExtendedLogger LOGGER = (ExtendedLogger) org.apache.logging.log4j.LogManager.getLogger(
       GuiLogger.class);
@@ -31,8 +30,12 @@ public class GuiLogger implements Logger {
     this.context = context;
   }
 
-  private void logConsole(String fqcn, Level level, String message) {
-    LOGGER.logIfEnabled(fqcn == null ? FQCN : fqcn, level, null, message);
+  private void logConsole(String fqcn, Level level, String message, Object... args) {
+    Throwable throwable =
+        args != null && args.length != 0 && args[args.length - 1] instanceof Throwable ?
+            (Throwable) args[args.length - 1] : null;
+    String msg = formatConsole(message, args);
+    LOGGER.logIfEnabled(fqcn == null ? FQCN : fqcn, level, null, msg, throwable);
   }
 
   private String formatConsole(String msg, Object... args) {
@@ -52,22 +55,22 @@ public class GuiLogger implements Logger {
   }
 
   private void debug(String fqcn, String msg, Object... args) {
-    logConsole(fqcn, Level.DEBUG, formatConsole(msg, args));
+    logConsole(fqcn, Level.DEBUG, msg, args);
     logGUI(new GuiLogRecord(GuiLogLevel.DEBUG, context, formatGUI(msg, args)));
   }
 
   private void info(String fqcn, String msg, Object... args) {
-    logConsole(fqcn, Level.INFO, formatConsole(msg, args));
+    logConsole(fqcn, Level.INFO, msg, args);
     logGUI(new GuiLogRecord(GuiLogLevel.INFO, context, formatGUI(msg, args)));
   }
 
   private void warn(String fqcn, String msg, Object... args) {
-    logConsole(fqcn, Level.WARN, formatConsole(msg, args));
+    logConsole(fqcn, Level.WARN, msg, args);
     logGUI(new GuiLogRecord(GuiLogLevel.WARN, context, formatGUI(msg, args)));
   }
 
   private void error(String fqcn, String msg, Object... args) {
-    logConsole(fqcn, Level.ERROR, formatConsole(msg, args));
+    logConsole(fqcn, Level.ERROR, msg, args);
     logGUI(new GuiLogRecord(GuiLogLevel.ERROR, context, formatGUI(msg, args)));
   }
 

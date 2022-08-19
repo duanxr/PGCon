@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 public class GuiConfig {
 
   private Integer width;
-
   private Integer height;
 
 }

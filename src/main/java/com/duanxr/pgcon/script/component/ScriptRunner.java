@@ -1,7 +1,7 @@
 package com.duanxr.pgcon.script.component;
 
 import com.duanxr.pgcon.script.api.Script;
-import com.duanxr.pgcon.service.Controller;
+import com.duanxr.pgcon.output.ControllerService;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -18,13 +18,12 @@ public class ScriptRunner {
   private final ListeningExecutorService listeningExecutorService;
   private ListenableFuture<?> currentScriptListenable;
   private ScriptTask currentScriptTask;
-  private final Controller controller;
-  public ScriptRunner(Controller controller) {
-    this.controller = controller;
+  private final ControllerService controllerService;
+  public ScriptRunner(ControllerService controllerService) {
+    this.controllerService = controllerService;
     this.listeningExecutorService = MoreExecutors.listeningDecorator(
         Executors.newSingleThreadExecutor());
   }
-
   public synchronized void run(Script<Object> script) {
     stop();
     currentScriptTask = new ScriptTask(script);
@@ -46,9 +45,8 @@ public class ScriptRunner {
       currentScriptTask = null;
       currentScriptListenable.cancel(true);
       currentScriptListenable = null;
-      controller.clear();
+      controllerService.clear();
     }
   }
-
 
 }
