@@ -74,7 +74,7 @@ public class ScriptParser {
       return null;
     }
     try {
-      scriptClass = CompilerUtils.CACHED_COMPILER.loadFromJava(className, code);
+      scriptClass = CompilerUtils.CACHED_COMPILER.loadFromJava(new ScriptClassLoader(),className, code);
     } catch (ClassNotFoundException e) {
       log.error(
           "cannot found class {} in script {} , please check the script and make sure its name is the same as the class name",

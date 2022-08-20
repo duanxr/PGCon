@@ -393,7 +393,7 @@ public class MainPanel {
       initializeScripts();
       Platform.runLater(() -> {
         scriptSelection.setPromptText("Please select a script");
-        Set<String> scripts = scriptManager.getScriptNames();
+        List<String> scripts = scriptManager.getScriptNames();
         scriptSelection.getItems().addAll(scripts);
         PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_SCRIPT, scriptSelection,
             scripts);
@@ -463,7 +463,9 @@ public class MainPanel {
     loadProtocol();
     ScriptCache<Object> script = findScript(getCurrentSelectedScriptName());
     if (enableDebug.get()) {
+      guiLogger.info("reload script {}", script.getScript().getInfo().getName());
       scriptService.reloadScripts(script);
+      guiLogger.info("reload script {} success", script.getScript().getInfo().getName());
     }
     scriptConfigurationWindow.hide();
     scriptRunner.run(script.getScript(), () -> Platform.runLater(this::enableScripts));

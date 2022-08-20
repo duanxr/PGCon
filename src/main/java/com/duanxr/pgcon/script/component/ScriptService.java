@@ -6,6 +6,8 @@ import com.duanxr.pgcon.script.api.Script;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
+import lombok.SneakyThrows;
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +30,7 @@ public class ScriptService {
     this.scriptParser = scriptParser;
     this.scriptManager = scriptManager;
   }
+
   public void loadScripts() {
     List<File> files = scriptLoader.loadScripts();
     if (!files.isEmpty()) {
@@ -37,15 +40,22 @@ public class ScriptService {
       guiLogger.error("no script file found");
     }
   }
+
+  @SneakyThrows
   public void reloadScripts(ScriptCache<Object> scriptCache) {
     Script<Object> script = scriptParser.compileScript(scriptCache.getScriptFile());
     if (script == null) {
       throw new AlertErrorException(
           "compile script " + scriptCache.getScriptFile().getName() + " failed");
     }
+    try {
+      BeanUtils.copyProperties(script.getInfo(), scriptCache.getScript().getInfo());
+    } catch (Exception e) {
+      throw new AlertErrorException(
+          "copy properties from script " + scriptCache.getScriptFile().getName() + " failed");
+    }
     scriptCache.setScript(script);
   }
-
 
 
 }

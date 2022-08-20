@@ -2,10 +2,12 @@ package com.duanxr.pgcon.script.component;
 
 import com.duanxr.pgcon.script.api.Script;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
 /**
@@ -40,9 +42,10 @@ public class ScriptManager {
     classMap.put((Class<? extends Script<Object>>) scriptCache.getScript().getClass(), scriptCache);
   }
 
-  public Set<String> getScriptNames() {
+  public List<String> getScriptNames() {
     return nameMap.values().stream()
         .filter(scriptCache -> !scriptCache.getScript().getInfo().isHidden())
-        .map(ScriptCache::getScriptName).collect(Collectors.toSet());
+        .map(ScriptCache::getScriptName).filter(Strings::isNotBlank)
+        .sorted().collect(Collectors.toList());
   }
 }
