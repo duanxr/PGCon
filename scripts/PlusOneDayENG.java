@@ -12,45 +12,46 @@ import lombok.SneakyThrows;
 /**
  * @author 段然 2022/7/25
  */
-public class PlusOneDayCHS extends PGConScriptEngineV1<Object> {
+public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
+
   private static final ImageCompare.Param DATE_CHANGE_MENU = ImageCompare.Param.builder()
-      .area(Area.ofRect(104, 52, 218, 54))
+      .area(Area.ofRect(94, 40, 330, 72))
       .method(ImageCompare.Method.TM_CCOEFF)
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
-          .binaryThreshold(0.0)
           .inverse(false)
           .threshType(
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .template(
-          "{\"R\":54,\"C\":218,\"T\":0,\"D\":\"H/8BAP////9jLgAACwAPMAALD28ALA/ZAFcXAAsAFgAKAAQBAA4wAB8AbwArHgB+AA/KADMPawAHBQsALgAA2wAP2gAYDhYBD9oACR8ArQAYDZwADQEAD9oAJw/ZABovAADaABEOdAAOqwAP2gAfDxwAAwMIAA/aAFAG2wAP2gA8Dx0ABArIAR7/igAPOQIJHwDaABof/9oAHQ+bAwgP2gATDokADzMBDwszAA/aAAIPuQMaDrQBDy8AGA+fAAIK/AAPDAIWDDMAD9oABQ8IBhcP2gAuDBoAD9oAIx//2gAkL///2gBCD9AGAA6OAg+ZABsPjgIICzsDDs4GD9oAPA/2BQIP2gA0D+EBCR8A2gBPDFMCD9oABh8A2gAZH//aABcOjgQP2gBIDngFDiYDD9oALAneAQ/aAJ4JGQAMaQMP2gBPH/9eCQYPjgIuH/9OBwwPkwAFDxwFXB8AsgkSD6oHFw8qAAUP2gBRH//aACMO8AEP2gA6D9sAAw7sCw+qBxgP2gAhDqoDD9oALw+GABAOQgQPhAgAD1AOHA7aAB8A2gC5Bh0CCiUCD9oAER8A2gCICRUAD9oAEw6iAA9oA1oP2gAiDuoFD9AGRA/aAOkJlwIP2gAnCQkAHwAEARIf/6oHNw8tAQIOlQMP2gBbD6oHMQ9fBAMPVQQBD40EBg/aABEOPQwP2gBNHwABABIOKgAP2gCPH/+zAQYMLQAP2gAsH//aAF4CEAAO0w8OcwYP2gAsDl0AD9oAUgVHAA5XAQ+RDQMPsAAhDxwFXQ8zCAUP2gBfHwDQBkcO2gAPqgcaCVEADjIGD9oAXwpHAA+cCwIP6wsoD1QPFB7/2QoPOAogD1YMCAUaBQ/aACof/9oAIA9YABIv///sCxkeAAQGDk8ND9kAGwj8AQ/aAGcNfgAOHg8PXgkICOoGD14NFQ/aAFQOuQALdwMPUgIBD1EDDg6rAQ4sAA8NBBEvAADaAAcPNgERHv/mBA7aAA/ZABkPhB0JDsUDD9oAIg9sAQAPfg0QDXYDD+sLBg8PDBoP2gAcDn4ADwEAbw+rAA4PAQD/////////0lD//////w==\",\"L\":11772}")
+          "{\"R\":72,\"C\":330,\"T\":0,\"D\":\"H/8BAP///////////////////////////////j8AAACRAH0e/5IAD0kBky8AABcACQYJAAZ1AQ5+AQ+SAD0LAQAv//9KAaUfAAEABg40AA9KAVEPbwAXLwAASgGVHwBKAWQPcQAUDsECD0oBjg+SAEsPiwACD0oBog3JAA6mBg+SAFgOSwEPSgGhD8sDBQ+UAlYOhgAPSgGEH/9KAZMOhwAPlAL/Jg8kARQDBgQfAEoB/w8fABQHAg4TAArsBw6zBg8zCAwJFgAPqgUKDtIID0oBGwm/AB7/mAYPeAAOD0oBIQmJAAo1AQ4VAA8WAAUPewkVCo0ADkEAD34BAg9KASsLagAP3gECD9MAAQ9KAToPYAEDDyMBAg9KASEvAADSABEvAABKASofALgLBQ4oAw7TAA9KATcOjgANEwAPzwkDL///UQAKCc4KDmUBD0oBOQ6qAA5ZAA/dAQQPSgEeCncADqEADtcLDxwAAC8AAMgRDw6zAQ4NAA4bAA+UAjQLVgEOxgAP0wAAD0oBKQ4YAA9KARAPlQohDz0BAA8CBwMPSgE0DpkBDuIADtMAD0oBIR8A9wMQDkwAD5UKJw4wAQ8aAAQf/0oBMh//MAEOD3cAAg9KAU8NMQAOuQsPGgoMD5oBAA/UDgUPSgEwDiwADcIBDtMAD0oBsR//SgG5DMEGDkUEDxsPGwyjBA9KAVYf/0oBEx8ASgFADgsID0oBAA9RCAwPlQEBD0oBdw4oAA/TAAYPSgEpHwBKATwvAABKAdwOJAEPSgEzHwBKAS8f/ygFKw9KAVgL4AAGDwAPcgYGD0kBIA5qAA9KAZEf/0oBJQ52AA9yBhUP5AAJHwC8B30PSgEGD1YTNw5nAA8GCQcPcwAYD0oB/w0PHg4SD0oBlx//SgEvHwBKAYAfAEoBoS8AAA8MCA/gCgsPSgEeDrwHD3gPEg9KAVcfAEoBKA0uAQ9KARgfAHIAHA8GCQkPDBIID0oBVA5LAQ9KARgN7QcOEAkPZgESARAAH/9hCRoPXBIJDngAD0oBEB//mgssDmkIDlYHDiULDzYJBi8AAJoLCg0KBA5GAA5zAA+aCx0OqAAP5AxSDtMAD0oBHw8jAAwf/0sBBA8sDiQPSgEQDtEBD94DUi///0oBLA8kAAgPsgEED+oQBA9KATcPhgABD0oBUR//SgEnDyYACQQNAA/8BQkOMwIPUQAWDw0DAA82AAIOCAwPSwcWH/9qAAUODgAP0wACDwEA////////////////////////////////ilD//////w==\",\"L\":23760}")
       .build();
   private static final ImageCompare.Param DATE_SETTING_MENU = ImageCompare.Param.builder()
-      .area(Area.ofRect(1432, 648, 250, 110))
+      .area(Area.ofRect(90, 400, 296, 58))
       .method(ImageCompare.Method.TM_CCOEFF)
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
-          .binaryThreshold(0.0)
           .inverse(false)
           .threshType(
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .template(
-          "{\"R\":110,\"C\":250,\"T\":0,\"D\":\"H/8BAP////////////++EQABAA/eAMcA4QAP+AACDwEA1Q/5AOYvAAD5AOYL+wAO4gMPzQTJD/kA4Q3rAA75AA/7ANQfAPoA/////8kP3AXxD/oA////////////////////////9Q/UGwINBxQO8hkP+gCsD9EcBw7lGw/6ALkPzB0JDAgWHwDuArgPyB4LDIwAD/oAvwwJAQ76AA75AA/6AKsPqyAELQAA+gAOeAMP+gCwDxQACAUKAB8A+gC8DtAAC4MABAkADmQGD/oAsA8RAQoDCAAfAPoAvQ7RAAyEAAIIAA75AA/6ALEf//oADR4A+QAP+gDIBRoABe4HD7gLuw5dAA/6AAYf//oA///cD+gD4w/cBdoF7AAP0AfiHwDECfEO+wAPuAvWDvoAD6wNwwcWAA+gD+YKqg8OoQ8PlBHHDhoTD44Sti//AIgTCg4bAA98FdUKfwAfAHAX2A5+Fy8AAGQZ4h//+gC+DpoMD1gbBB//+gBcDwEAew/6AP/////////////////////////////gDvsAD/oA2h8A+QDhDuwcDwEAxw/6AOoOBgIP+QDjD/wA1R//AQD/////////yVD//////w==\",\"L\":27500}")
+          "{\"R\":58,\"C\":296,\"T\":0,\"D\":\"H/8BAP///////////////////7YvAP8BAP8TTwAAAAAuABkPiABJBwEAL///KAGPHwABAAIOLQAPJwE9DisBDygBih8AKAF0D2sACw6PAA8oAV0PUAJnDYEADygBex//5AERAxMAD68BVg4pAQ9QAn4OiAAP1wJnD7wADw+hAFgPKAGDDCkBDGICDsoED14BEQ/TAwEfADoABglzBB//5AUZDlsADqEADj4DDygBIggVAA4EBA8TAAsPSwQQCBUADxQFAwgtAA4oAQ81BAwPWwAADqgBDrcADygBKx8AKAESDiwHD6QJEQ9mBwYJFQAPeAMaD7gABA6oAQ63AA8oASEJmAEJjwEPNQACCo0AD1YHBy8A/ykBAw92BwIOAwIPUAIcDSIBL/8AaAAADnwDDygBIgcJDA8oAQYMawIP3QcLDjIED0QACA8oASwIMgEfAH4ADQ8oASsf/44DBQ8nAQEv//+aARoMEgEPXQAADygBKg5sAQihAAiZCQ8oAVUf/3IAIg7VBQ5BAA6lCA8oARYOJgAPIgAFL///CwklHwAvCAUPKAE8H/8oAWkf/ygBQh8AKAEHH/9oDBMLRgAPKAESH/8oASYf/ygBGR//KAEnC9sADAgIDq4BDnEAD0MJDA6JAg5YCg5oCg8oATMPjwEBDygBKi8AACgBDwxUAQ9CCQIPKAF/Dk4MDygBJgvgAA9ACQAPmBESHwBuAQ0JcgAPKAFWDrcAD/AGJA7YAA8oASIOZQEPKAHBDrMADigBDycBCw6aBw8oAYEf/+ANJgsdAA4oAQ7JAA9kAAYPKAGADrcADygBMh8AKAEoH/8oARkO2QgPGAhPDygBIQ7KAA+QCw0PKAFLD0AJRR8AKAErD5IGBB8AKAEzD/AGDQ3VAw8oAUQf/ygBLA4ACA+zBgQP9AsiLwAAKAESDnYADygBQi8AAHYeFh8AvAYCCx4ALwD/QQkDDZIPD2YKCQ1gAA/WAwkKMAAPKAFCDGgADygBEA8iBwYvAABpCgcPDwAAD44LFA+yDw0OsQcPKAFCDrcADygBGw8fAAQOywAP2gAEL///kAskD8EAAC///1ACHR//KAECD7oODy///ykBGh//TAsJDxINBQ8jAxQM7AEITwAJwAAJXwAvAAC9AAkPEQAFCpwAD2gABw4mAQ8BAP////////////////////8tUP//////\",\"L\":17168}")
       .build();
   private static final ImageCompare.Param ENABLE_TIME_SYNC = ImageCompare.Param.builder()
-      .area(Area.ofRect(1502, 230, 72, 40))
-      .method(ImageCompare.Method.TM_CCOEFF)
+      .area(Area.ofRect(1514, 222, 68, 56))
+      .method(ImageCompare.Method.TM_CCORR)
+      .preProcessor(com.duanxr.pgcon.core.preprocessing.config.NormalizePreProcessorConfig.builder()
+          .enable(true)
+          .build())
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
-          .binaryThreshold(0.0)
           .inverse(false)
           .threshType(
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .template(
-          "{\"R\":40,\"C\":72,\"T\":0,\"D\":\"H/8BAP/yLgAADQAODgAPRwAQLwAADQADAA4ABBUACQEAD0gADgsmAA1BAA9JABQNIwAENQAORwAPSAAbBNoACCwBBxMAD7oADgU5AAnlAA5IAA8BARIMuwEPSABQAhUABz4AAw8ADjEADkgAD0YCEA9kAAEHawAPSAAgDz8CGA7iAQ+QACkPSAADDpICDyABJQ1HAA5oAQT3AQYFARn/AwEGMQAuAABIAA8+AhEPSAAEHwBIACwEqwAP0AIgBkgAA+sDDkgAD2gBBw/sAwIPngABD64BDAsiAAZAAg8YAxUNWQEKSAAPYAMVB3MADpoDD6gDFgrTAS8AAAwFAx8ASAAMCnkDCDAAD4gCFwwiAA6eAA/5AgQPRgAOCRMAD7kCBw/UAAoNFgAPTQcADpAADngHDvwDD/QHMR//AQD/LlD//////w==\",\"L\":2880}")
+          "{\"R\":56,\"C\":68,\"T\":0,\"D\":\"H/8BAP////9BFAABAA0XAAsJAA9BAA4LRgAGEAAOXwAPRAALAiwAFwBEAA6jAA9DAA0GLgAPhwAXCiEACA4ADg4BD0MAEgkQAAbZAAQJAA9DABMGEgAN4wAPRAAKDxQAAA4mAQ9EACEPiAAbDxQABggQAQPvAQ9EABYEFQAOmAEPRABGD+gAAh8ARAB3H/9EAFwPRQABHwBEAGEOMQMGEQAOTQAPPgQKDlQADwoFIA4NAA9EABkG7AQMXQMPRAAZDpUFD3wDAA9FABkf/xoGAA5DAA9cARMOPAAPAQD////2UP//////\",\"L\":3808}")
       .build();
   private static final ImageCompare.Param MAIN_MENU = ImageCompare.Param.builder()
       .area(Area.ofRect(1248, 778, 72, 78))
@@ -79,48 +80,48 @@ public class PlusOneDayCHS extends PGConScriptEngineV1<Object> {
           "{\"R\":88,\"C\":88,\"T\":0,\"D\":\"H/8BAP///4kRAAEAD1cAPw9YAP9UHwAIAdovAABYABYObAAPnAALH/9gARMOxQAPWgMbLgAAWQAOHgEP+gEbBlQADxoABg9YABkfAFYABAYcAB8AWAAjHwBWAAYNHAAPCQETDwEAGQ+5ARkPVwBED1kABx//VwArL///OwAJD1YAJww9AA4dAA9YACYPRAILD1cAJw/zAgQOEgMPVwA7DpAFD1cAHg9ZAA0PHgY+DlgAD3UGFg+aBhIPzQY+D1gAJg+cBj0fAFgASw8pABYPWABsHwBYADsO/wQPUAUfDyQAAQ9YAHgf/1gAnB4ANQAPYAFWD1kAAw9DAhsPwAJaDy8AAA8hBBQP0ARFD1gAlA/pAgAPMAZkDzgHGR8A6AdED5gIci//AEgJRA9ZAAwfAFgAMB8AUAo4DlAED1gLMg5YBQNbBQ8ZAAIPWAAsHwC3DEYfAGcNNQ9jAAkv//8XDiYPvAAJD8gOJw8WAQgf/3gPKA9xAQYPzgMBD4AQLw8sAAIPMBEYD4gRQS//AMUFGA9LEi4OXQMP+BQ5D1gA//YOMhQPAQD///8gUP//////\",\"L\":7744}")
       .build();
   private static final OCR.Param TIME_DAY = OCR.Param.builder()
-      .area(Area.ofRect(766, 664, 98, 74))
+      .area(Area.ofRect(376, 660, 96, 88))
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
-          .binaryThreshold(0.0)
           .inverse(false)
           .threshType(
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .apiConfig(ApiConfig.builder()
           .method(OCR.Method.NMU)
-          .whitelist("1234567890")
+          .whitelist("0123456789")
           .build())
       .build();
+
+
   private static final OCR.Param TIME_MONTH = OCR.Param.builder()
-      .area(Area.ofRect(564, 660, 110, 84))
+      .area(Area.ofRect(170, 658, 116, 92))
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
-          .binaryThreshold(0.0)
           .inverse(false)
           .threshType(
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .apiConfig(ApiConfig.builder()
           .method(OCR.Method.NMU)
-          .whitelist("1234567890")
+          .whitelist("0123456789")
           .build())
       .build();
   private static final OCR.Param TIME_YEAR = OCR.Param.builder()
-      .area(Area.ofRect(270, 670, 190, 68))
+      .area(Area.ofRect(590, 668, 186, 72))
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
           .enable(true)
-          .binaryThreshold(0.0)
           .inverse(false)
           .threshType(
               com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.ThreshType.OTSU)
           .build())
       .apiConfig(ApiConfig.builder()
           .method(OCR.Method.NMU)
-          .whitelist("1234567890")
+          .whitelist("0123456789")
           .build())
       .build();
-  public PlusOneDayCHS() {
+
+  public PlusOneDayENG() {
     super(ScriptInfo.builder()
         .isLoop(false)
         .isHidden(true)
@@ -233,12 +234,6 @@ public class PlusOneDayCHS extends PGConScriptEngineV1<Object> {
     Long day = dayF.get();
     LocalDate currentDay = LocalDate.of(year.intValue(), month.intValue(), day.intValue());
     LocalDate nextDay = currentDay.plusDays(1);
-    if (currentDay.getYear() != nextDay.getYear()) {
-      press(D_TOP);
-      sleep(300);
-    }
-    press(A);
-    sleep(150);
     if (currentDay.getMonthValue() != nextDay.getMonthValue()) {
       press(D_TOP);
       sleep(300);
@@ -255,6 +250,14 @@ public class PlusOneDayCHS extends PGConScriptEngineV1<Object> {
     }
     press(A);
     sleep(150);
+    if (currentDay.getYear() != nextDay.getYear()) {
+      press(D_TOP);
+      sleep(300);
+    }
+    press(A);
+    sleep(150);
+    press(A);
+    sleep(150);
     press(A);
     sleep(150);
     press(A);
@@ -267,8 +270,7 @@ public class PlusOneDayCHS extends PGConScriptEngineV1<Object> {
   private void backToGame() {
     press(HOME);
     sleep(1000);
-    press(HOME);
-    sleep(1000);
+    script("LunchGameENG");
   }
 
 }
