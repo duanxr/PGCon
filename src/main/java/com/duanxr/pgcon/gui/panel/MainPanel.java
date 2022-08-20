@@ -1,11 +1,6 @@
 package com.duanxr.pgcon.gui.panel;
 
 import com.dooapp.fxform.FXForm;
-import com.duanxr.pgcon.gui.display.DisplayService;
-import com.duanxr.pgcon.input.FrameCacheService;
-import com.duanxr.pgcon.input.FrameCacheService.CachedFrame;
-import com.duanxr.pgcon.output.ProtocolService;
-import com.duanxr.pgcon.script.component.ScriptService;
 import com.duanxr.pgcon.config.GuiConfig;
 import com.duanxr.pgcon.config.InputConfig;
 import com.duanxr.pgcon.config.OutputConfig;
@@ -15,19 +10,24 @@ import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
 import com.duanxr.pgcon.exception.AlertErrorException;
 import com.duanxr.pgcon.gui.FXFormGenerator;
+import com.duanxr.pgcon.gui.display.DisplayService;
 import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
+import com.duanxr.pgcon.input.FrameCacheService;
+import com.duanxr.pgcon.input.FrameCacheService.CachedFrame;
 import com.duanxr.pgcon.input.impl.CameraImageInput;
 import com.duanxr.pgcon.log.GuiLogLevel;
 import com.duanxr.pgcon.log.GuiLogView;
 import com.duanxr.pgcon.log.GuiLogger;
+import com.duanxr.pgcon.output.ControllerService;
+import com.duanxr.pgcon.output.ProtocolService;
 import com.duanxr.pgcon.output.api.Protocol;
 import com.duanxr.pgcon.script.api.Script;
 import com.duanxr.pgcon.script.api.ScriptInfo;
 import com.duanxr.pgcon.script.component.ScriptCache;
 import com.duanxr.pgcon.script.component.ScriptManager;
 import com.duanxr.pgcon.script.component.ScriptRunner;
-import com.duanxr.pgcon.output.ControllerService;
+import com.duanxr.pgcon.script.component.ScriptService;
 import com.duanxr.pgcon.util.CallBackUtil;
 import com.duanxr.pgcon.util.PropertyCacheUtil;
 import com.duanxr.pgcon.util.SaveUtil;
@@ -462,6 +462,9 @@ public class MainPanel {
     checkSelections();
     loadProtocol();
     ScriptCache<Object> script = findScript(getCurrentSelectedScriptName());
+    if (enableDebug.get()) {
+      scriptService.reloadScripts(script);
+    }
     scriptConfigurationWindow.hide();
     scriptRunner.run(script.getScript(), () -> Platform.runLater(this::enableScripts));
     disableSelections();

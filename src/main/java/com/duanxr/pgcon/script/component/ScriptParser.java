@@ -2,6 +2,7 @@ package com.duanxr.pgcon.script.component;
 
 import com.duanxr.pgcon.component.PGConComponents;
 import com.duanxr.pgcon.log.GuiLogger;
+import com.duanxr.pgcon.script.api.Script;
 import com.duanxr.pgcon.script.engine.BasicScriptEngine;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -27,23 +28,29 @@ public class ScriptParser {
     this.component = component;
   }
 
-  @SuppressWarnings("unchecked")
   public ScriptCache<Object> parseScript(File scriptFile) {
-    String name = scriptFile.getName();
-    Object scriptInstance = compileScript(scriptFile);
+    Script<Object> script = compileScript(scriptFile);
+    if (script != null) {
+      guiLogger.info("compile script {} success", scriptFile.getName());
+      return ScriptCache.builder()
+          .scriptName(script.getInfo().getName())
+          .script(script)
+          .scriptFile(scriptFile)
+          .build();
+    }
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public Script<Object> compileScript(File scriptFile) {
+    Object scriptInstance = compileJava(scriptFile);
     if (scriptInstance != null) {
       if (checkEngine(scriptInstance)) {
         BasicScriptEngine<Object> script = (BasicScriptEngine<Object>) scriptInstance;
         script.setComponents(component);
-        ScriptCache<Object> scriptCache = ScriptCache.builder()
-            .scriptName(script.getInfo().getName())
-            .script(script)
-            .scriptFile(scriptFile)
-            .build();
-        guiLogger.info("compile script {} success", name);
-        return scriptCache;
+        return script;
       } else {
-        guiLogger.error("script {} didn't implement any ScriptEngine", name);
+        guiLogger.error("script {} didn't implement any ScriptEngine", scriptFile.getName());
       }
     }
     return null;
@@ -54,7 +61,7 @@ public class ScriptParser {
   }
 
   @SneakyThrows
-  private Object compileScript(File file) {
+  public Object compileJava(File file) {
     String name = file.getName();
     String className = name.substring(0, name.lastIndexOf("."));
     String code = null;
