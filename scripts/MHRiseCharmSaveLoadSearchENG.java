@@ -488,7 +488,7 @@ public class MHRiseCharmSaveLoadSearchENG extends PGConScriptEngineV1<MHRiseChar
     super(ScriptInfo.<MHRiseCharmSaveLoadSearchENG.Config>builder()
         .config(new MHRiseCharmSaveLoadSearchENG.Config())
         .isLoop(true)
-        .name("MHR Charm S&L Search(ENG.Ver)")
+        .description("MHR Charm S&L Search(ENG.Ver)")
         .build());
     this.slotTargets = new ArrayList<>();
     this.skillTargets = new ConcurrentHashMap<>();

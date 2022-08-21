@@ -8,7 +8,7 @@ public class Test extends PGConScriptEngineV1<Object> {
 
   public Test() {
     super(ScriptInfo.builder()
-        .name("Test")
+        .description("Test")
         .build());
   }
 

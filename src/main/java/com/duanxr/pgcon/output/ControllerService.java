@@ -1,5 +1,7 @@
 package com.duanxr.pgcon.output;
 
+import static com.duanxr.pgcon.config.ConstantConfig.AUTO_RELEASE_DELAY;
+
 import com.duanxr.pgcon.component.DaemonTask;
 import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.gui.display.DisplayService;
@@ -22,8 +24,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ControllerService {
-
-  private static final int AUTO_RELEASE_DELAY = 10;
   private static final ButtonAction[] BUTTON_ACTIONS = ButtonAction.values();
   private final long[] buttonExpired;
   private final DisplayService displayService; //TODO DEBUG WITH CONTROLLER IN THE CANVAS
@@ -57,7 +57,7 @@ public class ControllerService {
         release(BUTTON_ACTIONS[i]);
       }
     }
-    TimeUnit.MILLISECONDS.sleep(5);
+    TimeUnit.MILLISECONDS.sleep(AUTO_RELEASE_DELAY);
   }
 
   public synchronized void release(StickAction action) {

@@ -12,7 +12,8 @@ import lombok.Data;
 @Builder
 public class ScriptCache<T> {
 
-  private String scriptName;
+  private String name;
+  private String description;
   private Script<T> script;
   private File scriptFile;
 

@@ -1,7 +1,6 @@
 import com.dooapp.fxform.annotation.FormFactory;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.detect.api.OCR;
-import com.duanxr.pgcon.core.detect.api.OCR.ApiConfig;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.gui.fxform.annotation.ConfigLabel;
 import com.duanxr.pgcon.gui.fxform.factory.ReadOnlyLabelFactory;
@@ -50,7 +49,7 @@ public class MHRiseAutoAmiiboENG extends PGConScriptEngineV1<MHRiseAutoAmiiboENG
   public MHRiseAutoAmiiboENG() {
     super(ScriptInfo.<MHRiseAutoAmiiboENG.Config>builder()
         .isLoop(true)
-        .name("MHR Auto Amiibo(ENG.Ver)")
+        .description("MHR Auto Amiibo(ENG.Ver)")
         .config(new Config())
         .build());
   }

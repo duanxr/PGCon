@@ -42,8 +42,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -66,6 +66,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -323,7 +324,7 @@ public class MainPanel {
   }
 
   private void bindScriptConfigurationToGUI(ScriptInfo<Object> scriptInfo) {
-    String scriptName = scriptInfo.getName();
+    String scriptName = scriptInfo.getDescription();
     String cacheKey = getScriptConfigurationCacheKey(scriptName);
     Object registerConfig = scriptInfo.getConfig();
     PropertyCacheUtil.bindPropertyBean(cacheKey, registerConfig);
@@ -393,7 +394,7 @@ public class MainPanel {
       initializeScripts();
       Platform.runLater(() -> {
         scriptSelection.setPromptText("Please select a script");
-        List<String> scripts = scriptManager.getScriptNames();
+        List<String> scripts = scriptManager.getScriptDescriptions();
         scriptSelection.getItems().addAll(scripts);
         PropertyCacheUtil.bindStringsComboBoxProperty(CACHE_KEY_SELECTED_SCRIPT, scriptSelection,
             scripts);
@@ -441,7 +442,7 @@ public class MainPanel {
   }
 
   private ScriptCache<Object> findScript(String scriptName) {
-    ScriptCache<Object> script = scriptManager.getScript(scriptName);
+    ScriptCache<Object> script = scriptManager.getScriptByDescription(scriptName);
     if (script == null) {
       throw new AlertErrorException("cannot find script: " + scriptName);
     }
@@ -458,14 +459,16 @@ public class MainPanel {
     }
   }
 
+  @SneakyThrows
   private void runScript() {
     checkSelections();
     loadProtocol();
     ScriptCache<Object> script = findScript(getCurrentSelectedScriptName());
     if (enableDebug.get()) {
-      guiLogger.info("reload script {}", script.getScript().getInfo().getName());
+      guiLogger.info("reload script {}", script.getScript().getInfo().getDescription());
+      TimeUnit.MILLISECONDS.sleep(1000);
       scriptService.reloadScripts(script);
-      guiLogger.info("reload script {} success", script.getScript().getInfo().getName());
+      guiLogger.info("reload script {} success", script.getScript().getInfo().getDescription());
     }
     scriptConfigurationWindow.hide();
     scriptRunner.run(script.getScript(), () -> Platform.runLater(this::enableScripts));
@@ -523,6 +526,7 @@ public class MainPanel {
   }
 
   private void enableScripts() {
+    scriptRunner.stop();
     run.setText("RUN!");
     protocolSelection.setDisable(false);
     portSelection.setDisable(false);

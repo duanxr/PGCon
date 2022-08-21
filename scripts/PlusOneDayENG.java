@@ -79,6 +79,7 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
       .template(
           "{\"R\":88,\"C\":88,\"T\":0,\"D\":\"H/8BAP///4kRAAEAD1cAPw9YAP9UHwAIAdovAABYABYObAAPnAALH/9gARMOxQAPWgMbLgAAWQAOHgEP+gEbBlQADxoABg9YABkfAFYABAYcAB8AWAAjHwBWAAYNHAAPCQETDwEAGQ+5ARkPVwBED1kABx//VwArL///OwAJD1YAJww9AA4dAA9YACYPRAILD1cAJw/zAgQOEgMPVwA7DpAFD1cAHg9ZAA0PHgY+DlgAD3UGFg+aBhIPzQY+D1gAJg+cBj0fAFgASw8pABYPWABsHwBYADsO/wQPUAUfDyQAAQ9YAHgf/1gAnB4ANQAPYAFWD1kAAw9DAhsPwAJaDy8AAA8hBBQP0ARFD1gAlA/pAgAPMAZkDzgHGR8A6AdED5gIci//AEgJRA9ZAAwfAFgAMB8AUAo4DlAED1gLMg5YBQNbBQ8ZAAIPWAAsHwC3DEYfAGcNNQ9jAAkv//8XDiYPvAAJD8gOJw8WAQgf/3gPKA9xAQYPzgMBD4AQLw8sAAIPMBEYD4gRQS//AMUFGA9LEi4OXQMP+BQ5D1gA//YOMhQPAQD///8gUP//////\",\"L\":7744}")
       .build();
+  private static final long TIMEOUT = 2000L;
   private static final OCR.Param TIME_DAY = OCR.Param.builder()
       .area(Area.ofRect(376, 660, 96, 88))
       .preProcessor(com.duanxr.pgcon.core.preprocessing.config.ThreshPreProcessorConfig.builder()
@@ -125,7 +126,7 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
     super(ScriptInfo.builder()
         .isLoop(false)
         .isHidden(true)
-        .name("PlusOneDayCHS")
+        .description("PlusOneDayENG")
         .build());
   }
 
@@ -164,7 +165,7 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
         result -> result.getSimilarity() > 0.9,
         () -> {
           press(HOME);
-          sleep(1000);
+          sleep(2000);
         });
   }
 
@@ -185,7 +186,7 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
     sleep(700);
     until(() -> detect(SETTING_MENU),
         input -> input.getSimilarity() > 0.9,
-        () -> sleep(150), 10000L, this::reset);
+        () -> sleep(150), TIMEOUT, this::reset);
     hold(D_BOTTOM);
     sleep(1500);
     release(D_BOTTOM);
@@ -200,7 +201,7 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
     sleep(500);
     until(() -> detect(DATE_CHANGE_MENU),
         input -> input.getSimilarity() > 0.9,
-        () -> sleep(150), 10000L, this::reset);
+        () -> sleep(150), TIMEOUT, this::reset);
   }
 
   private void checkIfDateIsSyncByInternet() {
@@ -209,7 +210,7 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
         () -> {
           press(A);
           sleep(500);
-        }, 10000L, this::reset);
+        }, TIMEOUT, this::reset);
   }
 
   private void toDateSetting() {
@@ -221,14 +222,14 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
     sleep(150);
     until(() -> detect(DATE_SETTING_MENU),
         input -> input.getSimilarity() > 0.9,
-        () -> sleep(150), 10000L, this::reset);
+        () -> sleep(150), TIMEOUT, this::reset);
   }
 
   @SneakyThrows
   private void plusOneDay() {
-    Future<Long> yearF = async(() -> detectAccurateLong(TIME_YEAR, 3, 10000L, this::reset));
-    Future<Long> monthF = async(() -> detectAccurateLong(TIME_MONTH, 3, 10000L, this::reset));
-    Future<Long> dayF = async(() -> detectAccurateLong(TIME_DAY, 3, 10000L, this::reset));
+    Future<Long> yearF = async(() -> detectAccurateLong(TIME_YEAR, 3, TIMEOUT, this::reset));
+    Future<Long> monthF = async(() -> detectAccurateLong(TIME_MONTH, 3, TIMEOUT, this::reset));
+    Future<Long> dayF = async(() -> detectAccurateLong(TIME_DAY, 3, TIMEOUT, this::reset));
     Long year = yearF.get();
     Long month = monthF.get();
     Long day = dayF.get();
@@ -241,7 +242,7 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
     press(A);
     sleep(150);
     if (currentDay.getDayOfMonth() != nextDay.getDayOfMonth()) {
-      until(() -> detectAccurateLong(TIME_DAY, 3, 10000L, this::reset),
+      until(() -> detectAccurateLong(TIME_DAY, 3, TIMEOUT, this::reset),
           input -> input == nextDay.getDayOfMonth(),
           () -> {
             press(D_TOP);

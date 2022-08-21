@@ -27,7 +27,7 @@ public class EasyConSerialPort implements SerialPort<byte[]> {
     semaphore = new Semaphore(0);
     CommPortIdentifier commPortIdentifier = CommPortIdentifier.getPortIdentifier(portName);
     serialPort = (purejavacomm.SerialPort) commPortIdentifier.open("SerialCon",
-        500);
+        1000);
     serialPort.setSerialPortParams(
         baudRate,
         purejavacomm.SerialPort.DATABITS_8,

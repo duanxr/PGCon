@@ -1,10 +1,8 @@
 package com.duanxr.pgcon.script.component;
 
-import com.duanxr.pgcon.script.api.Script;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.util.Strings;
@@ -16,36 +14,37 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScriptManager {
 
-  private final Map<Class<? extends Script<Object>>, ScriptCache<Object>> classMap;
   private final Map<String, ScriptCache<Object>> nameMap;
 
+  private final Map<String, ScriptCache<Object>> descriptionMap;
+  
   public ScriptManager() {
+    this.descriptionMap = new ConcurrentHashMap<>();
     this.nameMap = new ConcurrentHashMap<>();
-    this.classMap = new ConcurrentHashMap<>();
   }
 
-  public ScriptCache<Object> getScript(String scriptName) {
+  public ScriptCache<Object> getScriptByDescription(String scriptName) {
+    return descriptionMap.get(scriptName);
+  }
+
+  public ScriptCache<Object> getScriptByName(String scriptName) {
     return nameMap.get(scriptName);
   }
 
   public Collection<ScriptCache<Object>> getScripts() {
-    return nameMap.values();
+    return descriptionMap.values();
   }
 
-  public ScriptCache<Object> getScript(Class<? extends Script<Object>> scriptClass) {
-    return classMap.get(scriptClass);
-  }
 
-  @SuppressWarnings("unchecked")
   public void putScript(ScriptCache<Object> scriptCache) {
-    nameMap.put(scriptCache.getScriptName(), scriptCache);
-    classMap.put((Class<? extends Script<Object>>) scriptCache.getScript().getClass(), scriptCache);
+    descriptionMap.put(scriptCache.getDescription(), scriptCache);
+    nameMap.put(scriptCache.getName(), scriptCache);
   }
 
-  public List<String> getScriptNames() {
-    return nameMap.values().stream()
+  public List<String> getScriptDescriptions() {
+    return descriptionMap.values().stream()
         .filter(scriptCache -> !scriptCache.getScript().getInfo().isHidden())
-        .map(ScriptCache::getScriptName).filter(Strings::isNotBlank)
+        .map(ScriptCache::getDescription).filter(Strings::isNotBlank)
         .sorted().collect(Collectors.toList());
   }
 }

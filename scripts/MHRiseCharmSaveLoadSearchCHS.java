@@ -520,7 +520,7 @@ public class MHRiseCharmSaveLoadSearchCHS extends PGConScriptEngineV1<MHRiseChar
     super(ScriptInfo.<MHRiseCharmSaveLoadSearchCHS.Config>builder()
         .config(new MHRiseCharmSaveLoadSearchCHS.Config())
         .isLoop(true)
-        .name("MHR Charm S&L Search(CHS.Ver)")
+        .description("MHR Charm S&L Search(CHS.Ver)")
         .build());
     this.slotTargets = new ArrayList<>();
     this.skillTargets = new ConcurrentHashMap<>();
@@ -1136,6 +1136,7 @@ public class MHRiseCharmSaveLoadSearchCHS extends PGConScriptEngineV1<MHRiseChar
   }
 
   private void launchGame() {
+    script("LunchGameCHS");
     until(() -> detect(MHR_IN_GAME),
         result -> result.getSimilarity() > MHR_IN_GAME_MENU_THRESHOLD,
         () -> {

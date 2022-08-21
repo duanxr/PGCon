@@ -14,7 +14,7 @@ public class ScriptInfo<T> {
   private boolean isLoop;
   private boolean isHidden;
   @NonNull
-  private String name;
+  private String description;
 
   public boolean isConfigurable() {
     return config != null;

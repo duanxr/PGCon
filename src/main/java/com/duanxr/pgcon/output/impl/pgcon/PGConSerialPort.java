@@ -27,7 +27,7 @@ public class PGConSerialPort implements SerialPort<Integer> {
     semaphore = new Semaphore(0);
     CommPortIdentifier commPortIdentifier = CommPortIdentifier.getPortIdentifier(portName);
     serialPort = (purejavacomm.SerialPort) commPortIdentifier.open("PGCon",
-        500);
+        1000);
     serialPort.setSerialPortParams(
         baudRate,
         purejavacomm.SerialPort.DATABITS_8,

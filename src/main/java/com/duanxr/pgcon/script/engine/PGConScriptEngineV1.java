@@ -7,7 +7,6 @@ import com.duanxr.pgcon.exception.ResetScriptException;
 import com.duanxr.pgcon.log.Logger;
 import com.duanxr.pgcon.output.action.ButtonAction;
 import com.duanxr.pgcon.output.action.StickAction;
-import com.duanxr.pgcon.script.api.Script;
 import com.duanxr.pgcon.script.api.ScriptInfo;
 import com.duanxr.pgcon.script.component.ScriptCache;
 import com.duanxr.pgcon.script.component.ScriptTask;
@@ -149,7 +148,7 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
 
   protected void push(String message) {
     try {
-      components.getNotifyService().push(getInfo().getName(), message);
+      components.getNotifyService().push(getInfo().getDescription(), message);
     } catch (Exception e) {
       error("push error", e);
     }
@@ -172,10 +171,10 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
     return components.getGuiLogger().getEndPoint(PGConScriptEngineV1.class);
   }
 
-  protected void script(String script) {
-    ScriptCache<Object> scriptCache = components.getScriptManager().getScript(script);
+  protected void script(String scriptName) {
+    ScriptCache<Object> scriptCache = components.getScriptManager().getScriptByName(scriptName);
     if (scriptCache == null) {
-      throw new InterruptScriptException("script " + script + " not found");
+      throw new InterruptScriptException("script " + scriptName + " not found");
     }
     new ScriptTask(scriptCache.getScript()).run();
   }

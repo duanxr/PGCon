@@ -37,7 +37,7 @@ public class LunchGameENG extends PGConScriptEngineV1<Object> {
     super(ScriptInfo.builder()
         .isLoop(false)
         .isHidden(true)
-        .name("LunchGameENG")
+        .description("LunchGameENG")
         .build());
   }
 
@@ -46,6 +46,7 @@ public class LunchGameENG extends PGConScriptEngineV1<Object> {
     press(A);
     sleep(1000);
     checkSelectUser();
+    sleep(1000);
     checkBackUp();
   }
 

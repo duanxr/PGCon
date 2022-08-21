@@ -9,7 +9,7 @@ public class PressA extends PGConScriptEngineV1<Object> {
   public PressA() {
     super(ScriptInfo.builder()
         .isLoop(true)
-        .name("Press A")
+        .description("Press A")
         .build());
   }
 

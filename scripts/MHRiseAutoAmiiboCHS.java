@@ -59,7 +59,7 @@ public class MHRiseAutoAmiiboCHS extends PGConScriptEngineV1<MHRiseAutoAmiiboCHS
   public MHRiseAutoAmiiboCHS() {
     super(ScriptInfo.<MHRiseAutoAmiiboCHS.Config>builder()
         .isLoop(true)
-        .name("MHR Auto Amiibo(CHS.Ver)")
+        .description("MHR Auto Amiibo(CHS.Ver)")
         .config(new Config())
         .build());
   }
