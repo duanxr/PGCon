@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class ControllerService {
   private final StickAction[] stickDirections;
   private final long[] stickExpired;
   @Setter
+  @Getter
   private volatile Protocol protocol;
   @Autowired
   public ControllerService(OutputConfig outputConfig, ExecutorService executorService,

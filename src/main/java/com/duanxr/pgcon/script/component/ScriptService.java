@@ -48,11 +48,15 @@ public class ScriptService {
       throw new AlertErrorException(
           "compile script " + scriptCache.getScriptFile().getName() + " failed");
     }
-    try {
-      BeanUtils.copyProperties(script.getInfo().getConfig(), scriptCache.getScript().getInfo().getConfig());
-    } catch (Exception e) {
-      throw new AlertErrorException(
-          "copy properties from script " + scriptCache.getScriptFile().getName() + " failed");
+    if (script.getInfo().getConfig() != null
+        && scriptCache.getScript().getInfo().getConfig() != null) {
+      try {
+        BeanUtils.copyProperties(script.getInfo().getConfig(),
+            scriptCache.getScript().getInfo().getConfig());
+      } catch (Exception e) {
+        throw new AlertErrorException(
+            "copy properties from script " + scriptCache.getScriptFile().getName() + " failed", e);
+      }
     }
     scriptCache.setScript(script);
   }

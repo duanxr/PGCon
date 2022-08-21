@@ -151,8 +151,6 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
     sleep(1000);
     press(HOME);
     sleep(1000);
-    press(HOME);
-    sleep(1000);
   }
 
   private void init() {
@@ -271,7 +269,7 @@ public class PlusOneDayENG extends PGConScriptEngineV1<Object> {
   private void backToGame() {
     press(HOME);
     sleep(1000);
-    script("LunchGameENG");
+    script("LunchGame");
   }
 
 }

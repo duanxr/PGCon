@@ -721,7 +721,7 @@ public class MHRiseCharmSaveLoadSearchENG extends PGConScriptEngineV1<MHRiseChar
   }
 
   private void launchGame() {
-    script("LunchGameENG");
+    script("LunchGame");
     until(() -> detect(MHR_IN_GAME),
         result -> result.getSimilarity() > MHR_IN_GAME_MENU_THRESHOLD,
         () -> {
@@ -754,10 +754,11 @@ public class MHRiseCharmSaveLoadSearchENG extends PGConScriptEngineV1<MHRiseChar
 
   private void reset() {
     press(HOME);
-    sleep(300);
+    sleep(3000);
     press(X);
     sleep(300);
     press(A);
+    sleep(5000);
   }
 
   private void fillPotOnce() {

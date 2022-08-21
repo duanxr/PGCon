@@ -22,10 +22,10 @@ public enum StickBaseAction {
   RY_CENTER(48,-128);
 
   private final byte pgcCommand;
-  private final byte scCommand;
+  private final byte ecCommand;
 
-  StickBaseAction(int command, int scCommand) {
+  StickBaseAction(int command, int ecCommand) {
     this.pgcCommand = (byte) command;
-    this.scCommand = (byte) scCommand;
+    this.ecCommand = (byte) ecCommand;
   }
 }

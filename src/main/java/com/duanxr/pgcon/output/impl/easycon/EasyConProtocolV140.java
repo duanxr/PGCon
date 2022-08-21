@@ -58,11 +58,30 @@ public class EasyConProtocolV140 implements Protocol {
   public synchronized void set(StickAction action) {
     byte[] bytes = currentBytes;
     if (action.isLeft()) {
-      bytes[3] = action.getActionX().getScCommand();
-      bytes[4] = action.getActionY().getScCommand();
+      bytes[3] = action.getActionX().getEcCommand();
+      bytes[4] = action.getActionY().getEcCommand();
     } else {
-      bytes[5] = action.getActionX().getScCommand();
-      bytes[6] = action.getActionY().getScCommand();
+      bytes[5] = action.getActionX().getEcCommand();
+      bytes[6] = action.getActionY().getEcCommand();
+    }
+    serialPort.sendCommand(bytes);
+  }
+
+  @Override
+  public void set(boolean isLeft, double degrees) {
+    byte[] bytes = currentBytes;
+    int ix = 128;
+    int iy = 128;
+    ix += 127 * -Math.sin(Math.toRadians(-degrees));
+    iy += 127 * -Math.cos(Math.toRadians(-degrees));
+    byte x = (byte) ix;
+    byte y = (byte) iy;
+    if (isLeft) {
+      bytes[3] = x;
+      bytes[4] = y;
+    } else {
+      bytes[5] = x;
+      bytes[6] = y;
     }
     serialPort.sendCommand(bytes);
   }

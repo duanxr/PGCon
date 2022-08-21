@@ -1,6 +1,7 @@
 package com.duanxr.pgcon.script.engine;
 
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
+import com.duanxr.pgcon.core.detect.api.ImageCompare.Result;
 import com.duanxr.pgcon.core.detect.api.OCR;
 import com.duanxr.pgcon.exception.InterruptScriptException;
 import com.duanxr.pgcon.exception.ResetScriptException;
@@ -10,7 +11,9 @@ import com.duanxr.pgcon.output.action.StickAction;
 import com.duanxr.pgcon.script.api.ScriptInfo;
 import com.duanxr.pgcon.script.component.ScriptCache;
 import com.duanxr.pgcon.script.component.ScriptTask;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -56,6 +59,27 @@ public abstract class PGConScriptEngineV1<T> extends BasicScriptEngine<T> {
 
   protected OCR.Result detect(OCR.Param param) {
     return components.getDetectService().detect(param);
+  }
+
+  @SneakyThrows
+  protected ImageCompare.Result detectBest(ImageCompare.Param... params) {
+    List<Future<Result>> detectList = new ArrayList<>(params.length);
+    for (int i = 0; i < params.length; i++) {
+      int finalI = i;
+      Future<Result> resultFuture = async(
+          () -> components.getDetectService().detect(params[finalI]));
+      detectList.add(resultFuture);
+    }
+    Result result = null;
+    double similarity = -100.0;
+    for (Future<Result> resultFuture : detectList) {
+      Result temp = resultFuture.get();
+      if (temp.getSimilarity() > similarity) {
+        result = temp;
+        similarity = result.getSimilarity();
+      }
+    }
+    return result;
   }
 
   protected Long detectLong(OCR.Param param, Long timeout, Runnable reset) {

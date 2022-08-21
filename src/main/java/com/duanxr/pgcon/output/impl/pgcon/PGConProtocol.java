@@ -35,6 +35,11 @@ public class PGConProtocol implements Protocol {
   }
 
   @Override
+  public void set(boolean isLeft, double degrees) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
   public void clear() {
     send(49);
     serialPort.close();

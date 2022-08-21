@@ -19,11 +19,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScriptParser {
 
-  private final GuiLogger guiLogger;
-
   private final PGConComponents component;
+  private final GuiLogger guiLogger;
+  private final ScriptClassLoader scriptClassLoader;
 
-  public ScriptParser(GuiLogger guiLogger, PGConComponents component) {
+  public ScriptParser(ScriptClassLoader scriptClassLoader, GuiLogger guiLogger,
+      PGConComponents component) {
+    this.scriptClassLoader = scriptClassLoader;
     this.guiLogger = guiLogger;
     this.component = component;
   }
@@ -57,10 +59,6 @@ public class ScriptParser {
     return null;
   }
 
-  private boolean checkEngine(Object scriptInstance) {
-    return scriptInstance instanceof BasicScriptEngine;
-  }
-
   @SneakyThrows
   public Object compileJava(File file) {
     String name = file.getName();
@@ -75,7 +73,8 @@ public class ScriptParser {
       return null;
     }
     try {
-      scriptClass = CompilerUtils.CACHED_COMPILER.loadFromJava(new ScriptClassLoader(), className,
+      scriptClass = CompilerUtils.CACHED_COMPILER.loadFromJava(
+          new ScriptClassLoader(scriptClassLoader), className,
           code);
     } catch (ClassNotFoundException e) {
       log.error(
@@ -93,6 +92,10 @@ public class ScriptParser {
       return null;
     }
     return scriptInstance;
+  }
+
+  private boolean checkEngine(Object scriptInstance) {
+    return scriptInstance instanceof BasicScriptEngine;
   }
 
 }
