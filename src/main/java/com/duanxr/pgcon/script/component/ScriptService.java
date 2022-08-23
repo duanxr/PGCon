@@ -18,36 +18,57 @@ import org.springframework.stereotype.Component;
 public class ScriptService {
 
   private final GuiLogger guiLogger;
-  private final ScriptLoader scriptLoader;
+  private final ScriptFinder scriptFinder;
   private final ScriptParser scriptParser;
   private final ScriptManager scriptManager;
+  private final ScriptCompiler scriptCompiler;
+  private final ScriptLoader scriptLoader;
+
+  private ClassLoader scriptClassLoader;
 
   @Autowired
-  public ScriptService(GuiLogger guiLogger, ScriptLoader scriptLoader,
-      ScriptManager scriptManager, ScriptParser scriptParser) {
+  public ScriptService(GuiLogger guiLogger, ScriptFinder scriptFinder,
+      ScriptManager scriptManager, ScriptParser scriptParser, ScriptCompiler scriptCompiler,
+      ScriptLoader scriptLoader) {
     this.guiLogger = guiLogger;
-    this.scriptLoader = scriptLoader;
+    this.scriptFinder = scriptFinder;
     this.scriptParser = scriptParser;
     this.scriptManager = scriptManager;
+    this.scriptCompiler = scriptCompiler;
+    this.scriptLoader = scriptLoader;
   }
 
   public void loadScripts() {
-    List<File> files = scriptLoader.loadScripts();
-    if (!files.isEmpty()) {
-      files.stream().map(scriptParser::parseScript)
-          .filter(Objects::nonNull).forEach(scriptManager::putScript);
-    } else {
+    scriptManager.clear();
+    scriptClassLoader = this.getClass().getClassLoader();
+    scriptClassLoader = scriptLoader.loadJars(scriptClassLoader);
+    scriptClassLoader = scriptLoader.loadEngines(scriptClassLoader);
+    List<File> files = scriptFinder.findScripts();
+    if (files.isEmpty()) {
       guiLogger.error("no script file found");
+    } else {
+      files.stream().map(this::parseScript)
+          .filter(Objects::nonNull).forEach(scriptManager::putScript);
     }
+  }
+
+  public ScriptCache<Object> parseScript(File scriptFile) {
+    Script<Object> script = scriptLoader.loadScript(scriptClassLoader, scriptFile);
+    if (script == null) {
+      return null;
+    }
+    guiLogger.info("compile script {} success", scriptFile.getName());
+    return ScriptCache.builder()
+        .description(script.getInfo().getDescription())
+        .script(script)
+        .name(script.getClass().getName())
+        .scriptFile(scriptFile)
+        .build();
   }
 
   @SneakyThrows
   public void reloadScripts(ScriptCache<Object> scriptCache) {
-    Script<Object> script = scriptParser.compileScript(scriptCache.getScriptFile());
-    if (script == null) {
-      throw new AlertErrorException(
-          "compile script " + scriptCache.getScriptFile().getName() + " failed");
-    }
+    Script<Object> script = scriptLoader.loadScript(scriptClassLoader,scriptCache.getScriptFile());
     if (script.getInfo().getConfig() != null
         && scriptCache.getScript().getInfo().getConfig() != null) {
       try {

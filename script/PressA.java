@@ -2,7 +2,7 @@ import com.duanxr.pgcon.script.api.ScriptInfo;
 import com.duanxr.pgcon.script.engine.PGConScriptEngineV1;
 
 /**
- * @author 段然 2021/12/9
+ * @author 2021/12/9
  */
 public class PressA extends PGConScriptEngineV1<Object> {
 

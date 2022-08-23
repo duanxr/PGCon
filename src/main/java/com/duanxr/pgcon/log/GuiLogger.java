@@ -18,13 +18,11 @@ public class GuiLogger implements Logger {
       GuiLogger.class);
   private final String context;
   private final GuiLog guiLog;
-
   @Autowired
   public GuiLogger(GuiLog guiLog) {
     this.guiLog = guiLog;
     this.context = "";
   }
-
   public GuiLogger(GuiLog guiLog, String context) {
     this.guiLog = guiLog;
     this.context = context;

@@ -7,15 +7,12 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class DaemonTask implements Runnable {
-
   private final String name;
   private final Runnable runnable;
-
   public DaemonTask(String name, Runnable runnable) {
     this.name = name;
     this.runnable = runnable;
   }
-
   @Override
   public void run() {
     try {

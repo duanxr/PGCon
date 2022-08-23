@@ -27,7 +27,7 @@ import com.duanxr.pgcon.gui.debug.DebugResultConfig;
 import com.duanxr.pgcon.gui.debug.DebugThreshConfig;
 import com.duanxr.pgcon.util.GuiUtil;
 import com.duanxr.pgcon.util.ImageUtil;
-import com.duanxr.pgcon.util.LogUtil;
+import com.duanxr.pgcon.util.StringFormatUtil;
 import com.duanxr.pgcon.util.PropertyCacheUtil;
 import com.google.common.base.Strings;
 import java.awt.image.BufferedImage;
@@ -183,7 +183,7 @@ public class DebugPanel {
               .preProcessors(preProcessorConfigs)
               .build();
           ImageCompare.Result detect = imageCompare.detect(param);
-          String similarity = LogUtil.formatToString("%.02f", detect.getSimilarity()).toString();
+          String similarity = StringFormatUtil.formatObj("%.02f", detect.getSimilarity()).toString();
           result.append("Similarity:").append(similarity).append("\n");
         } else if (detectType == DetectType.OCR) {
           Param param = Param.builder()

@@ -5,9 +5,12 @@ import static com.duanxr.pgcon.config.ConstantConfig.AUTO_RELEASE_DELAY;
 import com.duanxr.pgcon.component.DaemonTask;
 import com.duanxr.pgcon.config.OutputConfig;
 import com.duanxr.pgcon.gui.display.DisplayService;
-import com.duanxr.pgcon.output.action.ButtonAction;
-import com.duanxr.pgcon.output.action.StickAction;
+import com.duanxr.pgcon.output.action.NintendoSwitchStandardButton;
+import com.duanxr.pgcon.output.action.NintendoSwitchStandardStick;
+import com.duanxr.pgcon.output.action.Sticks;
+import com.duanxr.pgcon.output.api.Button;
 import com.duanxr.pgcon.output.api.Protocol;
+import com.duanxr.pgcon.output.api.Stick;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,44 +28,45 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ControllerService {
-  private static final ButtonAction[] BUTTON_ACTIONS = ButtonAction.values();
+  private static final Button[] BUTTON_ACTIONS = NintendoSwitchStandardButton.values();
   private final long[] buttonExpired;
   private final DisplayService displayService; //TODO DEBUG WITH CONTROLLER IN THE CANVAS
-  private final ButtonAction[] hatDirections;
+  private final Button[] hatDirections;
   private final OutputConfig outputConfig;
-  private final StickAction[] stickDirections;
+  private final Stick[] stickDirections;
   private final long[] stickExpired;
   @Setter
   @Getter
   private volatile Protocol protocol;
+
   @Autowired
   public ControllerService(OutputConfig outputConfig, ExecutorService executorService,
       DisplayService displayService) {
     this.outputConfig = outputConfig;
     this.displayService = displayService;
-    this.buttonExpired = new long[ButtonAction.values().length];
+    this.buttonExpired = new long[NintendoSwitchStandardButton.values().length];
     this.stickExpired = new long[2];
-    this.hatDirections = new ButtonAction[]{null};
-    this.stickDirections = new StickAction[]{StickAction.L_CENTER, StickAction.R_CENTER};
+    this.hatDirections = new Button[]{null};
+    this.stickDirections = new Stick[]{NintendoSwitchStandardStick.L_CENTER,
+        NintendoSwitchStandardStick.R_CENTER};
     executorService.execute(DaemonTask.of("CHECK_CONTROLLER", this::autoRelease));
   }
-
   @SneakyThrows
   private void autoRelease() {
     for (int i = 0, length = stickExpired.length; i < length; i++) {
-      if(stickExpired[i] != 0 &&  System.currentTimeMillis() >= stickExpired[i]) {
-        release(i==0?StickAction.L_CENTER:StickAction.R_CENTER);
+      if (stickExpired[i] != 0 && System.currentTimeMillis() >= stickExpired[i]) {
+        release(i == 0 ? NintendoSwitchStandardStick.L_CENTER : NintendoSwitchStandardStick.R_CENTER);
       }
     }
     for (int i = 0, length = buttonExpired.length; i < length; i++) {
-      if(buttonExpired[i] != 0 &&  System.currentTimeMillis() >= buttonExpired[i]) {
+      if (buttonExpired[i] != 0 && System.currentTimeMillis() >= buttonExpired[i]) {
         release(BUTTON_ACTIONS[i]);
       }
     }
     TimeUnit.MILLISECONDS.sleep(AUTO_RELEASE_DELAY);
   }
 
-  public synchronized void release(StickAction action) {
+  public synchronized void release(Stick action) {
     int index = getExpireTimeIndex(action);
     long duration = stickExpired[index];
     if (duration != 0) {
@@ -74,7 +78,7 @@ public class ControllerService {
     }
   }
 
-  public synchronized void release(ButtonAction action) {
+  public synchronized void release(Button action) {
     int index = getExpireTimeIndex(action);
     if (buttonExpired[index] != 0) {
       buttonExpired[index] = 0;
@@ -87,27 +91,29 @@ public class ControllerService {
     }
   }
 
-  private int getExpireTimeIndex(StickAction action) {
-    return action.isLeft() ? 0 : 1;
+  private int getExpireTimeIndex(Stick action) {
+    return action.getStick().ordinal();
   }
 
-  private StickAction getReleaseAction(StickAction action) {
-    return action.isLeft() ? StickAction.L_CENTER : StickAction.R_CENTER;
+  private Stick getReleaseAction(Stick action) {
+    return action.getStick() == Sticks.LEFT ?
+        NintendoSwitchStandardStick.L_CENTER :
+        NintendoSwitchStandardStick.R_CENTER;
   }
 
-  private int getExpireTimeIndex(ButtonAction action) {
-    return action.isHat() ? ButtonAction.D_TOP.ordinal() : action.ordinal();
+  private int getExpireTimeIndex(Button action) {
+    return action.isHat() ? NintendoSwitchStandardButton.D_TOP.ordinal() : action.ordinal();
   }
 
-  private ButtonAction getReleaseAction(ButtonAction action) {
-    return action.isHat() ? ButtonAction.D_TOP : action;
+  private Button getReleaseAction(Button action) {
+    return action.isHat() ? NintendoSwitchStandardButton.D_TOP : action;
   }
 
-  public synchronized void press(ButtonAction action) {
+  public synchronized void press(Button action) {
     hold(action, getDefaultPressTime());
   }
 
-  public synchronized void hold(ButtonAction action, int duration) {
+  public synchronized void hold(Button action, int duration) {
     long expiredTime = System.currentTimeMillis() + duration;
     checkAndHold(action, expiredTime);
   }
@@ -116,7 +122,7 @@ public class ControllerService {
     return outputConfig.getPressTime();
   }
 
-  public synchronized void checkAndHold(ButtonAction action, long expiredTime) {
+  public synchronized void checkAndHold(Button action, long expiredTime) {
     int index = getExpireTimeIndex(action);
     if (buttonExpired[index] == 0) {
       buttonExpired[index] = expiredTime;
@@ -148,21 +154,21 @@ public class ControllerService {
     }
   }
 
-  public synchronized void hold(ButtonAction action) {
+  public synchronized void hold(Button action) {
     long expiredTime = Long.MAX_VALUE;
     checkAndHold(action, expiredTime);
   }
 
-  public synchronized void press(StickAction action) {
+  public synchronized void press(Stick action) {
     hold(action, getDefaultPressTime());
   }
 
-  public void hold(StickAction action, int duration) {
+  public void hold(Stick action, int duration) {
     long expiredTime = System.currentTimeMillis() + duration;
     checkAndHold(action, expiredTime);
   }
 
-  private synchronized void checkAndHold(StickAction action, long expiredTime) {
+  private synchronized void checkAndHold(Stick action, long expiredTime) {
     int index = getExpireTimeIndex(action);
     if (stickExpired[index] == 0) {
       stickExpired[index] = expiredTime;
@@ -184,7 +190,7 @@ public class ControllerService {
     stickDirections[index] = action;
   }
 
-  public void hold(StickAction action) {
+  public void hold(Stick action) {
     long expiredTime = Long.MAX_VALUE;
     checkAndHold(action, expiredTime);
   }
@@ -195,11 +201,11 @@ public class ControllerService {
     if (protocol != null) {
       protocol.clear();
       protocol = null;
-      Arrays.fill(stickExpired,0);
-      Arrays.fill(buttonExpired,0);
-      hatDirections[0]=null;
-      stickDirections[0]= StickAction.L_CENTER;
-      stickDirections[1]= StickAction.R_CENTER;
+      Arrays.fill(stickExpired, 0);
+      Arrays.fill(buttonExpired, 0);
+      hatDirections[0] = null;
+      stickDirections[0] = NintendoSwitchStandardStick.L_CENTER;
+      stickDirections[1] = NintendoSwitchStandardStick.R_CENTER;
     }
   }
 

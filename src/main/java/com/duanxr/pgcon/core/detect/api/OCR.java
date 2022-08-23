@@ -54,7 +54,6 @@ public interface OCR extends Detector<Result, Param> {
   @NoArgsConstructor
   @AllArgsConstructor
   class Result {
-
     @NonNull
     private String text;
 
@@ -63,6 +62,9 @@ public interface OCR extends Detector<Result, Param> {
 
     @NonNull
     private FrameCacheService.CachedFrame cachedFrame;
+
+    @NonNull
+    private Param param;
 
     public String getTextWithoutSpace() {
       return text.trim().replaceAll(" ", "").replaceAll("\n", "");

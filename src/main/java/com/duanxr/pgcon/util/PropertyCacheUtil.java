@@ -38,7 +38,7 @@ public class PropertyCacheUtil {
   public static <T> void loadProperty(String key, Property<T> property,
       Function<String, T> converter) {
     CallBackUtil.callbackWithExceptionCatch(() -> {
-      String cache = ConfigUtil.get(key);
+      String cache = ConfigCacheUtil.get(key);
       T value = deserialize(cache, converter);
       if (value != null) {
         property.setValue(value);
@@ -52,7 +52,7 @@ public class PropertyCacheUtil {
         CallBackUtil.callbackWithExceptionCatch(() -> {
           String cache = serialize(newValue, converter);
           if (!Strings.isNullOrEmpty(cache)) {
-            ConfigUtil.set(key, cache);
+            ConfigCacheUtil.set(key, cache);
           }
         }));
   }
@@ -113,11 +113,11 @@ public class PropertyCacheUtil {
   }
 
   public static void bindPropertyBean(String key, Object bean) {
-    String cache = ConfigUtil.get(key);
+    String cache = ConfigCacheUtil.get(key);
     deserialize(bean, cache);
     List<Property<?>> properties = getBeanPropertiesWithGetter(bean);
     ChangeListener<Object> changeListener = (observable, oldValue, newValue) -> CallBackUtil.callbackWithExceptionCatch(
-        () -> ConfigUtil.set(key, serialize(bean)));
+        () -> ConfigCacheUtil.set(key, serialize(bean)));
     for (Property<?> property : properties) {
       property.addListener(changeListener);
     }

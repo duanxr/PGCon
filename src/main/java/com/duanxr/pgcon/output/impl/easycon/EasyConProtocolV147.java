@@ -1,9 +1,12 @@
 package com.duanxr.pgcon.output.impl.easycon;
 
-import com.duanxr.pgcon.output.action.ButtonAction;
-import com.duanxr.pgcon.output.action.StickAction;
+import com.duanxr.pgcon.output.action.NintendoSwitchStandardButton;
+import com.duanxr.pgcon.output.action.NintendoSwitchStandardStick;
+import com.duanxr.pgcon.output.action.Sticks;
+import com.duanxr.pgcon.output.api.Button;
 import com.duanxr.pgcon.output.api.Protocol;
 import com.duanxr.pgcon.output.api.SerialPort;
+import com.duanxr.pgcon.output.api.Stick;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,8 +26,8 @@ public class EasyConProtocolV147 implements Protocol {
   }
 
   @Override
-  public synchronized void hold(ButtonAction buttonType) {
-    int command = buttonType.getEcCommand();
+  public synchronized void hold(Button buttonType) {
+    int command = buttonType.getCommandEasyCon();
     byte[] bytes = currentBytes;
     if (buttonType.isHat()) {
       bytes[2] = (byte) command;
@@ -39,8 +42,8 @@ public class EasyConProtocolV147 implements Protocol {
   }
 
   @Override
-  public synchronized void release(ButtonAction buttonType) {
-    int command = buttonType.getEcCommand();
+  public synchronized void release(Button buttonType) {
+    int command = buttonType.getCommandEasyCon();
     byte[] bytes = currentBytes;
     if (buttonType.isHat()) {
       bytes[2] = 8;
@@ -55,14 +58,14 @@ public class EasyConProtocolV147 implements Protocol {
   }
 
   @Override
-  public synchronized void set(StickAction action) {
+  public synchronized void set(Stick action) {
     byte[] bytes = currentBytes;
-    if (action.isLeft()) {
-      bytes[3] = action.getActionX().getEcCommand();
-      bytes[4] = action.getActionY().getEcCommand();
+    if (action.getStick() == Sticks.LEFT) {
+      bytes[3] = action.getXCommandEasyCon();
+      bytes[4] = action.getYCommandEasyCon();
     } else {
-      bytes[5] = action.getActionX().getEcCommand();
-      bytes[6] = action.getActionY().getEcCommand();
+      bytes[5] = action.getXCommandEasyCon();
+      bytes[6] = action.getYCommandEasyCon();
     }
     serialPort.sendCommand(bytes);
   }
@@ -85,6 +88,7 @@ public class EasyConProtocolV147 implements Protocol {
     }
     serialPort.sendCommand(bytes);
   }
+
   @Override
   public void clear() {
     serialPort.sendCommand(getDefault());

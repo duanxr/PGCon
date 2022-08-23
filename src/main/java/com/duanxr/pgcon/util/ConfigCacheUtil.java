@@ -16,7 +16,7 @@ import org.apache.commons.configuration2.builder.fluent.Configurations;
  */
 @Slf4j
 @UtilityClass
-public class ConfigUtil {
+public class ConfigCacheUtil {
   private static final Configuration CONFIG = loadConfig();
   @SneakyThrows
   private static Configuration loadConfig() {

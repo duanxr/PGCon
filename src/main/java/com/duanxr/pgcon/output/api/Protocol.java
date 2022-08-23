@@ -1,18 +1,18 @@
 package com.duanxr.pgcon.output.api;
 
-import com.duanxr.pgcon.output.action.ButtonAction;
-import com.duanxr.pgcon.output.action.StickAction;
+import com.duanxr.pgcon.output.action.NintendoSwitchStandardButton;
+import com.duanxr.pgcon.output.action.NintendoSwitchStandardStick;
 
 /**
  * @author Duanran 2019/12/17
  */
 public interface Protocol {
 
-  void hold(ButtonAction buttonType);
+  void hold(Button buttonType);
 
-  void release(ButtonAction buttonType);
+  void release(Button buttonType);
 
-  void set(StickAction stickSimpleAction);
+  void set(Stick stickSimpleAction);
 
   void set(boolean isLeft, double degrees);
 

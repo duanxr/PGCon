@@ -1,9 +1,11 @@
 package com.duanxr.pgcon.output.impl.pgcon;
 
+import com.duanxr.pgcon.output.api.Button;
 import com.duanxr.pgcon.output.api.Protocol;
 import com.duanxr.pgcon.output.api.SerialPort;
-import com.duanxr.pgcon.output.action.ButtonAction;
-import com.duanxr.pgcon.output.action.StickAction;
+import com.duanxr.pgcon.output.action.NintendoSwitchStandardButton;
+import com.duanxr.pgcon.output.action.NintendoSwitchStandardStick;
+import com.duanxr.pgcon.output.api.Stick;
 import lombok.SneakyThrows;
 
 /**
@@ -19,19 +21,19 @@ public class PGConProtocol implements Protocol {
   }
 
   @Override
-  public void hold(ButtonAction buttonType) {
-    send(buttonType.getPcHoldCommand());
+  public void hold(Button buttonType) {
+    send(buttonType.getHoldCommandPGCon());
   }
 
   @Override
-  public void release(ButtonAction buttonType) {
-    send(buttonType.getPcReleaseCommand());
+  public void release(Button buttonType) {
+    send(buttonType.getReleaseCommandPGCon());
   }
 
   @Override
-  public void set(StickAction action) {
-    send(action.getActionX().getPgcCommand());
-    send(action.getActionY().getPgcCommand());
+  public void set(Stick action) {
+    send(action.getXCommandPGCon());
+    send(action.getYCommandPGCon());
   }
 
   @Override

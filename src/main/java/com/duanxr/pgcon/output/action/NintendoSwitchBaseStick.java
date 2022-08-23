@@ -6,7 +6,7 @@ import lombok.Getter;
  * @author Duanran 2019/12/17
  */
 @Getter
-public enum StickBaseAction {
+public enum NintendoSwitchBaseStick {
 
   LX_MIN(37,0),
   LX_MAX(38,-1),
@@ -21,11 +21,11 @@ public enum StickBaseAction {
   RY_MAX(47,-1),
   RY_CENTER(48,-128);
 
-  private final byte pgcCommand;
-  private final byte ecCommand;
+  private final byte commandPGCon;
+  private final byte commandEasyCon;
 
-  StickBaseAction(int command, int ecCommand) {
-    this.pgcCommand = (byte) command;
-    this.ecCommand = (byte) ecCommand;
+  NintendoSwitchBaseStick(int commandPGCon, int commandEasyCon) {
+    this.commandPGCon = (byte) commandPGCon;
+    this.commandEasyCon = (byte) commandEasyCon;
   }
 }

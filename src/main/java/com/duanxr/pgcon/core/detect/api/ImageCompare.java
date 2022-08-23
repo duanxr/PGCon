@@ -4,6 +4,7 @@ import com.duanxr.pgcon.core.detect.api.ImageCompare.Param;
 import com.duanxr.pgcon.core.detect.api.ImageCompare.Result;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
+import com.duanxr.pgcon.input.FrameCacheService;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,7 +50,48 @@ public interface ImageCompare extends Detector<Result, Param> {
     private Double similarity;
 
     @NonNull
-    private Long timestamp;
+    private Param param;
+
+    @NonNull
+    private FrameCacheService.CachedFrame cachedFrame;
+  }
+
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class ResultList {
+
+    @Singular
+    private List<Result> results;
+
+    public Result getMax() {
+      if (results == null || results.isEmpty()) {
+        return null;
+      }
+      Result max = results.get(0);
+      for (Result result : results) {
+        if (result.getSimilarity() > max.getSimilarity()) {
+          max = result;
+        }
+      }
+      return max;
+    }
+
+    public Result getMin() {
+      if (results == null || results.isEmpty()) {
+        return null;
+      }
+      Result min = results.get(0);
+      for (Result result : results) {
+        if (result.getSimilarity() < min.getSimilarity()) {
+          min = result;
+        }
+      }
+      return min;
+    }
+
 
   }
 

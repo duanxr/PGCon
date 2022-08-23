@@ -90,7 +90,7 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
     targetMat = tryPreProcess(targetMat, preProcessors);
     PIX image = ImageUtil.matToPix(targetMat);
     Pair<String, Integer> result = getText(tessBaseAPI, image);
-    return warpResult(result, cachedFrame);
+    return warpResult(result, cachedFrame,param);
   }
 
   private CachedFrame getFrame() {
@@ -123,9 +123,9 @@ public class TesseractOCR extends ImageDetector<OCR.Result, OCR.Param> implement
     }
   }
 
-  private Result warpResult(Pair<String, Integer> result, CachedFrame cachedFrame) {
+  private Result warpResult(Pair<String, Integer> result, CachedFrame cachedFrame, Param param) {
     return Result.builder().text(result.getFirst()).confidence(result.getSecond())
-        .cachedFrame(cachedFrame).build();
+        .cachedFrame(cachedFrame).param(param).build();
   }
 
   private Mat splitMat(CachedFrame cachedFrame, Area area) {

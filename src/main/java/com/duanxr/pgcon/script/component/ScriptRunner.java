@@ -5,6 +5,7 @@ import com.duanxr.pgcon.output.ControllerService;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,13 +20,13 @@ public class ScriptRunner {
   private ListenableFuture<?> currentScriptListenable;
   private ScriptTask currentScriptTask;
   private final ControllerService controllerService;
-  public ScriptRunner(ControllerService controllerService) {
+  public ScriptRunner(ControllerService controllerService, ExecutorService executorService) {
     this.controllerService = controllerService;
-    this.listeningExecutorService = MoreExecutors.listeningDecorator(
-        Executors.newSingleThreadExecutor());
+    this.listeningExecutorService = MoreExecutors.listeningDecorator(executorService);
   }
   public synchronized void run(Script<Object> script) {
     stop();
+    script.load();
     currentScriptTask = new ScriptTask(script);
     currentScriptListenable = listeningExecutorService.submit(currentScriptTask);
   }

@@ -8,7 +8,7 @@ import com.duanxr.pgcon.gui.display.DrawEvent;
 import com.duanxr.pgcon.gui.display.impl.Rectangle;
 import com.duanxr.pgcon.gui.display.impl.Text;
 import com.duanxr.pgcon.log.GuiLogger;
-import com.duanxr.pgcon.util.LogUtil;
+import com.duanxr.pgcon.util.StringFormatUtil;
 import java.awt.Color;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.stereotype.Component;
@@ -73,7 +73,7 @@ public class DetectService {
       drawDebugInfo(param);
       ImageCompare.Result detect = imageCompare.detect(param);
       drawDebugInfo(param, detect);
-      String similarity = LogUtil.formatToString("%.02f", detect.getSimilarity()).toString();
+      String similarity = StringFormatUtil.formatObj("%.02f", detect.getSimilarity()).toString();
       guiLogger.debug("image compare {} similarity: {}, cost {} ms", param.hashCode(),
           similarity, System.currentTimeMillis() - start);
       return detect;
@@ -92,7 +92,7 @@ public class DetectService {
   }
 
   private void drawDebugInfo(ImageCompare.Param param, ImageCompare.Result detect) {
-    String similarity = LogUtil.formatToString("%.0f%%", detect.getSimilarity() * 100).toString();
+    String similarity = StringFormatUtil.formatObj("%.0f%%", detect.getSimilarity() * 100).toString();
     Area rect = displayService.inputToScreen(param.getArea());
     displayService.draw(
         new DrawEvent("TEXT_" + param, new Text(

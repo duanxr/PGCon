@@ -1,11 +1,11 @@
 package com.duanxr.pgcon.core.detect.impl;
 
-import com.duanxr.pgcon.input.FrameCacheService;
-import com.duanxr.pgcon.input.FrameCacheService.CachedFrame;
 import com.duanxr.pgcon.core.detect.api.ImageCompare;
 import com.duanxr.pgcon.core.model.Area;
 import com.duanxr.pgcon.core.preprocessing.PreProcessorConfig;
 import com.duanxr.pgcon.core.preprocessing.PreprocessorFactory;
+import com.duanxr.pgcon.input.FrameCacheService;
+import com.duanxr.pgcon.input.FrameCacheService.CachedFrame;
 import com.duanxr.pgcon.util.ImageUtil;
 import com.duanxr.pgcon.util.MatUtil;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -40,7 +40,8 @@ public class OpenCvImageCompare extends
   private final LoadingCache<String, Mat> cache;
 
   @Autowired
-  public OpenCvImageCompare(PreprocessorFactory preprocessorFactory, FrameCacheService frameCacheService) {
+  public OpenCvImageCompare(PreprocessorFactory preprocessorFactory,
+      FrameCacheService frameCacheService) {
     super(frameCacheService, preprocessorFactory);
     this.cache = Caffeine.newBuilder().build(this::loadTemplate);
     this.methods = new HashMap<>();
@@ -64,16 +65,16 @@ public class OpenCvImageCompare extends
     Area area = param.getArea();
     Method method = param.getMethod();
     List<PreProcessorConfig> preProcessors = param.getPreProcessors();
-    return detectNow(temple, mask, area, preProcessors, method);
+    return detectNow(temple, mask, area, preProcessors, method, param);
   }
 
   private Result detectNow(Mat temple, Mat mask, Area area, List<PreProcessorConfig> preProcessors,
-      Method method) {
+      Method method, Param param) {
     CachedFrame cachedFrame = getImage();
     Mat targetMat = getTarget(cachedFrame, area, !preProcessors.isEmpty());
     targetMat = tryPreProcess(targetMat, preProcessors);
     Double score = doDetect(temple, targetMat, method);
-    return Result.builder().similarity(score).timestamp(cachedFrame.getTimestamp()).build();
+    return Result.builder().similarity(score).cachedFrame(cachedFrame).param(param).build();
   }
 
   private Double doDetect(Mat temple, Mat target, Method method) {

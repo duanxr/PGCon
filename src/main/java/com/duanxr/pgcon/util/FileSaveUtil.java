@@ -15,7 +15,7 @@ import org.opencv.core.Mat;
  */
 @Slf4j
 @UtilityClass
-public class SaveUtil {
+public class FileSaveUtil {
   @SneakyThrows
   public static File saveTempImage(BufferedImage image) {
     File file = File.createTempFile("PGCon", ".png");

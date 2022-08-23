@@ -15,18 +15,19 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ProtocolService {
+
   private final LinkedHashMap<String, Function<String, Protocol>> supportedProtocols;
+
   public ProtocolService() {
     supportedProtocols = new LinkedHashMap<>();
     supportedProtocols.put("EasyCon V1.47", EasyConProtocolV147::new);
     supportedProtocols.put("EasyCon V1.40", EasyConProtocolV140::new);
-    supportedProtocols.put("PGCon", PGConProtocol::new);
+    supportedProtocols.put("PGCon V1.0", PGConProtocol::new);
   }
 
   public List<String> getProtocolList() {
     return supportedProtocols.keySet().stream().toList();
   }
-
   public Protocol loadProtocol(String protocolName, String port) {
     Function<String, Protocol> protocolLoader = supportedProtocols.get(protocolName);
     if (protocolLoader == null) {
