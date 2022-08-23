@@ -72,7 +72,7 @@ public class ScriptLoader {
         CompilerUtils.addClassPath(folder);
       }
       for (File engine : engines) {
-        scriptCompiler.compile(scriptJavaClassLoader, engine);
+        //scriptCompiler.compile(scriptJavaClassLoader, engine);
       }
       return scriptJavaClassLoader;
     }

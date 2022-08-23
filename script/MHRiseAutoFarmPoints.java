@@ -15,7 +15,7 @@ import lombok.Data;
 /**
  * @author DuanXR 2021/12/9
  */
-public class MHRiseAutoPoints extends MonsterHunterRiseEngine<MHRiseAutoPoints.Config> {
+public class MHRiseAutoFarmPoints extends MonsterHunterRiseEngine<MHRiseAutoFarmPoints.Config> {
 
   private static final ImageCompare.Param COMPLETE_MISSION_SELECTED = ImageCompare.Param.builder()
       .area(Area.ofRect(84, 984, 162, 40)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
@@ -204,9 +204,9 @@ public class MHRiseAutoPoints extends MonsterHunterRiseEngine<MHRiseAutoPoints.C
   private long runCount = 0;
   private long runStartTime = 0;
 
-  public MHRiseAutoPoints() {
-    super(ScriptInfo.<MHRiseAutoPoints.Config>builder().config(new Config()).isLoop(true)
-        .description("MHR Auto Points(CHS.Ver & ENG.Ver)").build());
+  public MHRiseAutoFarmPoints() {
+    super(ScriptInfo.<MHRiseAutoFarmPoints.Config>builder().config(new Config()).isLoop(true)
+        .description("MHR Auto Farm Points(CHS.Ver & ENG.Ver)").build());
   }
 
   @Override

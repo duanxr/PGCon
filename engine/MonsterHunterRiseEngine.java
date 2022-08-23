@@ -9,9 +9,7 @@ import com.duanxr.pgcon.script.api.ScriptInfo;
  * @author 段然 2022/8/23
  */
 public abstract class MonsterHunterRiseEngine<T> extends NintendoSwitchEngineV2<T> {
-
   private static final float MONSTER_HUNTER_RISE_ENGINE_SCORE_THRESHOLD = 0.7f;
-
   private static final ImageCompare.Param WIRE_BUG_READY = ImageCompare.Param.builder()
       .area(Area.ofRect(964, 980, 70, 62)).method(ImageCompare.Method.TM_CCOEFF).preProcessor(
           com.duanxr.pgcon.core.preprocessing.config.ColorPickFilterPreProcessorConfig.builder()
@@ -30,6 +28,31 @@ public abstract class MonsterHunterRiseEngine<T> extends NintendoSwitchEngineV2<
 
   protected MonsterHunterRiseEngine(ScriptInfo<T> scriptInfo) {
     super(scriptInfo);
+  }
+
+  protected void run(int millis, double degree) {
+    hold(R);
+    walk(millis, new MonsterHunterRiseDirectionStick(degree));
+    release(R);
+  }
+
+  protected void walk(int millis, Stick stick) {
+    hold(stick);
+    sleep(millis);
+    release(stick);
+  }
+
+  protected void walk(int millis, double degree) {
+    MonsterHunterRiseDirectionStick stick = new MonsterHunterRiseDirectionStick(degree);
+    hold(stick);
+    sleep(millis);
+    release(stick);
+  }
+
+  protected void run(int millis, Stick stick) {
+    hold(R);
+    walk(millis, stick);
+    release(R);
   }
 
   protected void run(int millis) {
@@ -79,7 +102,6 @@ public abstract class MonsterHunterRiseEngine<T> extends NintendoSwitchEngineV2<
     release(direction);
   }
 
-
   protected void wireBugDash() {
     hold(ZL);
     press(A);
@@ -96,18 +118,27 @@ public abstract class MonsterHunterRiseEngine<T> extends NintendoSwitchEngineV2<
   }
 
   protected void checkBugReady() {
-    checkBugReady(null, null);
+    checkBugReady(null, null, null);
   }
 
-  protected void checkBugReady(Long timeout, Runnable reset) {
+  protected void checkBugReady(Runnable action, Long timeout, Runnable reset) {
     until(() -> detect(WIRE_BUG_READY),
         result -> result.getSimilarity() > MONSTER_HUNTER_RISE_ENGINE_SCORE_THRESHOLD,
-        () -> sleep(200),
+        () -> {
+          if (action != null) {
+            action.run();
+          }
+          sleep(200);
+        },
         timeout, reset);
   }
 
-  protected void checkBugReady(Long timeout) {
-    checkBugReady(timeout, null);
+  protected void checkBugReady(Runnable action, Long timeout) {
+    checkBugReady(action, timeout, null);
+  }
+
+  protected void checkBugReady(Runnable action) {
+    checkBugReady(action, null, null);
   }
 
   private static class MonsterHunterRiseDirectionStick implements Stick {
