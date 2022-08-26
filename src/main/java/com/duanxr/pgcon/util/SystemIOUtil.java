@@ -14,11 +14,13 @@ import purejavacomm.CommPortIdentifier;
  */
 @UtilityClass
 public class SystemIOUtil {
+
   public static List<String> getCameraList() {
     List<Webcam> list = Webcam.getWebcams();
     return list.isEmpty() ? Collections.emptyList() : list.stream().map(Webcam::getName).collect(
         Collectors.toList());
   }
+
   public static List<String> getSerialList() {
     Enumeration<?> allPorts = CommPortIdentifier.getPortIdentifiers();
     List<String> portIdentifierList = new ArrayList<>();

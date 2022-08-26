@@ -39,9 +39,11 @@ public class PropertyCacheUtil {
       Function<String, T> converter) {
     CallBackUtil.callbackWithExceptionCatch(() -> {
       String cache = ConfigCacheUtil.get(key);
-      T value = deserialize(cache, converter);
-      if (value != null) {
-        property.setValue(value);
+      if (!Strings.isNullOrEmpty(cache)) {
+        T value = deserialize(cache, converter);
+        if (value != null) {
+          property.setValue(value);
+        }
       }
     });
   }
